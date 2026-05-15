@@ -1,4 +1,5 @@
 export { GalleryLightbox } from "./components/gallery-lightbox";
+export { MapEmbed } from "./components/map-embed";
 export { MinimalistModern } from "./templates/minimalist-modern";
 export { FloralClassic } from "./templates/floral-classic";
 export { IslamicElegant } from "./templates/islamic-elegant";

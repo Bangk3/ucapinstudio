@@ -15,7 +15,10 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
   const [galleryRaw, setGalleryRaw] = useState(() => (content.galleryUrls ?? []).join("\n"));
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [musicLoading, setMusicLoading] = useState(false);
+  const [musicError, setMusicError] = useState<string | null>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const musicInputRef = useRef<HTMLInputElement>(null);
 
   // Sync if parent resets content from outside (e.g. navigation)
   useEffect(() => {
@@ -43,6 +46,34 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
     }
     const data = (await res.json()) as { url: string };
     return data.url;
+  }
+
+  async function handleMusicFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setMusicLoading(true);
+    setMusicError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("tenantId", tenantId);
+      formData.append("type", "audio");
+
+      const res = await fetch("/api/v1/media/upload", { method: "POST", body: formData });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setMusicError(body.error ?? "Upload gagal");
+        return;
+      }
+      const data = (await res.json()) as { url: string };
+      onChange({ musicUrl: data.url });
+    } catch {
+      setMusicError("Upload gagal, coba lagi");
+    } finally {
+      setMusicLoading(false);
+    }
   }
 
   async function handleGalleryFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -96,17 +127,45 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
         />
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="story-music-url" className="text-xs font-medium text-muted-foreground">
-          URL Musik (opsional)
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="story-music-url" className="text-xs font-medium text-muted-foreground">
+            Musik Latar (opsional)
+          </label>
+          <button
+            type="button"
+            onClick={() => musicInputRef.current?.click()}
+            disabled={musicLoading}
+            className="flex items-center gap-1.5 rounded-lg border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground hover:border-primary/60 hover:text-foreground transition-colors disabled:opacity-60"
+            title="Upload file musik MP3/OGG (maks 8MB)"
+          >
+            <Upload className={`h-3 w-3 ${musicLoading ? "animate-spin" : ""}`} />
+            {musicLoading ? "Mengupload..." : "Upload MP3"}
+          </button>
+        </div>
         <input
           id="story-music-url"
           value={content.musicUrl ?? ""}
           onChange={(e) => onChange({ musicUrl: e.target.value })}
-          placeholder="https://..."
+          placeholder="https://... atau upload file MP3/OGG di atas"
           className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        <p className="text-xs text-muted-foreground">Link langsung ke file mp3 atau ogg</p>
+        {musicError && <p className="text-xs text-destructive">{musicError}</p>}
+        {content.musicUrl && (
+          <audio
+            src={content.musicUrl}
+            controls
+            className="w-full mt-1 h-8"
+            aria-label="Preview musik latar"
+          />
+        )}
+        <p className="text-xs text-muted-foreground">MP3/OGG maks 8MB, atau tempel URL langsung</p>
+        <input
+          ref={musicInputRef}
+          type="file"
+          accept="audio/mpeg,audio/ogg,audio/mp3,.mp3,.ogg"
+          className="hidden"
+          onChange={handleMusicFile}
+        />
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">

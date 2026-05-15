@@ -7,6 +7,7 @@ import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { GalleryLightbox } from "../components/gallery-lightbox";
+import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
 import { RsvpForm } from "../components/rsvp-form";
@@ -443,6 +444,14 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
                       </a>
                     )}
                   </div>
+                  {event.lat !== undefined && event.lng !== undefined && (
+                    <MapEmbed
+                      lat={event.lat}
+                      lng={event.lng}
+                      {...(event.venueName !== undefined ? { venueName: event.venueName } : {})}
+                      className="mt-3"
+                    />
+                  )}
                   {/* Add to calendar */}
                   {event.date && !preview && (
                     <AddToCalendar
