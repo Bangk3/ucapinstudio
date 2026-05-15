@@ -1,7 +1,7 @@
 "use client";
 
 import type { InvitationContent } from "@invyte/templates";
-import { Upload } from "lucide-react";
+import { Plus, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface Props {
@@ -201,6 +201,102 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
           className="hidden"
           onChange={handleGalleryFiles}
         />
+      </div>
+
+      {/* Timeline milestones */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">
+            Timeline Perjalanan Cinta
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              const newItem = {
+                year: String(new Date().getFullYear()),
+                title: "",
+                description: "",
+                emoji: "",
+              };
+              onChange({ timeline: [...(content.timeline ?? []), newItem] });
+            }}
+            className="flex items-center gap-1 rounded border px-2 py-1 text-xs text-muted-foreground hover:border-primary/60 hover:text-foreground transition-colors"
+          >
+            <Plus className="h-3 w-3" aria-hidden="true" />
+            Tambah
+          </button>
+        </div>
+
+        {(content.timeline ?? []).map((item, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: milestone items ordered by user
+          <div key={index} className="rounded-lg border p-3 space-y-2">
+            <div className="flex gap-2">
+              <input
+                value={item.year}
+                onChange={(e) => {
+                  const next = [...(content.timeline ?? [])];
+                  next[index] = { ...item, year: e.target.value };
+                  onChange({ timeline: next });
+                }}
+                placeholder="2019"
+                maxLength={4}
+                className="w-16 rounded border bg-background px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                aria-label={`Tahun milestone ${index + 1}`}
+              />
+              <input
+                value={item.emoji ?? ""}
+                onChange={(e) => {
+                  const next = [...(content.timeline ?? [])];
+                  next[index] = { ...item, emoji: e.target.value };
+                  onChange({ timeline: next });
+                }}
+                placeholder="💑"
+                maxLength={2}
+                className="w-12 rounded border bg-background px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                aria-label={`Emoji milestone ${index + 1}`}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const next = (content.timeline ?? []).filter((_, i) => i !== index);
+                  onChange({ timeline: next });
+                }}
+                className="ml-auto rounded p-1 text-muted-foreground hover:text-destructive transition-colors"
+                aria-label={`Hapus milestone ${index + 1}`}
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+            <input
+              value={item.title}
+              onChange={(e) => {
+                const next = [...(content.timeline ?? [])];
+                next[index] = { ...item, title: e.target.value };
+                onChange({ timeline: next });
+              }}
+              placeholder="Pertama Bertemu"
+              className="w-full rounded border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+              aria-label={`Judul milestone ${index + 1}`}
+            />
+            <textarea
+              value={item.description ?? ""}
+              onChange={(e) => {
+                const next = [...(content.timeline ?? [])];
+                next[index] = { ...item, description: e.target.value };
+                onChange({ timeline: next });
+              }}
+              placeholder="Cerita singkat..."
+              rows={2}
+              className="w-full rounded border bg-background px-2 py-1.5 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+              aria-label={`Deskripsi milestone ${index + 1}`}
+            />
+          </div>
+        ))}
+        {(!content.timeline || content.timeline.length === 0) && (
+          <p className="text-xs text-muted-foreground italic text-center py-2">
+            Belum ada milestone. Klik "Tambah" untuk mulai.
+          </p>
+        )}
       </div>
     </div>
   );

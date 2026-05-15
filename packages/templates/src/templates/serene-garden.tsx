@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { GalleryLightbox } from "../components/gallery-lightbox";
+import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
@@ -930,6 +931,21 @@ export function SereneGarden({ data, preview }: TemplateProps) {
                 </div>
               )}
             </div>
+          </section>
+        </GardenSection>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          LOVE STORY TIMELINE
+      ══════════════════════════════════════════════════════════ */}
+      {content.timeline && content.timeline.length > 0 && (
+        <GardenSection direction="up" delay={0.05}>
+          <section className="mx-auto max-w-2xl px-6 py-16">
+            <div className="text-center mb-8">
+              <SectionLabel color={primary}>Perjalanan Cinta</SectionLabel>
+              <Divider color={primary} accent={accent} />
+            </div>
+            <LoveTimeline items={content.timeline} primaryColor={primary} />
           </section>
         </GardenSection>
       )}

@@ -1,4 +1,5 @@
 export { GalleryLightbox } from "./components/gallery-lightbox";
+export { LoveTimeline } from "./components/love-timeline";
 export { MapEmbed } from "./components/map-embed";
 export { MinimalistModern } from "./templates/minimalist-modern";
 export { FloralClassic } from "./templates/floral-classic";

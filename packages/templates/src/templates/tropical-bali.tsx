@@ -7,6 +7,7 @@ import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { GalleryLightbox } from "../components/gallery-lightbox";
+import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
@@ -487,6 +488,19 @@ export function TropicalBali({ data, preview }: TemplateProps) {
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">{story}</p>
           </section>
         </AnimateIn>
+      )}
+
+      {/* Love story timeline */}
+      {content.timeline && content.timeline.length > 0 && (
+        <section className="mx-auto max-w-2xl px-6 py-16">
+          <h2
+            className="mb-8 text-center text-sm uppercase tracking-widest"
+            style={{ color: primary }}
+          >
+            Perjalanan Cinta
+          </h2>
+          <LoveTimeline items={content.timeline} primaryColor={primary} />
+        </section>
       )}
 
       {/* Gallery */}

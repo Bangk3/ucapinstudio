@@ -34,6 +34,12 @@ export interface InvitationContent {
   galleryUrls?: string[];
   musicUrl?: string;
   musicTitle?: string;
+  timeline?: Array<{
+    year: string;
+    title: string;
+    description?: string;
+    emoji?: string;
+  }>;
 }
 
 export interface ThemeConfig {
