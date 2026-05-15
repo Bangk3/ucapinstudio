@@ -6,6 +6,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { WishRow } from "./wish-row";
 
 interface Props {
   params: Promise<{ tenant: string; id: string }>;
@@ -84,32 +85,24 @@ export default async function WishesPage({ params, searchParams }: Props) {
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card py-16 gap-3">
           <MessageSquare className="h-10 w-10 text-muted-foreground" />
           <p className="font-medium">Belum ada ucapan</p>
+          <p className="text-sm text-muted-foreground">
+            {activeStatus === "pending"
+              ? "Tidak ada ucapan menunggu moderasi."
+              : activeStatus
+                ? `Tidak ada ucapan dengan status "${STATUS_LABELS[activeStatus] ?? activeStatus}".`
+                : "Belum ada ucapan dari tamu."}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {wishList.map((wish) => (
-            <div key={wish.id} className="rounded-lg border bg-card px-4 py-3 space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-medium text-sm">{wish.senderName}</p>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      wish.status === "approved"
-                        ? "bg-green-100 text-green-700"
-                        : wish.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {STATUS_LABELS[wish.status] ?? wish.status}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(wish.createdAt).toLocaleDateString("id-ID")}
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{wish.message}</p>
-            </div>
+            <WishRow
+              key={wish.id}
+              wish={wish}
+              invitationId={id}
+              tenantSlug={tenant}
+              wishesModerated={invitation.wishesModerated}
+            />
           ))}
         </div>
       )}
