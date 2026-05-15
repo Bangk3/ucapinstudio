@@ -41,6 +41,13 @@ services:
       timeout: 10s
       start_period: 20s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 128M
 
   postgres:
     image: postgres:16-alpine
@@ -61,6 +68,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          memory: 64M
 
   redis:
     image: redis:7-alpine
@@ -76,6 +90,13 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          memory: 32M
 
   minio:
     image: minio/minio:latest
@@ -96,6 +117,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 64M
 
   caddy:
     image: caddy:2-alpine
@@ -116,6 +144,13 @@ services:
       - invyte
     depends_on:
       - web
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
+        reservations:
+          memory: 16M
 
 volumes:
   postgres_data:

@@ -2,6 +2,7 @@
 
 import type { Invitation } from "@invyte/db";
 import type { InvitationContent, ThemeConfig } from "@invyte/templates";
+import { Monitor, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
@@ -41,6 +42,7 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scheduleSave = useCallback(
@@ -195,7 +197,28 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
       <div className="flex-1 overflow-hidden bg-gray-100">
         <div className="flex items-center gap-3 border-b bg-background px-4 py-2.5">
           <span className="text-xs font-medium text-muted-foreground">Preview</span>
-          <div className="ml-auto flex items-center gap-3">
+          {/* Mobile/Desktop toggle */}
+          <div className="flex items-center rounded-lg border bg-muted p-0.5 gap-0.5">
+            <button
+              type="button"
+              onClick={() => setPreviewMode("desktop")}
+              className={`flex items-center justify-center rounded-md p-1 transition-colors ${previewMode === "desktop" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-label="Preview desktop"
+              title="Desktop"
+            >
+              <Monitor className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPreviewMode("mobile")}
+              className={`flex items-center justify-center rounded-md p-1 transition-colors ${previewMode === "mobile" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              aria-label="Preview mobile"
+              title="Mobile (375px)"
+            >
+              <Smartphone className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
             <Link
               href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/guests`}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -224,22 +247,41 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
             </a>
           </div>
         </div>
-        {/* overflow-hidden outer so scroll happens inside the scaled viewport */}
-        <div className="h-[calc(100%-2.5rem)] overflow-hidden">
-          {/* Inner div is 166.67% layout (= 100% visual after 0.6 scale).
-              It owns the vertical scroll so the scrollbar is inside the preview frame. */}
-          <div
-            className="origin-top-left scale-[0.6] overflow-y-auto"
-            style={{ width: "166.67%", height: "166.67%" }}
-          >
-            <InvitationPreview
-              templateId={templateId}
-              content={content}
-              theme={theme}
-              slug={invitation.slug}
-              tenantSlug={tenantSlug}
-            />
-          </div>
+        {/* Preview viewport — switches between desktop (scaled full-width) and mobile (375px frame) */}
+        <div className="h-[calc(100%-2.5rem)] overflow-hidden flex items-start justify-center">
+          {previewMode === "desktop" ? (
+            /* Desktop: scale full panel width to 0.6 */
+            <div className="w-full h-full overflow-hidden">
+              <div
+                className="origin-top-left scale-[0.6] overflow-y-auto"
+                style={{ width: "166.67%", height: "166.67%" }}
+              >
+                <InvitationPreview
+                  templateId={templateId}
+                  content={content}
+                  theme={theme}
+                  slug={invitation.slug}
+                  tenantSlug={tenantSlug}
+                />
+              </div>
+            </div>
+          ) : (
+            /* Mobile: 375px wide phone frame, centered, scrollable */
+            <div className="flex-shrink-0 overflow-y-auto h-full" style={{ width: "375px" }}>
+              <div
+                className="origin-top scale-[0.85]"
+                style={{ width: "441px", transformOrigin: "top center" }}
+              >
+                <InvitationPreview
+                  templateId={templateId}
+                  content={content}
+                  theme={theme}
+                  slug={invitation.slug}
+                  tenantSlug={tenantSlug}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
