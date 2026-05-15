@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { rateLimitIp } from "@/lib/rate-limit";
 import { uuidv7 } from "@/lib/uuid";
-import { events, db, guests, invitations, rsvps } from "@invyte/db";
+import { events, db, guests, invitations, rsvps, withTenantRls } from "@invyte/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const { invitationId, guestId, eventId, status, guestName, plusOneCount, dietaryNotes } =
     parsed.data;
 
-  // Validate invitation exists and is published
+  // Public lookup — uses invitations_public_read RLS policy (published only, no tenant ctx)
   const [inv] = await db
     .select({
       id: invitations.id,
@@ -41,26 +41,6 @@ export async function POST(req: NextRequest) {
 
   if (!inv) return NextResponse.json({ error: "Invitation not found" }, { status: 404 });
   if (!inv.rsvpEnabled) return NextResponse.json({ error: "RSVP is disabled" }, { status: 403 });
-
-  // Validate guestId belongs to this invitation if provided
-  if (guestId) {
-    const [guest] = await db
-      .select({ id: guests.id })
-      .from(guests)
-      .where(and(eq(guests.id, guestId), eq(guests.invitationId, invitationId)))
-      .limit(1);
-    if (!guest) return NextResponse.json({ error: "Guest not found" }, { status: 404 });
-  }
-
-  // Validate eventId belongs to this invitation if provided
-  if (eventId) {
-    const [event] = await db
-      .select({ id: events.id })
-      .from(events)
-      .where(and(eq(events.id, eventId), eq(events.invitationId, invitationId)))
-      .limit(1);
-    if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
-  }
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -83,16 +63,69 @@ export async function POST(req: NextRequest) {
 
   const id = uuidv7();
 
-  // Upsert: if guestId + eventId both present, use conflict target
-  if (guestId && eventId) {
-    const [row] = await db
+  // All subsequent queries run inside withTenantRls — RLS tenant isolation applies
+  const rsvpRow = await withTenantRls(inv.tenantId, async (tx) => {
+    // Validate guestId belongs to this invitation
+    if (guestId) {
+      const [guest] = await tx
+        .select({ id: guests.id })
+        .from(guests)
+        .where(and(eq(guests.id, guestId), eq(guests.invitationId, invitationId)))
+        .limit(1);
+      if (!guest) return null;
+    }
+
+    // Validate eventId belongs to this invitation
+    if (eventId) {
+      const [event] = await tx
+        .select({ id: events.id })
+        .from(events)
+        .where(and(eq(events.id, eventId), eq(events.invitationId, invitationId)))
+        .limit(1);
+      if (!event) return null;
+    }
+
+    // Upsert: if guestId + eventId both present, use conflict target
+    if (guestId && eventId) {
+      const [row] = await tx
+        .insert(rsvps)
+        .values({
+          id,
+          tenantId: inv.tenantId,
+          invitationId,
+          guestId,
+          eventId,
+          status,
+          guestName,
+          plusOneCount,
+          ipHash,
+          ...(dietaryNotes !== undefined ? { dietaryNotes } : {}),
+          ...(userAgent !== undefined ? { userAgent } : {}),
+        })
+        .onConflictDoUpdate({
+          target: [rsvps.guestId, rsvps.eventId],
+          set: {
+            status,
+            guestName,
+            plusOneCount,
+            ipHash,
+            ...(dietaryNotes !== undefined ? { dietaryNotes } : {}),
+            ...(userAgent !== undefined ? { userAgent } : {}),
+          },
+        })
+        .returning();
+      return row;
+    }
+
+    // No conflict target — plain insert
+    const [row] = await tx
       .insert(rsvps)
       .values({
         id,
         tenantId: inv.tenantId,
         invitationId,
-        guestId,
-        eventId,
+        ...(guestId !== undefined ? { guestId } : {}),
+        ...(eventId !== undefined ? { eventId } : {}),
         status,
         guestName,
         plusOneCount,
@@ -100,40 +133,14 @@ export async function POST(req: NextRequest) {
         ...(dietaryNotes !== undefined ? { dietaryNotes } : {}),
         ...(userAgent !== undefined ? { userAgent } : {}),
       })
-      .onConflictDoUpdate({
-        target: [rsvps.guestId, rsvps.eventId],
-        set: {
-          status,
-          guestName,
-          plusOneCount,
-          ipHash,
-          ...(dietaryNotes !== undefined ? { dietaryNotes } : {}),
-          ...(userAgent !== undefined ? { userAgent } : {}),
-        },
-      })
       .returning();
+    return row;
+  });
 
-    const isNew = row?.id === id;
-    return NextResponse.json({ rsvp: row }, { status: isNew ? 201 : 200 });
+  if (rsvpRow === null) {
+    return NextResponse.json({ error: "Guest or event not found" }, { status: 404 });
   }
 
-  // No conflict target — plain insert
-  const [row] = await db
-    .insert(rsvps)
-    .values({
-      id,
-      tenantId: inv.tenantId,
-      invitationId,
-      ...(guestId !== undefined ? { guestId } : {}),
-      ...(eventId !== undefined ? { eventId } : {}),
-      status,
-      guestName,
-      plusOneCount,
-      ipHash,
-      ...(dietaryNotes !== undefined ? { dietaryNotes } : {}),
-      ...(userAgent !== undefined ? { userAgent } : {}),
-    })
-    .returning();
-
-  return NextResponse.json({ rsvp: row }, { status: 201 });
+  const isNew = rsvpRow?.id === id;
+  return NextResponse.json({ rsvp: rsvpRow }, { status: isNew ? 201 : 200 });
 }

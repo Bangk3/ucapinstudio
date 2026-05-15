@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { rateLimitIp } from "@/lib/rate-limit";
 import { uuidv7 } from "@/lib/uuid";
-import { db, invitations, wishes } from "@invyte/db";
+import { db, invitations, wishes, withTenantRls } from "@invyte/db";
 import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -31,9 +31,9 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? "20"), 100);
   const offset = Number(req.nextUrl.searchParams.get("offset") ?? "0");
 
-  // Verify invitation is published and not deleted
+  // Public lookup — invitations_public_read RLS policy (published only, no tenant ctx)
   const [inv] = await db
-    .select({ id: invitations.id })
+    .select({ id: invitations.id, tenantId: invitations.tenantId })
     .from(invitations)
     .where(
       and(
@@ -45,26 +45,30 @@ export async function GET(req: NextRequest) {
     .limit(1);
   if (!inv) return NextResponse.json({ wishes: [], total: 0 });
 
-  const [rows, totalRow] = await Promise.all([
-    db
-      .select({
-        id: wishes.id,
-        senderName: wishes.senderName,
-        message: wishes.message,
-        createdAt: wishes.createdAt,
-      })
-      .from(wishes)
-      .where(and(eq(wishes.invitationId, invitationId), eq(wishes.status, "approved")))
-      .orderBy(desc(wishes.createdAt))
-      .limit(limit)
-      .offset(offset),
-    db
-      .select({ total: count() })
-      .from(wishes)
-      .where(and(eq(wishes.invitationId, invitationId), eq(wishes.status, "approved"))),
-  ]);
+  // Run inside tenant context — wishes_tenant_iso policy applies
+  const result = await withTenantRls(inv.tenantId, async (tx) => {
+    const [rows, totalRow] = await Promise.all([
+      tx
+        .select({
+          id: wishes.id,
+          senderName: wishes.senderName,
+          message: wishes.message,
+          createdAt: wishes.createdAt,
+        })
+        .from(wishes)
+        .where(and(eq(wishes.invitationId, invitationId), eq(wishes.status, "approved")))
+        .orderBy(desc(wishes.createdAt))
+        .limit(limit)
+        .offset(offset),
+      tx
+        .select({ total: count() })
+        .from(wishes)
+        .where(and(eq(wishes.invitationId, invitationId), eq(wishes.status, "approved"))),
+    ]);
+    return { wishes: rows, total: totalRow[0]?.total ?? 0 };
+  });
 
-  return NextResponse.json({ wishes: rows, total: totalRow[0]?.total ?? 0 });
+  return NextResponse.json(result);
 }
 
 export async function POST(req: NextRequest) {
@@ -74,7 +78,7 @@ export async function POST(req: NextRequest) {
 
   const { invitationId, senderName, message, guestId } = parsed.data;
 
-  // Validate invitation
+  // Public lookup — invitations_public_read RLS policy (no tenant ctx)
   const [inv] = await db
     .select({
       id: invitations.id,
@@ -118,21 +122,25 @@ export async function POST(req: NextRequest) {
 
   const id = uuidv7();
 
-  const [wish] = await db
-    .insert(wishes)
-    .values({
-      id,
-      tenantId: inv.tenantId,
-      invitationId,
-      senderName,
-      message,
-      status,
-      spamScore,
-      ipHash,
-      ...(guestId !== undefined ? { guestId } : {}),
-      ...(userAgentHash !== undefined ? { userAgentHash } : {}),
-    })
-    .returning();
+  // Run inside tenant context — wishes_tenant_iso policy applies
+  const wish = await withTenantRls(inv.tenantId, async (tx) => {
+    const [row] = await tx
+      .insert(wishes)
+      .values({
+        id,
+        tenantId: inv.tenantId,
+        invitationId,
+        senderName,
+        message,
+        status,
+        spamScore,
+        ipHash,
+        ...(guestId !== undefined ? { guestId } : {}),
+        ...(userAgentHash !== undefined ? { userAgentHash } : {}),
+      })
+      .returning();
+    return row;
+  });
 
   return NextResponse.json({ wish, pending: status === "pending" }, { status: 201 });
 }

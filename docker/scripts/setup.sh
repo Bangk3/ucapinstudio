@@ -79,6 +79,16 @@ echo "  Running database migrations..."
 }
 echo "  Migrations applied."
 
+# ── Apply RLS policies ───────────────────────────────────────
+echo ""
+echo "  Applying Row Level Security policies..."
+docker compose -f "${COMPOSE_FILE}" exec -T postgres \
+  psql -U "${POSTGRES_USER:-invyte}" -d "${POSTGRES_DB:-invyte}" \
+  -f /dev/stdin < "${ROOT_DIR}/packages/db/rls.sql" || {
+  echo "  WARNING: RLS apply failed — check packages/db/rls.sql"
+}
+echo "  RLS policies applied."
+
 # ── Start remaining services ─────────────────────────────────
 echo ""
 echo "  Starting web and caddy..."

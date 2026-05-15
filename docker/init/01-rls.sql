@@ -1,9 +1,13 @@
--- Enable RLS on tenant-scoped tables (runs after migrations)
--- This file is for future use when Drizzle migrations are in place.
+-- Invyte — PostgreSQL init script
+-- This file runs when the Docker container first creates the database.
+-- At this point, no application tables exist yet (Drizzle creates them).
+--
+-- Row Level Security policies are applied separately by setup.sh
+-- AFTER running `pnpm --filter @invyte/db db:migrate`.
+-- See: packages/db/rls.sql
 
--- Example:
--- ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY tenant_isolation ON invitations
---   USING (tenant_id = current_setting('app.current_tenant')::uuid);
+-- Nothing to do here — placeholder kept for future DB-level config
+-- (e.g. extensions, roles, custom types that predate migrations).
 
-SELECT 'RLS init placeholder — configure after running db:migrate' AS note;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";

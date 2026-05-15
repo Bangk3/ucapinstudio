@@ -24,6 +24,24 @@ export async function withTenantRls<T>(
 }
 
 /**
+ * Execute `fn` inside a transaction with tenant context cleared.
+ * Use for public-facing routes (RSVP submit, wish submit) where
+ * RLS INSERT policies explicitly allow writes without tenant context.
+ *
+ * @example
+ * await withPublicDb(async (tx) => {
+ *   await tx.insert(rsvps).values({ ... });
+ * });
+ */
+export async function withPublicDb<T>(fn: (db: Database) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    // Clear any inherited tenant context — public writes have their own RLS policies
+    await tx.execute(sql`SELECT set_config('app.tenant_id', '', true)`);
+    return fn(tx as unknown as Database);
+  });
+}
+
+/**
  * @deprecated Use withTenantRls for new code.
  * Kept for backward compat during incremental migration.
  */
