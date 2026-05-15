@@ -128,6 +128,7 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
             </div>
           </div>
           <button
+            type="button"
             onClick={handlePublish}
             disabled={publishing}
             className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -144,6 +145,7 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
         <div className="flex border-b overflow-x-auto">
           {TABS.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`shrink-0 px-4 py-2.5 text-xs font-medium transition-colors ${
@@ -199,6 +201,12 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Tamu
+            </Link>
+            <Link
+              href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/rsvp`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              RSVP
             </Link>
             <Link
               href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/wishes`}
