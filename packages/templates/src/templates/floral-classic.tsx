@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { GalleryLightbox } from "../components/gallery-lightbox";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
 import { RsvpForm } from "../components/rsvp-form";
@@ -273,17 +274,11 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* Gallery */}
       {galleryUrls && galleryUrls.length > 0 && (
         <section className="px-4 py-12">
-          <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-3">
-            {galleryUrls.map((url, i) => (
-              <AnimateIn key={i} direction="scale" delay={i * 0.08}>
-                <img
-                  src={url}
-                  alt=""
-                  className="aspect-square w-full rounded-2xl object-cover shadow-sm"
-                />
-              </AnimateIn>
-            ))}
-          </div>
+          <GalleryLightbox
+            urls={galleryUrls}
+            gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-3"
+            itemClassName="aspect-square w-full rounded-2xl object-cover shadow-sm cursor-pointer"
+          />
         </section>
       )}
 

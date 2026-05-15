@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { GalleryLightbox } from "../components/gallery-lightbox";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
 import { RsvpForm } from "../components/rsvp-form";
@@ -356,21 +357,11 @@ export function RoyalJava({ data, preview }: TemplateProps) {
       {galleryUrls && galleryUrls.length > 0 && (
         <AnimateIn direction="up">
           <section className="px-4 py-12">
-            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-2 md:grid-cols-3">
-              {galleryUrls.map((url, i) => (
-                <motion.img
-                  key={i}
-                  src={url}
-                  alt=""
-                  className="aspect-square w-full object-cover shadow-lg"
-                  style={{ border: `2px solid ${gold}` }}
-                  initial={!preview ? { opacity: 0, scale: 0.92 } : {}}
-                  whileInView={!preview ? { opacity: 1, scale: 1 } : {}}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.08 }}
-                />
-              ))}
-            </div>
+            <GalleryLightbox
+              urls={galleryUrls}
+              gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-2 md:grid-cols-3"
+              itemClassName="aspect-square w-full object-cover shadow-lg cursor-pointer"
+            />
           </section>
         </AnimateIn>
       )}

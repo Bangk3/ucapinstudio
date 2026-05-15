@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { GalleryLightbox } from "../components/gallery-lightbox";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
 import { RsvpForm } from "../components/rsvp-form";
@@ -273,20 +274,11 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
           >
             Galeri
           </h2>
-          <StaggerChildren
-            className="mx-auto grid max-w-4xl grid-cols-2 gap-2 md:grid-cols-3"
-            staggerDelay={0.08}
-            direction="scale"
-          >
-            {galleryUrls.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt={`Gallery ${i + 1}`}
-                className="aspect-square w-full rounded-lg object-cover"
-              />
-            ))}
-          </StaggerChildren>
+          <GalleryLightbox
+            urls={galleryUrls}
+            gridClassName="mx-auto grid max-w-4xl grid-cols-2 gap-2 md:grid-cols-3"
+            itemClassName="aspect-square w-full rounded-lg object-cover cursor-pointer"
+          />
         </section>
       )}
 

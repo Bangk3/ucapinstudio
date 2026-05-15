@@ -3,9 +3,9 @@
 import { type MotionStyle, motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
-import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { GalleryLightbox } from "../components/gallery-lightbox";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
 import { RsvpForm } from "../components/rsvp-form";
@@ -714,18 +714,11 @@ export function SereneGarden({ data, preview }: TemplateProps) {
               <Divider color={primary} accent={accent} />
             </div>
           </GardenSection>
-          <div className="mx-auto max-w-3xl grid grid-cols-2 gap-2 md:grid-cols-3">
-            {galleryUrls.map((url, i) => (
-              <AnimateIn key={i} direction="scale" delay={i * 0.07}>
-                <img
-                  src={url}
-                  alt=""
-                  className="aspect-square w-full rounded-xl object-cover shadow-sm"
-                  style={{ border: `2px solid ${accent}40` }}
-                />
-              </AnimateIn>
-            ))}
-          </div>
+          <GalleryLightbox
+            urls={galleryUrls}
+            gridClassName="mx-auto max-w-3xl grid grid-cols-2 gap-2 md:grid-cols-3"
+            itemClassName="aspect-square w-full rounded-xl object-cover shadow-sm cursor-pointer"
+          />
         </section>
       )}
 
