@@ -1,0 +1,43 @@
+{
+  "name": "@invyte/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@invyte/db": "workspace:*",
+    "@invyte/shared": "workspace:*",
+    "@invyte/storage": "workspace:*",
+    "@invyte/templates": "workspace:*",
+    "@invyte/ui": "workspace:*",
+    "better-auth": "^1.2.7",
+    "drizzle-orm": "^0.41.0",
+    "framer-motion": "^12.9.4",
+    "ioredis": "^5.10.1",
+    "lucide-react": "^0.511.0",
+    "nanoid": "^5.1.5",
+    "next": "^15.3.1",
+    "next-intl": "^3.26.5",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.55.0",
+    "zod": "^3.24.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.4",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Ubah",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "submit": "Kirim",
+    "search": "Cari",
+    "filter": "Filter",
+    "export": "Ekspor",
+    "import": "Impor"
+  },
+  "nav": {
+    "dashboard": "Dasbor",
+    "invitations": "Undangan",
+    "guests": "Tamu",
+    "rsvp": "RSVP",
+    "analytics": "Analitik",
+    "settings": "Pengaturan"
+  },
+  "auth": {
+    "login": "Masuk",
+    "register": "Daftar",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "forgotPassword": "Lupa kata sandi?",
+    "resetPassword": "Atur ulang kata sandi"
+  }
+}
