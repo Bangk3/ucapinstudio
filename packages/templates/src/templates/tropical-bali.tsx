@@ -143,6 +143,7 @@ export function TropicalBali({ data, preview }: TemplateProps) {
           <>
             <motion.svg
               viewBox="0 0 80 120"
+              aria-hidden="true"
               style={{
                 position: "absolute",
                 top: 0,
@@ -160,6 +161,7 @@ export function TropicalBali({ data, preview }: TemplateProps) {
             </motion.svg>
             <motion.svg
               viewBox="0 0 80 120"
+              aria-hidden="true"
               style={{
                 position: "absolute",
                 top: 0,
@@ -178,6 +180,7 @@ export function TropicalBali({ data, preview }: TemplateProps) {
             </motion.svg>
             <motion.svg
               viewBox="0 0 80 120"
+              aria-hidden="true"
               style={{
                 position: "absolute",
                 bottom: 0,
@@ -196,6 +199,7 @@ export function TropicalBali({ data, preview }: TemplateProps) {
             </motion.svg>
             <motion.svg
               viewBox="0 0 80 120"
+              aria-hidden="true"
               style={{
                 position: "absolute",
                 bottom: 0,

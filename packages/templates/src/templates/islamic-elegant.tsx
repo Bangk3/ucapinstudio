@@ -155,6 +155,7 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
         {!preview && (
           <motion.svg
             viewBox="0 0 200 200"
+            aria-hidden="true"
             style={{
               position: "absolute",
               top: "50%",
