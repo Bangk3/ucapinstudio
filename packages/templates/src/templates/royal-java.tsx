@@ -14,7 +14,7 @@ import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
 import type { TemplateProps } from "../types";
 
-/* ── Shimmer CSS injected once ─────────────────────────────────── */
+/* ── Shimmer CSS ──────────────────────────────────────────── */
 const SHIMMER_STYLE = `
 @keyframes royalShimmer {
   0%   { background-position: -300% center; }
@@ -28,9 +28,13 @@ const SHIMMER_STYLE = `
   from { clip-path: inset(0 0 100% 0); opacity: 0; }
   to   { clip-path: inset(0 0 0% 0);   opacity: 1; }
 }
+@keyframes headingShimmer {
+  0%   { background-position: -300% center; }
+  100% { background-position: 300% center; }
+}
 `;
 
-/* ── Section with scroll-triggered reveal ───────────────────────── */
+/* ── Section with scroll-triggered reveal ─────────────────── */
 function RoyalSection({
   children,
   className,
@@ -79,12 +83,34 @@ export function RoyalJava({ data, preview }: TemplateProps) {
       }
     : { color: gold };
 
+  /* Heading shimmer (richer gold for section headings) */
+  const headingShimmerStyle: React.CSSProperties = !preview
+    ? {
+        background: `linear-gradient(90deg, #8b1a2e 0%, #c9a84c 25%, #ffd700 50%, #c9a84c 75%, #8b1a2e 100%)`,
+        backgroundSize: "300% auto",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+        animation: "headingShimmer 5s linear infinite",
+      }
+    : { color: gold };
+
   return (
     <div
       className="min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, fontFamily: "'Georgia', serif", color: "#1a0a0a" }}
     >
       {!preview && <style>{SHIMMER_STYLE}</style>}
+
+      {/* Batik border trim — top */}
+      <svg width="100%" height="16" aria-hidden="true">
+        <defs>
+          <pattern id="batikTop" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+            <polygon points="8,0 16,8 8,16 0,8" fill={gold} opacity="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="16" fill="url(#batikTop)" />
+      </svg>
 
       {/* Opening screen */}
       {!opened && (
@@ -129,6 +155,39 @@ export function RoyalJava({ data, preview }: TemplateProps) {
           />
         )}
 
+        {/* Batik SVG pattern overlay */}
+        {!preview && (
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            animate={{ opacity: [0.03, 0.08, 0.03] }}
+            transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          >
+            <svg width="100%" height="100%" aria-hidden="true">
+              <defs>
+                <pattern
+                  id="batikHero"
+                  x="0"
+                  y="0"
+                  width="32"
+                  height="32"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <polygon
+                    points="16,2 30,16 16,30 2,16"
+                    fill="none"
+                    stroke={gold}
+                    strokeWidth="0.8"
+                  />
+                  <circle cx="16" cy="16" r="3" fill={gold} opacity="0.6" />
+                  <line x1="16" y1="2" x2="16" y2="0" stroke={gold} strokeWidth="0.5" />
+                  <line x1="30" y1="16" x2="32" y2="16" stroke={gold} strokeWidth="0.5" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#batikHero)" />
+            </svg>
+          </motion.div>
+        )}
+
         <div className="relative z-10 space-y-6">
           {/* Pulsing ornament */}
           {!preview ? (
@@ -152,7 +211,7 @@ export function RoyalJava({ data, preview }: TemplateProps) {
             </AnimateIn>
           )}
 
-          {/* Names — royal unfurl from top + bottom */}
+          {/* Names — royal side entrance */}
           <div>
             <p className="text-xs uppercase tracking-widest mb-4" style={goldShimmerStyle}>
               Dengan rahmat dan karunia Tuhan
@@ -160,32 +219,35 @@ export function RoyalJava({ data, preview }: TemplateProps) {
 
             {!preview ? (
               <>
+                {/* Groom slides from left */}
                 <motion.h1
                   className="text-5xl font-bold md:text-6xl"
                   style={{ color: primary }}
-                  initial={{ clipPath: "inset(0 0 100% 0)", opacity: 0 }}
-                  animate={opened ? { clipPath: "inset(0 0 0% 0)", opacity: 1 } : {}}
-                  transition={{ duration: 1.0, delay: 0.15, ease: [0.76, 0, 0.24, 1] }}
+                  initial={{ opacity: 0, x: -60 }}
+                  animate={opened ? { opacity: 1, x: 0 } : {}}
+                  transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.15 }}
                 >
                   {hosts.groomName}
                 </motion.h1>
 
+                {/* Connector scales in */}
                 <motion.p
                   className="my-4 text-2xl italic"
                   style={{ color: gold }}
-                  initial={{ opacity: 0, scale: 0.6 }}
+                  initial={{ opacity: 0, scale: 0 }}
                   animate={opened ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.5, delay: 0.8 }}
+                  transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.7 }}
                 >
                   — & —
                 </motion.p>
 
+                {/* Bride slides from right */}
                 <motion.h1
                   className="text-5xl font-bold md:text-6xl"
                   style={{ color: primary }}
-                  initial={{ clipPath: "inset(100% 0 0% 0)", opacity: 0 }}
-                  animate={opened ? { clipPath: "inset(0% 0 0% 0)", opacity: 1 } : {}}
-                  transition={{ duration: 1.0, delay: 1.1, ease: [0.76, 0, 0.24, 1] }}
+                  initial={{ opacity: 0, x: 60 }}
+                  animate={opened ? { opacity: 1, x: 0 } : {}}
+                  transition={{ type: "spring", stiffness: 80, damping: 20, delay: 1.0 }}
                 >
                   {hosts.brideName}
                 </motion.h1>
@@ -266,17 +328,21 @@ export function RoyalJava({ data, preview }: TemplateProps) {
         <AnimateIn>
           <h2
             className="mb-10 text-center text-xs uppercase tracking-widest"
-            style={goldShimmerStyle}
+            style={headingShimmerStyle}
           >
             ❖ Acara ❖
           </h2>
         </AnimateIn>
         <StaggerChildren staggerDelay={0.18} direction="up" className="space-y-6">
           {events.map((event) => (
-            <div
+            <motion.div
               key={event.id}
               className="p-6 text-center"
               style={{ border: `1px solid ${gold}`, backgroundColor: "white" }}
+              initial={{ opacity: 0, rotateX: 15, y: 20 }}
+              whileInView={{ opacity: 1, rotateX: 0, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <p className="text-xs uppercase tracking-widest mb-1" style={{ color: gold }}>
                 ❖
@@ -336,7 +402,7 @@ export function RoyalJava({ data, preview }: TemplateProps) {
                   primaryColor={primary}
                 />
               )}
-            </div>
+            </motion.div>
           ))}
         </StaggerChildren>
       </section>
@@ -370,7 +436,7 @@ export function RoyalJava({ data, preview }: TemplateProps) {
       {!preview && (
         <AnimateIn>
           <section className="mx-auto max-w-2xl px-6 py-16 text-center">
-            <h2 className="mb-6 text-xs uppercase tracking-widest" style={goldShimmerStyle}>
+            <h2 className="mb-6 text-xs uppercase tracking-widest" style={headingShimmerStyle}>
               ❖ Bagikan Undangan ❖
             </h2>
             <ShareBar
@@ -422,9 +488,51 @@ export function RoyalJava({ data, preview }: TemplateProps) {
         </AnimateIn>
       )}
 
-      {/* ── Closing ─────────────────────────────────────────────── */}
+      {/* ── Royal seal + closing ──────────────────────────────────── */}
       <AnimateIn direction="none">
         <section className="px-6 py-20 text-center text-white" style={{ backgroundColor: primary }}>
+          {/* Royal seal stamp */}
+          <motion.div
+            initial={{ scale: 0, rotate: -180, opacity: 0 }}
+            whileInView={{ scale: 1, rotate: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 60, damping: 12, delay: 0.2 }}
+            className="mx-auto mb-8"
+            style={{ width: 80, height: 80 }}
+          >
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+              <circle cx="40" cy="40" r="38" fill="none" stroke={gold} strokeWidth="1.5" />
+              <circle cx="40" cy="40" r="30" fill="none" stroke={gold} strokeWidth="0.8" />
+              <text
+                x="40"
+                y="38"
+                textAnchor="middle"
+                fontSize="7"
+                fill={gold}
+                fontFamily="Georgia, serif"
+                letterSpacing="1"
+              >
+                UNDANGAN
+              </text>
+              <text
+                x="40"
+                y="48"
+                textAnchor="middle"
+                fontSize="7"
+                fill={gold}
+                fontFamily="Georgia, serif"
+                letterSpacing="1"
+              >
+                PERNIKAHAN
+              </text>
+              <polygon
+                points="40,14 42,22 50,22 44,27 46,35 40,30 34,35 36,27 30,22 38,22"
+                fill={gold}
+                opacity="0.7"
+              />
+            </svg>
+          </motion.div>
+
           <motion.div
             className="text-3xl mb-6"
             animate={!preview ? { rotate: [0, 15, -15, 0], scale: [1, 1.1, 1.1, 1] } : {}}
@@ -444,6 +552,23 @@ export function RoyalJava({ data, preview }: TemplateProps) {
 
       <div className="h-1" style={{ backgroundColor: primary }} />
       <div className="h-2" style={{ backgroundColor: gold }} />
+
+      {/* Batik border trim — bottom */}
+      <svg width="100%" height="16" aria-hidden="true">
+        <defs>
+          <pattern
+            id="batikBottom"
+            x="0"
+            y="0"
+            width="16"
+            height="16"
+            patternUnits="userSpaceOnUse"
+          >
+            <polygon points="8,0 16,8 8,16 0,8" fill={gold} opacity="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="16" fill="url(#batikBottom)" />
+      </svg>
     </div>
   );
 }

@@ -14,6 +14,38 @@ import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
 import type { TemplateProps } from "../types";
 
+/* Stable petal data */
+const PETALS = [
+  { left: "8%", duration: "10s", delay: "0s", color: "#f9a8d4", size: 12 },
+  { left: "18%", duration: "13s", delay: "1.5s", color: "#fda4af", size: 18 },
+  { left: "27%", duration: "9s", delay: "3s", color: "#f9a8d4", size: 8 },
+  { left: "37%", duration: "12s", delay: "0.8s", color: "#fecdd3", size: 12 },
+  { left: "46%", duration: "15s", delay: "4.5s", color: "#fda4af", size: 18 },
+  { left: "55%", duration: "11s", delay: "2s", color: "#fecdd3", size: 8 },
+  { left: "64%", duration: "14s", delay: "6s", color: "#f9a8d4", size: 12 },
+  { left: "73%", duration: "10s", delay: "1.2s", color: "#fda4af", size: 18 },
+  { left: "81%", duration: "13s", delay: "3.8s", color: "#fecdd3", size: 8 },
+  { left: "88%", duration: "11s", delay: "0.5s", color: "#f9a8d4", size: 12 },
+  { left: "14%", duration: "16s", delay: "7s", color: "#fecdd3", size: 18 },
+  { left: "43%", duration: "9s", delay: "5s", color: "#fda4af", size: 8 },
+  { left: "61%", duration: "12s", delay: "2.5s", color: "#f9a8d4", size: 12 },
+  { left: "93%", duration: "14s", delay: "4s", color: "#fda4af", size: 18 },
+] as const;
+
+/* Sparkle star SVG positions */
+const SPARKLES = [
+  { top: "12%", left: "8%", size: 8, delay: 0 },
+  { top: "20%", left: "90%", size: 6, delay: 0.7 },
+  { top: "35%", left: "5%", size: 10, delay: 1.4 },
+  { top: "50%", left: "95%", size: 7, delay: 2.1 },
+  { top: "65%", left: "10%", size: 9, delay: 0.3 },
+  { top: "75%", left: "88%", size: 6, delay: 3.0 },
+  { top: "15%", left: "50%", size: 8, delay: 1.8 },
+  { top: "40%", left: "80%", size: 7, delay: 4.2 },
+  { top: "80%", left: "30%", size: 6, delay: 2.6 },
+  { top: "90%", left: "70%", size: 9, delay: 0.9 },
+] as const;
+
 export function FloralClassic({ data, preview }: TemplateProps) {
   const { content, theme, guestName } = data;
   const { hosts, events, story, thanksNote, galleryUrls, musicUrl, musicTitle } = content;
@@ -27,43 +59,79 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       className="min-h-screen text-[#3d2c2c] overflow-x-hidden"
       style={{ backgroundColor: accent, fontFamily: "'Georgia', serif" }}
     >
-      {/* Floating petals CSS */}
+      {/* CSS animations */}
       <style>{`
         @keyframes floatPetal {
           0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
           10%  { opacity: 0.6; }
           90%  { opacity: 0.4; }
-          100% { transform: translateY(calc(100vh + 40px)) rotate(720deg) translateX(60px); opacity: 0; }
+          100% { transform: translateY(calc(100vh + 40px)) rotate(720deg) translateX(var(--drift)); opacity: 0; }
+        }
+        @keyframes sparkle {
+          0%   { transform: scale(0) rotate(0deg);   opacity: 0; }
+          40%  { transform: scale(1) rotate(90deg);  opacity: 1; }
+          100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+        @keyframes shimmerHero {
+          0%   { background-position: -100% center; }
+          100% { background-position: 200% center; }
         }
       `}</style>
 
-      {/* Floating petals (only when opened and not in preview) */}
+      {/* Floating petals */}
       {opened && !preview && (
         <>
-          {[
-            { left: "10%", duration: "10s", delay: "0s", color: "#f9a8d4" },
-            { left: "25%", duration: "13s", delay: "1.5s", color: "#fda4af" },
-            { left: "40%", duration: "9s", delay: "3s", color: "#f9a8d4" },
-            { left: "55%", duration: "12s", delay: "0.8s", color: "#fecdd3" },
-            { left: "70%", duration: "14s", delay: "4.5s", color: "#fda4af" },
-            { left: "85%", duration: "11s", delay: "2s", color: "#fecdd3" },
-          ].map((petal, i) => (
+          {PETALS.map((petal, i) => (
             <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+              key={i}
+              style={
+                {
+                  position: "fixed",
+                  top: "-20px",
+                  left: petal.left,
+                  width: `${petal.size}px`,
+                  height: `${Math.round(petal.size * 1.35)}px`,
+                  borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
+                  backgroundColor: petal.color,
+                  opacity: 0,
+                  pointerEvents: "none",
+                  zIndex: 0,
+                  "--drift": `${-40 + (Math.round(i * 8.5) % 120)}px`,
+                  animation: `floatPetal ${petal.duration} ${petal.delay} infinite linear`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </>
+      )}
+
+      {/* Sparkle stars */}
+      {opened && !preview && (
+        <>
+          {SPARKLES.map((s, i) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
               key={i}
               style={{
                 position: "fixed",
-                top: "-20px",
-                left: petal.left,
-                width: "12px",
-                height: "16px",
-                borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-                backgroundColor: petal.color,
-                opacity: 0.4,
+                top: s.top,
+                left: s.left,
+                width: `${s.size}px`,
+                height: `${s.size}px`,
                 pointerEvents: "none",
                 zIndex: 0,
-                animation: `floatPetal ${petal.duration} ${petal.delay} infinite linear`,
+                animationDelay: `${s.delay}s`,
+                animationDuration: "2.5s",
+                animationName: "sparkle",
+                animationTimingFunction: "ease-in-out",
+                animationIterationCount: "infinite",
               }}
-            />
+            >
+              <svg viewBox="0 0 10 10" fill={primary} aria-hidden="true">
+                <polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4" />
+              </svg>
+            </div>
           ))}
         </>
       )}
@@ -101,6 +169,20 @@ export function FloralClassic({ data, preview }: TemplateProps) {
             className="absolute inset-0 h-full w-full object-cover opacity-15"
           />
         )}
+
+        {/* Background shimmer overlay */}
+        {!preview && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%)",
+              backgroundSize: "200% 100%",
+              animation: "shimmerHero 3s ease-in-out 0s 1, shimmerHero 3s ease-in-out 6s infinite",
+            }}
+          />
+        )}
+
         <div className="relative z-10">
           {guestName && (
             <p className="mb-4 text-sm italic text-gray-500">Kepada Yth. {guestName}</p>
@@ -111,9 +193,9 @@ export function FloralClassic({ data, preview }: TemplateProps) {
           {opened && !preview ? (
             <motion.div
               className="my-6 text-5xl font-light tracking-wide md:text-6xl"
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15 }}
             >
               <span className="font-bold">{hosts.groomName}</span>
               <div className="my-3 text-2xl italic" style={{ color: primary }}>
@@ -158,9 +240,15 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* Couple carousel */}
       <section className="mx-auto max-w-2xl px-6 py-20">
         <div className="text-center mb-10">
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: primary }}>
-            Mempelai
-          </p>
+          <motion.div
+            whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <p className="text-xs uppercase tracking-widest mb-1" style={{ color: primary }}>
+              Mempelai
+            </p>
+          </motion.div>
         </div>
         <AnimateIn direction="up">
           <CoupleCarousel
@@ -179,24 +267,73 @@ export function FloralClassic({ data, preview }: TemplateProps) {
         </AnimateIn>
       </section>
 
-      {/* Divider */}
-      <motion.div
-        className="mx-auto max-w-xs text-center py-4 text-2xl"
-        style={{ color: primary }}
-        animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 4, ease: "easeInOut" }}
-      >
-        ✿ ✿ ✿
-      </motion.div>
+      {/* Animated rose branch divider */}
+      <div className="mx-auto max-w-xs py-4 flex items-center justify-center">
+        <svg viewBox="0 0 200 30" width="200" height="30" aria-hidden="true">
+          <motion.path
+            d="M10,15 C40,5 60,25 100,15 C140,5 160,25 190,15"
+            fill="none"
+            stroke={primary}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            whileInView={{ pathLength: 1, opacity: 0.6 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.4, ease: "easeOut" }}
+          />
+          <motion.circle
+            cx="50"
+            cy="12"
+            r="4"
+            fill="none"
+            stroke={primary}
+            strokeWidth="1.2"
+            initial={{ scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 0.6 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          />
+          <motion.circle
+            cx="100"
+            cy="18"
+            r="4"
+            fill="none"
+            stroke={primary}
+            strokeWidth="1.2"
+            initial={{ scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 0.6 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+          />
+          <motion.circle
+            cx="150"
+            cy="12"
+            r="4"
+            fill="none"
+            stroke={primary}
+            strokeWidth="1.2"
+            initial={{ scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 0.6 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 1.2 }}
+          />
+        </svg>
+      </div>
 
       {/* Events */}
       <section className="mx-auto max-w-2xl px-6 py-16">
-        <h2
-          className="mb-10 text-center text-xs uppercase tracking-widest"
-          style={{ color: primary }}
+        <motion.div
+          whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          Rangkaian Acara
-        </h2>
+          <h2
+            className="mb-10 text-center text-xs uppercase tracking-widest"
+            style={{ color: primary }}
+          >
+            Rangkaian Acara
+          </h2>
+        </motion.div>
         <div className="space-y-6">
           {events.map((event, index) => (
             <AnimateIn key={event.id} direction="up" delay={index * 0.15}>
@@ -264,9 +401,15 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* Story */}
       {story && (
         <section className="mx-auto max-w-xl px-6 py-16 text-center">
-          <p className="mb-4 text-xs uppercase tracking-widest" style={{ color: primary }}>
-            Kisah Cinta
-          </p>
+          <motion.div
+            whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <p className="mb-4 text-xs uppercase tracking-widest" style={{ color: primary }}>
+              Kisah Cinta
+            </p>
+          </motion.div>
           <p className="text-gray-700 leading-relaxed italic whitespace-pre-line">"{story}"</p>
         </section>
       )}
@@ -285,9 +428,15 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* Share */}
       {!preview && (
         <section className="mx-auto max-w-2xl px-6 py-16 text-center">
-          <h2 className="mb-6 text-xs uppercase tracking-widest" style={{ color: primary }}>
-            Bagikan Undangan
-          </h2>
+          <motion.div
+            whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <h2 className="mb-6 text-xs uppercase tracking-widest" style={{ color: primary }}>
+              Bagikan Undangan
+            </h2>
+          </motion.div>
           <ShareBar
             groomName={hosts.groomName}
             brideName={hosts.brideName}
@@ -299,12 +448,18 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* RSVP */}
       {data.rsvpEnabled && !preview && (
         <section className="mx-auto max-w-2xl px-6 py-16">
-          <h2
-            className="mb-6 text-center text-sm uppercase tracking-widest"
-            style={{ color: primary }}
+          <motion.div
+            whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Konfirmasi Kehadiran
-          </h2>
+            <h2
+              className="mb-6 text-center text-sm uppercase tracking-widest"
+              style={{ color: primary }}
+            >
+              Konfirmasi Kehadiran
+            </h2>
+          </motion.div>
           <RsvpForm
             invitationId={data.id}
             primaryColor={primary}
@@ -317,12 +472,18 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       {/* Wishes */}
       {data.wishesEnabled && !preview && (
         <section className="mx-auto max-w-2xl px-6 py-16">
-          <h2
-            className="mb-6 text-center text-sm uppercase tracking-widest"
-            style={{ color: primary }}
+          <motion.div
+            whileInView={{ scale: [0.95, 1.02, 1], opacity: [0, 1] }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            Buku Tamu
-          </h2>
+            <h2
+              className="mb-6 text-center text-sm uppercase tracking-widest"
+              style={{ color: primary }}
+            >
+              Buku Tamu
+            </h2>
+          </motion.div>
           <WishesSection
             invitationId={data.id}
             primaryColor={primary}

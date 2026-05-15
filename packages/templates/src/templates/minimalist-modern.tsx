@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { useRef, useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
@@ -14,19 +14,72 @@ import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
 import type { TemplateProps } from "../types";
 
+/* Stable decorative circles for hero ambient */
+const HERO_CIRCLES = [
+  { cx: "12%", cy: "18%", r: 4, dur: 10, delay: 0 },
+  { cx: "88%", cy: "22%", r: 3, dur: 13, delay: 1.2 },
+  { cx: "6%", cy: "65%", r: 6, dur: 9, delay: 2.4 },
+  { cx: "93%", cy: "70%", r: 2, dur: 15, delay: 0.8 },
+  { cx: "30%", cy: "10%", r: 3, dur: 11, delay: 3.1 },
+  { cx: "70%", cy: "88%", r: 5, dur: 14, delay: 1.7 },
+  { cx: "50%", cy: "5%", r: 2, dur: 12, delay: 4.0 },
+  { cx: "20%", cy: "85%", r: 4, dur: 16, delay: 2.0 },
+] as const;
+
 export function MinimalistModern({ data, preview }: TemplateProps) {
   const { content, theme, guestName } = data;
   const { hosts, events, story, quote, thanksNote, galleryUrls, musicUrl, musicTitle } = content;
-  const [opened, setOpened] = useState(preview); // skip opening screen in preview
+  const [opened, setOpened] = useState(preview);
 
   const primary = theme.primaryColor ?? "#6b8f6e";
+
+  /* Page-level scroll for progress bar */
+  const { scrollYProgress } = useScroll();
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+  /* Parallax for hero cover photo */
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollY } = useScroll();
+  const coverY = useTransform(scrollY, [0, 600], [0, 240]);
 
   return (
     <div
       className="min-h-screen bg-[#f9f7f4] font-serif text-[#2c2c2c] overflow-x-hidden"
       style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
     >
-      {/* Opening screen (only on public page, not preview) */}
+      <style>{`
+        @keyframes geoFloat {
+          0%, 100% { transform: translateY(0px); opacity: 0.15; }
+          50%       { transform: translateY(-20px); opacity: 0.4; }
+        }
+      `}</style>
+
+      {/* Scroll progress bar — fixed left */}
+      {!preview && (
+        <motion.div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: 2,
+            height: "100vh",
+            backgroundColor: "#e5e7eb",
+            zIndex: 50,
+          }}
+        >
+          <motion.div
+            style={{
+              width: "100%",
+              height: "100%",
+              backgroundColor: primary,
+              scaleY: smoothProgress,
+              transformOrigin: "top",
+            }}
+          />
+        </motion.div>
+      )}
+
+      {/* Opening screen */}
       {!opened && (
         <OpeningScreen
           groomName={hosts.groomName}
@@ -49,18 +102,44 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
 
       {/* Hero */}
       <section
-        className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-20 text-center"
+        ref={heroRef}
+        className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-20 text-center overflow-hidden"
         style={{ backgroundColor: "#f9f7f4" }}
       >
+        {/* Parallax cover */}
         {theme.coverPhotoUrl && (
-          <div className="absolute inset-0 overflow-hidden">
+          <motion.div className="absolute inset-0" style={!preview ? { y: coverY } : {}}>
             <img
               src={theme.coverPhotoUrl}
               alt="Cover"
               className="h-full w-full object-cover opacity-20"
             />
-          </div>
+          </motion.div>
         )}
+
+        {/* Floating geometric circles */}
+        {!preview && (
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
+            {HERO_CIRCLES.map((c, i) => (
+              <motion.circle
+                // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+                key={i}
+                cx={c.cx}
+                cy={c.cy}
+                r={c.r}
+                fill={primary}
+                animate={{ y: [0, -20, 0], opacity: [0.15, 0.4, 0.15] }}
+                transition={{
+                  duration: c.dur,
+                  delay: c.delay,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </svg>
+        )}
+
         <div className="relative z-10 space-y-4">
           {guestName && (
             <p className="text-sm uppercase tracking-widest text-gray-500">
@@ -73,30 +152,58 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
           <h1 className="text-5xl font-bold leading-tight md:text-7xl">
             {!preview ? (
               <>
-                <motion.span
-                  style={{ display: "block" }}
-                  initial={{ opacity: 0, y: -50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0, ease: [0.25, 0.46, 0.45, 0.94] }}
-                >
-                  {hosts.groomName}
+                {/* Character-by-character groom name */}
+                <motion.span style={{ display: "block" }}>
+                  {hosts.groomName.split("").map((char, i) =>
+                    char === " " ? (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: character animation
+                      <span key={i}>&nbsp;</span>
+                    ) : (
+                      <motion.span
+                        // biome-ignore lint/suspicious/noArrayIndexKey: character animation
+                        key={i}
+                        style={{ display: "inline-block" }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.04, ease: "easeOut" }}
+                      >
+                        {char}
+                      </motion.span>
+                    ),
+                  )}
                 </motion.span>
                 <motion.span
                   className="text-3xl font-light"
                   style={{ display: "block", margin: "8px 0", color: primary }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
                 >
                   &
                 </motion.span>
-                <motion.span
-                  style={{ display: "block" }}
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
-                >
-                  {hosts.brideName}
+                {/* Character-by-character bride name */}
+                <motion.span style={{ display: "block" }}>
+                  {hosts.brideName.split("").map((char, i) =>
+                    char === " " ? (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: character animation
+                      <span key={i}>&nbsp;</span>
+                    ) : (
+                      <motion.span
+                        // biome-ignore lint/suspicious/noArrayIndexKey: character animation
+                        key={i}
+                        style={{ display: "inline-block" }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.4,
+                          delay: 0.6 + i * 0.04,
+                          ease: "easeOut",
+                        }}
+                      >
+                        {char}
+                      </motion.span>
+                    ),
+                  )}
                 </motion.span>
               </>
             ) : (
@@ -151,7 +258,28 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
 
       {/* Couple carousel */}
       <section className="mx-auto max-w-2xl px-6 py-20 text-center">
-        <div className="mb-10 h-px bg-gray-200" />
+        {/* Animated SVG divider */}
+        <svg
+          width="100%"
+          height="2"
+          viewBox="0 0 400 2"
+          preserveAspectRatio="none"
+          className="mb-10"
+          aria-hidden="true"
+        >
+          <motion.line
+            x1="0"
+            y1="1"
+            x2="400"
+            y2="1"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          />
+        </svg>
         <p className="text-xs uppercase tracking-widest mb-8" style={{ color: primary }}>
           Mempelai
         </p>
@@ -170,7 +298,28 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
             mutedColor="#9ca3af"
           />
         </AnimateIn>
-        <div className="mt-10 h-px bg-gray-200" />
+        {/* Animated SVG divider */}
+        <svg
+          width="100%"
+          height="2"
+          viewBox="0 0 400 2"
+          preserveAspectRatio="none"
+          className="mt-10"
+          aria-hidden="true"
+        >
+          <motion.line
+            x1="0"
+            y1="1"
+            x2="400"
+            y2="1"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          />
+        </svg>
       </section>
 
       {/* Events */}
@@ -183,9 +332,13 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
         </h2>
         <StaggerChildren className="space-y-8" staggerDelay={0.15}>
           {events.map((event) => (
-            <div
+            <motion.div
               key={event.id}
               className="rounded-xl border border-gray-100 bg-white p-6 text-center shadow-sm"
+              whileHover={{
+                boxShadow: `0 0 0 2px ${primary}, 0 8px 24px rgba(0,0,0,0.08)`,
+              }}
+              transition={{ duration: 0.2 }}
             >
               <h3 className="text-xl font-bold">{event.name}</h3>
               {event.date && (
@@ -213,7 +366,12 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
                     className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm text-white"
                     style={{ backgroundColor: primary }}
                   >
-                    <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
@@ -248,7 +406,7 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
                   primaryColor={primary}
                 />
               )}
-            </div>
+            </motion.div>
           ))}
         </StaggerChildren>
       </section>
@@ -256,6 +414,28 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
       {/* Story */}
       {story && (
         <section className="mx-auto max-w-2xl px-6 py-16 text-center">
+          {/* Animated SVG divider */}
+          <svg
+            width="100%"
+            height="2"
+            viewBox="0 0 400 2"
+            preserveAspectRatio="none"
+            className="mb-10"
+            aria-hidden="true"
+          >
+            <motion.line
+              x1="0"
+              y1="1"
+              x2="400"
+              y2="1"
+              stroke="#e5e7eb"
+              strokeWidth="1"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+            />
+          </svg>
           <h2 className="mb-6 text-sm uppercase tracking-widest" style={{ color: primary }}>
             Kisah Kami
           </h2>
@@ -291,6 +471,30 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
           )}
         </section>
       )}
+
+      {/* Animated SVG divider before RSVP */}
+      <div className="mx-auto max-w-2xl px-6">
+        <svg
+          width="100%"
+          height="2"
+          viewBox="0 0 400 2"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <motion.line
+            x1="0"
+            y1="1"
+            x2="400"
+            y2="1"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          />
+        </svg>
+      </div>
 
       {/* RSVP */}
       {data.rsvpEnabled && !preview && (

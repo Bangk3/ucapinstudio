@@ -17,6 +17,30 @@ import type { TemplateProps } from "../types";
 const spring = { type: "spring", stiffness: 60, damping: 14 } as const;
 const springFast = { type: "spring", stiffness: 90, damping: 16 } as const;
 
+/* ─── Stable garden particle data ───────────────────────── */
+const GARDEN_PARTICLES = [
+  { top: "12%", left: "15%", color: "#fda4af", size: 3, dur: 5, delay: 0 },
+  { top: "20%", left: "80%", color: "#86efac", size: 2, dur: 7, delay: 0.8 },
+  { top: "30%", left: "30%", color: "#fde68a", size: 3, dur: 4, delay: 1.6 },
+  { top: "42%", left: "92%", color: "#fda4af", size: 2, dur: 9, delay: 0.3 },
+  { top: "55%", left: "5%", color: "#86efac", size: 3, dur: 6, delay: 2.5 },
+  { top: "65%", left: "65%", color: "#fde68a", size: 2, dur: 8, delay: 1.2 },
+  { top: "75%", left: "45%", color: "#fda4af", size: 3, dur: 5, delay: 3.1 },
+  { top: "18%", left: "55%", color: "#fde68a", size: 2, dur: 7, delay: 4.0 },
+  { top: "38%", left: "72%", color: "#fda4af", size: 3, dur: 6, delay: 1.9 },
+  { top: "82%", left: "20%", color: "#86efac", size: 2, dur: 9, delay: 0.6 },
+  { top: "48%", left: "38%", color: "#fde68a", size: 3, dur: 10, delay: 5.0 },
+  { top: "88%", left: "75%", color: "#fda4af", size: 2, dur: 4, delay: 2.2 },
+  { top: "25%", left: "12%", color: "#86efac", size: 3, dur: 8, delay: 3.8 },
+  { top: "60%", left: "85%", color: "#fde68a", size: 2, dur: 6, delay: 0.4 },
+  { top: "70%", left: "25%", color: "#fda4af", size: 3, dur: 5, delay: 7.0 },
+  { top: "35%", left: "50%", color: "#86efac", size: 2, dur: 7, delay: 1.5 },
+  { top: "92%", left: "42%", color: "#fde68a", size: 3, dur: 9, delay: 4.5 },
+  { top: "8%", left: "88%", color: "#fda4af", size: 2, dur: 6, delay: 2.8 },
+  { top: "52%", left: "60%", color: "#86efac", size: 3, dur: 8, delay: 1.0 },
+  { top: "78%", left: "95%", color: "#fde68a", size: 2, dur: 5, delay: 6.0 },
+] as const;
+
 /* ─── Floating botanical decoration ─────────────────────── */
 function FloatingFloral({
   symbol,
@@ -43,7 +67,7 @@ function FloatingFloral({
   );
 }
 
-/* ─── Scroll-triggered section wrapper ────────────────────── */
+/* ─── Scroll-triggered section wrapper ─────────────────────────── */
 function GardenSection({
   children,
   className,
@@ -56,7 +80,7 @@ function GardenSection({
   direction?: "up" | "left" | "right" | "none";
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px 0px" });
+  const inView = useInView(ref, { once: true, margin: "-80px 0px" });
   const offset =
     direction === "up"
       ? { y: 48 }
@@ -213,6 +237,11 @@ export function SereneGarden({ data, preview }: TemplateProps) {
             0%, 100% { opacity: 0.25; transform: scale(1); }
             50%       { opacity: 0.5;  transform: scale(1.08); }
           }
+          @keyframes lightRay {
+            0%, 100% { opacity: 0; transform: scaleY(0); }
+            30%       { opacity: 0.4; transform: scaleY(1); }
+            70%       { opacity: 0.4; transform: scaleY(1); }
+          }
         `}</style>
       )}
 
@@ -227,6 +256,7 @@ export function SereneGarden({ data, preview }: TemplateProps) {
           { left: "85%", delay: "7s", dur: "13s", color: `${accent}` },
         ].map((p, i) => (
           <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
             key={i}
             style={{
               position: "fixed",
@@ -243,6 +273,73 @@ export function SereneGarden({ data, preview }: TemplateProps) {
             }}
           />
         ))}
+
+      {/* Garden particles */}
+      {opened && !preview && (
+        <>
+          {GARDEN_PARTICLES.map((p, i) => (
+            <motion.div
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+              key={i}
+              style={{
+                position: "fixed",
+                top: p.top,
+                left: p.left,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                borderRadius: "50%",
+                backgroundColor: p.color,
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
+              animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
+              transition={{
+                duration: p.dur,
+                delay: p.delay,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </>
+      )}
+
+      {/* Butterfly */}
+      {opened && !preview && (
+        <motion.div
+          style={{
+            position: "fixed",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+          animate={{
+            x: ["5vw", "50vw", "90vw"],
+            y: ["80vh", "20vh", "30vh"],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+        >
+          <motion.svg
+            viewBox="0 0 40 30"
+            width="40"
+            height="30"
+            aria-hidden="true"
+            animate={{ scaleX: [1, 0.3, 1] }}
+            transition={{ duration: 0.5, repeat: Number.POSITIVE_INFINITY }}
+          >
+            {/* Left wing */}
+            <ellipse cx="12" cy="15" rx="10" ry="8" fill={accent} opacity="0.6" />
+            {/* Right wing */}
+            <ellipse cx="28" cy="15" rx="10" ry="8" fill={accent} opacity="0.6" />
+            {/* Body */}
+            <ellipse cx="20" cy="15" rx="2" ry="8" fill={primary} opacity="0.8" />
+          </motion.svg>
+        </motion.div>
+      )}
 
       {/* Opening screen */}
       {!opened && (
@@ -293,6 +390,39 @@ export function SereneGarden({ data, preview }: TemplateProps) {
             />
           )}
         </motion.div>
+
+        {/* Light rays */}
+        {!preview && (
+          <>
+            {[
+              { top: "10%", left: "20%", delay: "0s", dur: "4s" },
+              { top: "5%", left: "50%", delay: "2s", dur: "6s" },
+              { top: "15%", left: "75%", delay: "1.5s", dur: "3.5s" },
+            ].map((ray, i) => (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+                key={i}
+                style={{
+                  position: "absolute",
+                  top: ray.top,
+                  left: ray.left,
+                  width: "2px",
+                  height: "200px",
+                  backgroundColor: "white",
+                  opacity: 0,
+                  transform: "rotate(15deg)",
+                  transformOrigin: "top center",
+                  animationName: "lightRay",
+                  animationDuration: ray.dur,
+                  animationDelay: ray.delay,
+                  animationTimingFunction: "ease-in-out",
+                  animationIterationCount: "infinite",
+                  pointerEvents: "none",
+                }}
+              />
+            ))}
+          </>
+        )}
 
         {/* Floating botanical corners */}
         {!preview ? (
@@ -380,7 +510,7 @@ export function SereneGarden({ data, preview }: TemplateProps) {
             <p className="text-xs uppercase tracking-[0.3em] opacity-50">✦ Undangan Pernikahan ✦</p>
           )}
 
-          {/* Names — spring float from below */}
+          {/* Names — spring float + breathing glow */}
           {opened && !preview ? (
             <div>
               <motion.h1
@@ -390,7 +520,18 @@ export function SereneGarden({ data, preview }: TemplateProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...spring, delay: 0.25 }}
               >
-                {hosts.groomName}
+                <motion.span
+                  animate={{
+                    textShadow: [
+                      "0 0 0px rgba(156,112,80,0)",
+                      "0 0 20px rgba(156,112,80,0.4)",
+                      "0 0 0px rgba(156,112,80,0)",
+                    ],
+                  }}
+                  transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                >
+                  {hosts.groomName}
+                </motion.span>
               </motion.h1>
               <motion.p
                 className="text-3xl my-2 font-light italic"
@@ -408,7 +549,23 @@ export function SereneGarden({ data, preview }: TemplateProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...spring, delay: 0.7 }}
               >
-                {hosts.brideName}
+                <motion.span
+                  animate={{
+                    textShadow: [
+                      "0 0 0px rgba(156,112,80,0)",
+                      "0 0 20px rgba(156,112,80,0.4)",
+                      "0 0 0px rgba(156,112,80,0)",
+                    ],
+                  }}
+                  transition={{
+                    duration: 4,
+                    delay: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                >
+                  {hosts.brideName}
+                </motion.span>
               </motion.h1>
             </div>
           ) : (
@@ -530,7 +687,29 @@ export function SereneGarden({ data, preview }: TemplateProps) {
       <GardenSection direction="up" delay={0.05}>
         <section className="mx-auto max-w-2xl px-6 py-4 pb-20">
           <div className="text-center mb-10">
-            <SectionLabel color={primary}>Mempelai</SectionLabel>
+            {/* Dewdrop glow behind heading */}
+            <div className="relative inline-block">
+              {!preview && (
+                <motion.div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    backgroundColor: primary,
+                    filter: "blur(30px)",
+                  }}
+                  animate={{ opacity: [0, 0.3, 0] }}
+                  whileInView={{ opacity: [0, 0.3, 0] }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 2, ease: "easeInOut" }}
+                />
+              )}
+              <SectionLabel color={primary}>Mempelai</SectionLabel>
+            </div>
             <Divider color={primary} accent={accent} />
           </div>
           <CoupleCarousel
@@ -560,7 +739,29 @@ export function SereneGarden({ data, preview }: TemplateProps) {
         <div className="mx-auto max-w-xl">
           <GardenSection direction="up">
             <div className="text-center mb-12">
-              <SectionLabel color={primary}>Rangkaian Acara</SectionLabel>
+              {/* Dewdrop glow behind section heading */}
+              <div className="relative inline-block">
+                {!preview && (
+                  <motion.div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: 120,
+                      height: 120,
+                      borderRadius: "50%",
+                      backgroundColor: primary,
+                      filter: "blur(30px)",
+                    }}
+                    animate={{ opacity: [0, 0.3, 0] }}
+                    whileInView={{ opacity: [0, 0.3, 0] }}
+                    viewport={{ once: false }}
+                    transition={{ duration: 2, delay: 0.3, ease: "easeInOut" }}
+                  />
+                )}
+                <SectionLabel color={primary}>Rangkaian Acara</SectionLabel>
+              </div>
               <Divider color={primary} accent={accent} />
             </div>
           </GardenSection>
@@ -656,7 +857,28 @@ export function SereneGarden({ data, preview }: TemplateProps) {
       {story && (
         <GardenSection direction="left" delay={0.05}>
           <section className="mx-auto max-w-xl px-6 py-20 text-center">
-            <SectionLabel color={primary}>Kisah Cinta Kami</SectionLabel>
+            <div className="relative inline-block">
+              {!preview && (
+                <motion.div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    backgroundColor: primary,
+                    filter: "blur(30px)",
+                  }}
+                  animate={{ opacity: [0, 0.3, 0] }}
+                  whileInView={{ opacity: [0, 0.3, 0] }}
+                  viewport={{ once: false }}
+                  transition={{ duration: 2, ease: "easeInOut" }}
+                />
+              )}
+              <SectionLabel color={primary}>Kisah Cinta Kami</SectionLabel>
+            </div>
             <Divider color={primary} accent={accent} />
             <div
               className="mt-8 px-6 py-8 rounded-2xl"

@@ -14,6 +14,22 @@ import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
 import type { TemplateProps } from "../types";
 
+/* Stable gold particle data */
+const GOLD_PARTICLES = [
+  { top: "10%", left: "15%", size: 3, dur: 7, delay: 0 },
+  { top: "22%", left: "80%", size: 2, dur: 9, delay: 1.2 },
+  { top: "35%", left: "5%", size: 4, dur: 6, delay: 2.5 },
+  { top: "48%", left: "92%", size: 2, dur: 11, delay: 0.7 },
+  { top: "60%", left: "20%", size: 3, dur: 8, delay: 3.1 },
+  { top: "72%", left: "70%", size: 4, dur: 10, delay: 1.8 },
+  { top: "15%", left: "50%", size: 2, dur: 12, delay: 4.0 },
+  { top: "55%", left: "40%", size: 3, dur: 7, delay: 2.0 },
+  { top: "80%", left: "85%", size: 2, dur: 9, delay: 0.4 },
+  { top: "88%", left: "30%", size: 4, dur: 5, delay: 3.6 },
+  { top: "30%", left: "60%", size: 2, dur: 8, delay: 1.5 },
+  { top: "70%", left: "10%", size: 3, dur: 11, delay: 5.0 },
+] as const;
+
 export function IslamicElegant({ data, preview }: TemplateProps) {
   const { content, theme, guestName } = data;
   const { hosts, events, thanksNote, galleryUrls, musicUrl, musicTitle } = content;
@@ -28,18 +44,51 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
       className="min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, color: "#e8dcc8", fontFamily: "'Georgia', serif" }}
     >
-      {/* Keyframe animations — only injected for real (non-preview) views */}
-      {!preview && (
-        <style>{`
-          @keyframes shimmer {
-            0%   { background-position: -200% center; }
-            100% { background-position: 200% center; }
-          }
-          @keyframes pulse-glow {
-            0%, 100% { opacity: 0.7; }
-            50%       { opacity: 1; }
-          }
-        `}</style>
+      {/* Keyframe animations */}
+      <style>{`
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes goldShimmer {
+          0%   { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.7; }
+          50%       { opacity: 1; }
+        }
+      `}</style>
+
+      {/* Gold particle rain (hero ambient) */}
+      {opened && !preview && (
+        <>
+          {GOLD_PARTICLES.map((p, i) => (
+            <motion.div
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+              key={i}
+              style={{
+                position: "fixed",
+                top: p.top,
+                left: p.left,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                borderRadius: "50%",
+                backgroundColor: "#ffd700",
+                pointerEvents: "none",
+                zIndex: 0,
+                opacity: 0.4,
+              }}
+              animate={{ y: [0, 30, 0], opacity: [0.3, 0.6, 0.3] }}
+              transition={{
+                duration: p.dur,
+                delay: p.delay,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </>
       )}
 
       {/* Opening screen */}
@@ -99,8 +148,44 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
             className="absolute inset-0 h-full w-full object-cover opacity-10"
           />
         )}
+
+        {/* Rotating Islamic geometric star */}
+        {!preview && (
+          <motion.svg
+            viewBox="0 0 200 200"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "40vh",
+              height: "40vh",
+              opacity: 0.06,
+              fill: primary,
+              pointerEvents: "none",
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+          >
+            <polygon points="100,0 122,78 200,78 138,126 162,204 100,156 38,204 62,126 0,78 78,78" />
+          </motion.svg>
+        )}
+
         <div className="relative z-10 space-y-6">
           {guestName && <p className="text-sm text-gray-400">Kepada Yth. {guestName}</p>}
+
+          {/* Bismillah reveal above names */}
+          {opened && !preview && (
+            <motion.p
+              className="text-xl"
+              style={{ fontFamily: "serif", color: primary }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+            >
+              بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+            </motion.p>
+          )}
 
           {/* Ornament — floating */}
           {!preview ? (
@@ -121,11 +206,18 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Undangan Pernikahan</p>
 
           <div>
-            {/* Groom name — clip-path curtain reveal */}
+            {/* Groom name — gold shimmer */}
             {opened && !preview ? (
               <motion.h1
                 className="text-5xl font-bold md:text-6xl"
-                style={{ color: primary }}
+                style={{
+                  background: `linear-gradient(90deg, ${primary} 0%, #ffd700 30%, ${primary} 60%, #ffd700 90%)`,
+                  backgroundSize: "200% auto",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "goldShimmer 3s linear infinite",
+                }}
                 initial={{ clipPath: "inset(0 100% 0 0)" }}
                 animate={{ clipPath: "inset(0 0% 0 0)" }}
                 transition={{ duration: 1.0, delay: 0.2, ease: [0.76, 0, 0.24, 1] }}
@@ -169,11 +261,18 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
               </motion.div>
             ) : null}
 
-            {/* Bride name — clip-path curtain reveal */}
+            {/* Bride name — gold shimmer */}
             {opened && !preview ? (
               <motion.h1
                 className="text-5xl font-bold md:text-6xl mt-3"
-                style={{ color: primary }}
+                style={{
+                  background: `linear-gradient(90deg, ${primary} 0%, #ffd700 30%, ${primary} 60%, #ffd700 90%)`,
+                  backgroundSize: "200% auto",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  animation: "goldShimmer 3s linear infinite",
+                }}
                 initial={{ clipPath: "inset(0 100% 0 0)" }}
                 animate={{ clipPath: "inset(0 0% 0 0)" }}
                 transition={{ duration: 1.0, delay: 1.2, ease: [0.76, 0, 0.24, 1] }}
@@ -268,76 +367,116 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
         <div className="space-y-6">
           {events.map((event, idx) => (
             <AnimateIn key={event.id} direction="up" delay={idx * 0.15}>
-              <div
-                className="rounded-xl p-6 text-center"
-                style={{ backgroundColor: surface, borderLeft: `3px solid ${primary}` }}
-              >
-                <h3 className="text-xl font-bold" style={{ color: primary }}>
-                  {event.name}
-                </h3>
-                {event.date && (
-                  <p className="mt-2 text-gray-300">
-                    {new Date(event.date).toLocaleDateString("id-ID", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                    {event.time && ` • ${event.time}`}
-                  </p>
-                )}
-                {event.venueName && (
-                  <p className="mt-2 text-white font-medium">{event.venueName}</p>
-                )}
-                {event.venueAddress && (
-                  <p className="text-sm text-gray-400 mt-1">{event.venueAddress}</p>
-                )}
-                {event.dressCode && (
-                  <p className="mt-2 text-xs text-gray-500">Dresscode: {event.dressCode}</p>
-                )}
-                {/* Maps deeplinks */}
-                <div className="mt-3 flex flex-wrap justify-center gap-2">
-                  {event.mapsUrl && (
-                    <a
-                      href={event.mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-sm font-medium text-black"
-                      style={{ backgroundColor: primary }}
-                    >
-                      Lihat Peta
-                    </a>
+              <div className="relative overflow-hidden">
+                {/* Animated SVG border frame */}
+                <svg
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  aria-hidden="true"
+                  style={{ borderRadius: "0.75rem" }}
+                >
+                  <motion.rect
+                    x="1"
+                    y="1"
+                    width="calc(100% - 2px)"
+                    height="calc(100% - 2px)"
+                    rx="11"
+                    ry="11"
+                    fill="none"
+                    stroke={primary}
+                    strokeWidth="1.5"
+                    strokeDasharray="800"
+                    initial={{ strokeDashoffset: 800 }}
+                    whileInView={{ strokeDashoffset: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                </svg>
+                <div
+                  className="rounded-xl p-6 text-center"
+                  style={{ backgroundColor: surface, borderLeft: `3px solid ${primary}` }}
+                >
+                  <h3 className="text-xl font-bold" style={{ color: primary }}>
+                    {event.name}
+                  </h3>
+                  {event.date && (
+                    <p className="mt-2 text-gray-300">
+                      {new Date(event.date).toLocaleDateString("id-ID", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                      {event.time && ` • ${event.time}`}
+                    </p>
                   )}
-                  {event.lat !== undefined && event.lng !== undefined && (
-                    <a
-                      href={`https://waze.com/ul?ll=${event.lat},${event.lng}&navigate=yes`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded border px-4 py-1.5 text-sm"
-                      style={{ borderColor: primary, color: primary }}
-                    >
-                      Waze
-                    </a>
+                  {event.venueName && (
+                    <p className="mt-2 text-white font-medium">{event.venueName}</p>
+                  )}
+                  {event.venueAddress && (
+                    <p className="text-sm text-gray-400 mt-1">{event.venueAddress}</p>
+                  )}
+                  {event.dressCode && (
+                    <p className="mt-2 text-xs text-gray-500">Dresscode: {event.dressCode}</p>
+                  )}
+                  {/* Maps deeplinks */}
+                  <div className="mt-3 flex flex-wrap justify-center gap-2">
+                    {event.mapsUrl && (
+                      <a
+                        href={event.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded px-4 py-1.5 text-sm font-medium text-black"
+                        style={{ backgroundColor: primary }}
+                      >
+                        Lihat Peta
+                      </a>
+                    )}
+                    {event.lat !== undefined && event.lng !== undefined && (
+                      <a
+                        href={`https://waze.com/ul?ll=${event.lat},${event.lng}&navigate=yes`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded border px-4 py-1.5 text-sm"
+                        style={{ borderColor: primary, color: primary }}
+                      >
+                        Waze
+                      </a>
+                    )}
+                  </div>
+                  {/* Add to calendar */}
+                  {event.date && !preview && (
+                    <AddToCalendar
+                      eventName={event.name}
+                      date={event.date}
+                      {...(event.time !== undefined ? { time: event.time } : {})}
+                      {...(event.venueName !== undefined ? { venueName: event.venueName } : {})}
+                      {...(event.venueAddress !== undefined
+                        ? { venueAddress: event.venueAddress }
+                        : {})}
+                      primaryColor={primary}
+                    />
                   )}
                 </div>
-                {/* Add to calendar */}
-                {event.date && !preview && (
-                  <AddToCalendar
-                    eventName={event.name}
-                    date={event.date}
-                    {...(event.time !== undefined ? { time: event.time } : {})}
-                    {...(event.venueName !== undefined ? { venueName: event.venueName } : {})}
-                    {...(event.venueAddress !== undefined
-                      ? { venueAddress: event.venueAddress }
-                      : {})}
-                    primaryColor={primary}
-                  />
-                )}
               </div>
             </AnimateIn>
           ))}
         </div>
       </section>
+
+      {/* Section divider — arabesque with animated diamond center */}
+      <div className="mx-auto max-w-xs py-4 flex items-center justify-center gap-2">
+        <div className="flex-1 h-px" style={{ backgroundColor: `${primary}40` }} />
+        <motion.div
+          initial={{ scale: 0 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          style={{ color: primary, fontSize: "1rem" }}
+        >
+          ◆
+        </motion.div>
+        <div className="flex-1 h-px" style={{ backgroundColor: `${primary}40` }} />
+      </div>
 
       {/* Gallery */}
       {galleryUrls && galleryUrls.length > 0 && (
