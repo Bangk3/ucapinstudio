@@ -12,6 +12,8 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/db/package.json ./packages/db/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/shared/package.json ./packages/shared/
+COPY packages/templates/package.json ./packages/templates/
+COPY packages/storage/package.json ./packages/storage/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod=false
 
@@ -23,7 +25,7 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN pnpm run build --filter=@undangan/web
+RUN pnpm run build --filter=@invyte/web
 
 # ─── runner ─────────────────────────────────────────────────
 FROM base AS runner

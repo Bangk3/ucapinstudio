@@ -1,0 +1,41 @@
+# Invyte — Caddyfile
+# Caddy auto-obtains TLS certificates via Let's Encrypt.
+# Set APP_DOMAIN and optional MINIO_CONSOLE_DOMAIN in your .env.
+
+{$APP_DOMAIN} {
+  encode gzip zstd
+
+  # Security headers
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+  }
+
+  # MinIO S3 API — serve media under /storage/*
+  handle /storage/* {
+    uri strip_prefix /storage
+    reverse_proxy minio:9000
+  }
+
+  # Next.js app
+  handle {
+    reverse_proxy web:3000 {
+      header_up X-Real-IP {remote_host}
+      header_up X-Forwarded-For {remote_host}
+      header_up X-Forwarded-Proto {scheme}
+    }
+  }
+
+  log {
+    output stdout
+    format json
+  }
+}
+
+# MinIO Console (optional — set MINIO_CONSOLE_DOMAIN to enable)
+{$MINIO_CONSOLE_DOMAIN:} {
+  reverse_proxy minio:9001
+}
