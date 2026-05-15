@@ -1,6 +1,17 @@
 "use client";
 
-import { Check, Copy, Plus, Upload, Users, X } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  Loader2,
+  Plus,
+  QrCode,
+  Trash2,
+  Upload,
+  Users,
+  X,
+} from "lucide-react";
 import { useRef, useState } from "react";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -50,6 +61,10 @@ export function GuestManager({
   } | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Bulk select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // Add guest form state
   const [form, setForm] = useState({
@@ -144,11 +159,42 @@ export function GuestManager({
     setTimeout(() => setCopiedSlug(null), 2000);
   }
 
+  async function refetch() {
+    const res = await fetch(
+      `/api/v1/invitations/${invitationId}/guests?tenantSlug=${tenantSlug}&limit=200`,
+    );
+    if (res.ok) {
+      const data = await res.json();
+      setGuests(data.guests ?? []);
+      setTotal(data.total ?? 0);
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (!confirm(`Hapus ${selectedIds.size} tamu? Tindakan ini tidak dapat dibatalkan.`)) return;
+    setBulkDeleting(true);
+    try {
+      const res = await fetch(`/api/v1/invitations/${invitationId}/guests/bulk`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestIds: Array.from(selectedIds), tenantSlug }),
+      });
+      if (!res.ok) throw new Error("Gagal menghapus");
+      setSelectedIds(new Set());
+      await refetch();
+    } catch {
+      alert("Gagal menghapus tamu");
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Action bar */}
       <div className="flex flex-wrap items-center gap-2">
         <button
+          type="button"
           onClick={() => {
             setShowAddForm((v) => !v);
             setAddError(null);
@@ -158,6 +204,15 @@ export function GuestManager({
           <Plus className="h-4 w-4" />
           Tambah Tamu
         </button>
+
+        <a
+          href={`/api/v1/invitations/${invitationId}/guests/template`}
+          download="tamu-template.csv"
+          className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary/60 hover:text-foreground transition-colors"
+        >
+          <Download className="h-3.5 w-3.5" aria-hidden="true" />
+          Unduh Template
+        </a>
 
         <label
           className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium cursor-pointer hover:bg-accent transition-colors ${importing ? "opacity-60 pointer-events-none" : ""}`}
@@ -173,6 +228,15 @@ export function GuestManager({
             disabled={importing}
           />
         </label>
+
+        <a
+          href={`/api/v1/invitations/${invitationId}/guests/qr-zip`}
+          download={`qr-${invitationId}.zip`}
+          className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-2 text-xs font-medium text-muted-foreground hover:border-primary/60 hover:text-foreground transition-colors"
+        >
+          <QrCode className="h-3.5 w-3.5" aria-hidden="true" />
+          Unduh QR ZIP
+        </a>
 
         <a
           href={`/api/v1/invitations/${invitationId}/guests/export?tenantSlug=${tenantSlug}`}
@@ -199,8 +263,8 @@ export function GuestManager({
           <p className="font-medium">{importResult.imported} tamu berhasil diimpor.</p>
           {importResult.errors.length > 0 && (
             <ul className="mt-1 space-y-0.5 text-xs">
-              {importResult.errors.slice(0, 5).map((e, i) => (
-                <li key={i}>
+              {importResult.errors.slice(0, 5).map((e) => (
+                <li key={`${e.row}-${e.reason}`}>
                   Baris {e.row}: {e.reason}
                 </li>
               ))}
@@ -218,6 +282,7 @@ export function GuestManager({
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-sm">Tambah Tamu Baru</h3>
             <button
+              type="button"
               onClick={() => setShowAddForm(false)}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -329,6 +394,36 @@ export function GuestManager({
         </div>
       )}
 
+      {/* Bulk delete bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2.5">
+          <span className="text-sm font-medium text-destructive">
+            {selectedIds.size} tamu dipilih
+          </span>
+          <button
+            type="button"
+            onClick={handleBulkDelete}
+            disabled={bulkDeleting}
+            className="flex items-center gap-1.5 rounded-lg bg-destructive px-3 py-1.5 text-xs font-medium text-white hover:bg-destructive/90 transition-colors disabled:opacity-60"
+          >
+            {bulkDeleting ? (
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            ) : (
+              <Trash2 className="h-3 w-3" aria-hidden="true" />
+            )}
+            Hapus Dipilih
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            disabled={bulkDeleting}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Batal
+          </button>
+        </div>
+      )}
+
       {/* Guest list */}
       {guests.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card py-16 gap-3">
@@ -343,6 +438,22 @@ export function GuestManager({
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50">
               <tr>
+                <th className="w-10 px-3 py-3">
+                  <input
+                    type="checkbox"
+                    aria-label="Pilih semua"
+                    checked={selectedIds.size === guests.length && guests.length > 0}
+                    ref={(el) => {
+                      if (el)
+                        el.indeterminate = selectedIds.size > 0 && selectedIds.size < guests.length;
+                    }}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedIds(new Set(guests.map((g) => g.id)));
+                      else setSelectedIds(new Set());
+                    }}
+                    className="rounded"
+                  />
+                </th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nama</th>
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">
                   Kategori
@@ -350,12 +461,26 @@ export function GuestManager({
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   Link Personal
                 </th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Salin</th>
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {guests.map((guest) => (
                 <tr key={guest.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="w-10 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label={`Pilih ${guest.name}`}
+                      checked={selectedIds.has(guest.id)}
+                      onChange={(e) => {
+                        const next = new Set(selectedIds);
+                        if (e.target.checked) next.add(guest.id);
+                        else next.delete(guest.id);
+                        setSelectedIds(next);
+                      }}
+                      className="rounded"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <p className="font-medium">{guest.name}</p>
                     {guest.phone && <p className="text-xs text-muted-foreground">{guest.phone}</p>}
@@ -374,17 +499,29 @@ export function GuestManager({
                     </a>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => copyLink(guest)}
-                      title="Salin link undangan"
-                      className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    >
-                      {copiedSlug === guest.slug ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </button>
+                    <div className="inline-flex items-center gap-1 justify-end">
+                      <a
+                        href={`/api/v1/invitations/${invitationId}/guests/${guest.id}/qr`}
+                        download={`qr-${guest.slug}.png`}
+                        className="rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        title="Unduh QR code"
+                        aria-label={`Unduh QR code untuk ${guest.name}`}
+                      >
+                        <QrCode className="h-3.5 w-3.5" aria-hidden="true" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => copyLink(guest)}
+                        title="Salin link undangan"
+                        className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        {copiedSlug === guest.slug ? (
+                          <Check className="h-4 w-4 text-green-500" aria-hidden="true" />
+                        ) : (
+                          <Copy className="h-4 w-4" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
