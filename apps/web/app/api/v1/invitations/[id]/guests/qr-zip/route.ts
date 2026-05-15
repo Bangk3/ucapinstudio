@@ -76,7 +76,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 
   const zipped = zipSync(files);
 
-  return new NextResponse(zipped, {
+  return new NextResponse(zipped as unknown as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/zip",

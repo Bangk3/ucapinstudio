@@ -38,12 +38,12 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
 
   // Cannot remove yourself if you are the only owner
   if (userId === session.user.id) {
-    const [{ ownerCount }] = await db
+    const ownerRows = await db
       .select({ ownerCount: count() })
       .from(memberships)
       .where(and(eq(memberships.tenantId, tenantRow.id), eq(memberships.role, "owner")));
 
-    if ((ownerCount ?? 0) <= 1) {
+    if ((ownerRows[0]?.ownerCount ?? 0) <= 1) {
       return NextResponse.json(
         { error: "Tidak dapat menghapus satu-satunya pemilik workspace" },
         { status: 409 },

@@ -49,7 +49,7 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 
   const buffer = await QRCode.toBuffer(url, { width: 400, margin: 2 });
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       "Content-Type": "image/png",
