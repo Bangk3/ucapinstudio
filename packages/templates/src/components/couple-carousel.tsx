@@ -67,7 +67,8 @@ export function CoupleCarousel({
   return (
     <div className="grid text-center items-start" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
       {people.map((p, idx) => (
-        <Fragment key={p.name}>
+        // biome-ignore lint/suspicious/noArrayIndexKey: groom/bride positions are fixed
+        <Fragment key={idx}>
           <div
             className="flex flex-col items-center space-y-3 px-2 py-4"
             style={{ backgroundColor: slideBg ?? "transparent" }}
