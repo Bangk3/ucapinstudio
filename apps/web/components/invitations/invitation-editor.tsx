@@ -258,6 +258,12 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
             >
               Kirim Pesan
             </Link>
+            <Link
+              href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/ai`}
+              className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+            >
+              ✨ AI Design
+            </Link>
             <a
               href={`/${tenantSlug}/u/${invitation.slug}`}
               target="_blank"

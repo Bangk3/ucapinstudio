@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const config: NextConfig = {
   output: "standalone",
   transpilePackages: [
+    "@invyte/ai",
     "@invyte/ui",
     "@invyte/shared",
     "@invyte/db",

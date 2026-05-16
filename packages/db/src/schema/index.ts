@@ -9,3 +9,4 @@ export * from "./wishes";
 export * from "./media";
 export * from "./analytics";
 export * from "./messaging";
+export * from "./ai-generations";
