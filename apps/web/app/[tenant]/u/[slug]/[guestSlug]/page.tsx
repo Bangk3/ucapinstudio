@@ -2,8 +2,10 @@ import { PublicInvitation } from "@/components/invitations/public-invitation";
 import { getGuestBySlug } from "@/lib/guests";
 import { getInvitationBySlug } from "@/lib/invitations";
 import { getTenantBySlug } from "@/lib/tenant";
+import { trackView } from "@/lib/track-view";
 import type { InvitationContent } from "@invyte/templates";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface Props {
@@ -48,6 +50,19 @@ export default async function GuestInvitationPage({ params }: Props) {
 
   const guest = await getGuestBySlug(invitation.id, guestSlug);
   if (!guest) notFound();
+
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ?? hdrs.get("x-real-ip") ?? undefined;
+  const ua = hdrs.get("user-agent") ?? undefined;
+  const ref = hdrs.get("referer") ?? undefined;
+  void trackView({
+    invitationId: invitation.id,
+    guestId: guest.id,
+    ...(ip !== undefined ? { ip } : {}),
+    ...(ua !== undefined ? { userAgent: ua } : {}),
+    ...(ref !== undefined ? { referrer: ref } : {}),
+  }).catch(() => {});
 
   return (
     <PublicInvitation

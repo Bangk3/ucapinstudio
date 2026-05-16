@@ -40,6 +40,23 @@ export interface InvitationContent {
     description?: string;
     emoji?: string;
   }>;
+  amplop?: {
+    /** URL to QRIS image (uploaded to storage) */
+    qrisUrl?: string;
+    qrisNote?: string;
+    bankAccounts?: Array<{
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+    }>;
+    ewallets?: Array<{
+      /** Provider slug for icon selection */
+      provider: "gopay" | "ovo" | "dana" | "shopeepay" | "other";
+      providerLabel?: string;
+      number: string;
+      holder: string;
+    }>;
+  };
 }
 
 export interface ThemeConfig {

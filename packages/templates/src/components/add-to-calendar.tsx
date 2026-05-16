@@ -12,7 +12,7 @@ interface AddToCalendarProps {
 function formatDate(date: string, time?: string): string {
   // Returns YYYYMMDDTHHMMSS for .ics
   const d = date.replace(/-/g, "");
-  const t = time ? time.replace(":", "") + "00" : "000000";
+  const t = time ? `${time.replace(":", "")}00` : "000000";
   return `${d}T${t}`;
 }
 
@@ -105,7 +105,7 @@ export function AddToCalendar({
         className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-medium transition-colors hover:bg-gray-50"
         style={{ borderColor: primaryColor, color: primaryColor }}
       >
-        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
         </svg>
         Google Calendar
@@ -116,7 +116,7 @@ export function AddToCalendar({
         className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-medium transition-colors hover:bg-gray-50"
         style={{ borderColor: primaryColor, color: primaryColor }}
       >
-        <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path
             fillRule="evenodd"
             d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"

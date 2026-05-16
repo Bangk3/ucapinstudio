@@ -7,3 +7,4 @@ export * from "./guests";
 export * from "./rsvps";
 export * from "./wishes";
 export * from "./media";
+export * from "./analytics";

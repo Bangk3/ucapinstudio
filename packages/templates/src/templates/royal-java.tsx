@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
@@ -88,7 +89,8 @@ export function RoyalJava({ data, preview }: TemplateProps) {
   /* Heading shimmer (richer gold for section headings) */
   const headingShimmerStyle: React.CSSProperties = !preview
     ? {
-        background: `linear-gradient(90deg, #8b1a2e 0%, #c9a84c 25%, #ffd700 50%, #c9a84c 75%, #8b1a2e 100%)`,
+        background:
+          "linear-gradient(90deg, #8b1a2e 0%, #c9a84c 25%, #ffd700 50%, #c9a84c 75%, #8b1a2e 100%)",
         backgroundSize: "300% auto",
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
@@ -453,6 +455,13 @@ export function RoyalJava({ data, preview }: TemplateProps) {
             />
           </section>
         </AnimateIn>
+      )}
+
+      {/* Digital Amplop */}
+      {content.amplop && (
+        <section className="mx-auto max-w-xl px-6 py-16">
+          <DigitalAmplop amplop={content.amplop} primaryColor={primary} />
+        </section>
       )}
 
       {/* ── Share ───────────────────────────────────────────────── */}

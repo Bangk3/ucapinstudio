@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
@@ -557,6 +558,13 @@ export function MinimalistModern({ data, preview }: TemplateProps) {
             />
           </section>
         </AnimateIn>
+      )}
+
+      {/* Digital Amplop */}
+      {content.amplop && (
+        <section className="mx-auto max-w-xl px-6 py-16">
+          <DigitalAmplop amplop={content.amplop} primaryColor={primary} />
+        </section>
       )}
 
       {/* Share */}

@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
@@ -277,34 +278,32 @@ export function SereneGarden({ data, preview }: TemplateProps) {
         ))}
 
       {/* Garden particles */}
-      {opened && !preview && (
-        <>
-          {GARDEN_PARTICLES.map((p, i) => (
-            <motion.div
-              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
-              key={i}
-              style={{
-                position: "fixed",
-                top: p.top,
-                left: p.left,
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                borderRadius: "50%",
-                backgroundColor: p.color,
-                pointerEvents: "none",
-                zIndex: 0,
-              }}
-              animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
-              transition={{
-                duration: p.dur,
-                delay: p.delay,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </>
-      )}
+      {opened &&
+        !preview &&
+        GARDEN_PARTICLES.map((p, i) => (
+          <motion.div
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+            key={i}
+            style={{
+              position: "fixed",
+              top: p.top,
+              left: p.left,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              borderRadius: "50%",
+              backgroundColor: p.color,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+            animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
+            transition={{
+              duration: p.dur,
+              delay: p.delay,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
 
       {/* Butterfly */}
       {opened && !preview && (
@@ -394,37 +393,34 @@ export function SereneGarden({ data, preview }: TemplateProps) {
         </motion.div>
 
         {/* Light rays */}
-        {!preview && (
-          <>
-            {[
-              { top: "10%", left: "20%", delay: "0s", dur: "4s" },
-              { top: "5%", left: "50%", delay: "2s", dur: "6s" },
-              { top: "15%", left: "75%", delay: "1.5s", dur: "3.5s" },
-            ].map((ray, i) => (
-              <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
-                key={i}
-                style={{
-                  position: "absolute",
-                  top: ray.top,
-                  left: ray.left,
-                  width: "2px",
-                  height: "200px",
-                  backgroundColor: "white",
-                  opacity: 0,
-                  transform: "rotate(15deg)",
-                  transformOrigin: "top center",
-                  animationName: "lightRay",
-                  animationDuration: ray.dur,
-                  animationDelay: ray.delay,
-                  animationTimingFunction: "ease-in-out",
-                  animationIterationCount: "infinite",
-                  pointerEvents: "none",
-                }}
-              />
-            ))}
-          </>
-        )}
+        {!preview &&
+          [
+            { top: "10%", left: "20%", delay: "0s", dur: "4s" },
+            { top: "5%", left: "50%", delay: "2s", dur: "6s" },
+            { top: "15%", left: "75%", delay: "1.5s", dur: "3.5s" },
+          ].map((ray, i) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+              key={i}
+              style={{
+                position: "absolute",
+                top: ray.top,
+                left: ray.left,
+                width: "2px",
+                height: "200px",
+                backgroundColor: "white",
+                opacity: 0,
+                transform: "rotate(15deg)",
+                transformOrigin: "top center",
+                animationName: "lightRay",
+                animationDuration: ray.dur,
+                animationDelay: ray.delay,
+                animationTimingFunction: "ease-in-out",
+                animationIterationCount: "infinite",
+                pointerEvents: "none",
+              }}
+            />
+          ))}
 
         {/* Floating botanical corners */}
         {!preview ? (
@@ -966,6 +962,13 @@ export function SereneGarden({ data, preview }: TemplateProps) {
             gridClassName="mx-auto max-w-3xl grid grid-cols-2 gap-2 md:grid-cols-3"
             itemClassName="aspect-square w-full rounded-xl object-cover shadow-sm cursor-pointer"
           />
+        </section>
+      )}
+
+      {/* Digital Amplop */}
+      {content.amplop && (
+        <section className="mx-auto max-w-xl px-6 py-16">
+          <DigitalAmplop amplop={content.amplop} primaryColor={primary} />
         </section>
       )}
 

@@ -6,6 +6,7 @@ import { Monitor, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
+import { EditorAmplop } from "./editor-sections/editor-amplop";
 import { EditorEvents } from "./editor-sections/editor-events";
 import { EditorHosts } from "./editor-sections/editor-hosts";
 import { EditorSettings } from "./editor-sections/editor-settings";
@@ -17,6 +18,7 @@ const TABS = [
   { id: "hosts", label: "Mempelai" },
   { id: "events", label: "Acara" },
   { id: "story", label: "Kisah" },
+  { id: "amplop", label: "Amplop" },
   { id: "theme", label: "Tema" },
   { id: "settings", label: "Pengaturan" },
 ] as const;
@@ -178,6 +180,13 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
               tenantId={invitation.tenantId}
             />
           )}
+          {activeTab === "amplop" && (
+            <EditorAmplop
+              content={content}
+              onChange={updateContent}
+              tenantId={invitation.tenantId}
+            />
+          )}
           {activeTab === "theme" && (
             <EditorTheme
               theme={theme}
@@ -236,6 +245,12 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               Buku Tamu
+            </Link>
+            <Link
+              href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/analytics`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Analitik
             </Link>
             <a
               href={`/${tenantSlug}/u/${invitation.slug}`}

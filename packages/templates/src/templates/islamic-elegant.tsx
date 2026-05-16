@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
@@ -63,35 +64,33 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
       `}</style>
 
       {/* Gold particle rain (hero ambient) */}
-      {opened && !preview && (
-        <>
-          {GOLD_PARTICLES.map((p, i) => (
-            <motion.div
-              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
-              key={i}
-              style={{
-                position: "fixed",
-                top: p.top,
-                left: p.left,
-                width: `${p.size}px`,
-                height: `${p.size}px`,
-                borderRadius: "50%",
-                backgroundColor: "#ffd700",
-                pointerEvents: "none",
-                zIndex: 0,
-                opacity: 0.4,
-              }}
-              animate={{ y: [0, 30, 0], opacity: [0.3, 0.6, 0.3] }}
-              transition={{
-                duration: p.dur,
-                delay: p.delay,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </>
-      )}
+      {opened &&
+        !preview &&
+        GOLD_PARTICLES.map((p, i) => (
+          <motion.div
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+            key={i}
+            style={{
+              position: "fixed",
+              top: p.top,
+              left: p.left,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              borderRadius: "50%",
+              backgroundColor: "#ffd700",
+              pointerEvents: "none",
+              zIndex: 0,
+              opacity: 0.4,
+            }}
+            animate={{ y: [0, 30, 0], opacity: [0.3, 0.6, 0.3] }}
+            transition={{
+              duration: p.dur,
+              delay: p.delay,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
 
       {/* Opening screen */}
       {!opened && (
@@ -510,6 +509,13 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
             gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-2 md:grid-cols-3"
             itemClassName="aspect-square w-full rounded-lg object-cover opacity-90 cursor-pointer"
           />
+        </section>
+      )}
+
+      {/* Digital Amplop */}
+      {content.amplop && (
+        <section className="mx-auto max-w-xl px-6 py-16">
+          <DigitalAmplop amplop={content.amplop} primaryColor={primary} />
         </section>
       )}
 

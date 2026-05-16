@@ -6,6 +6,7 @@ import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
+import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
@@ -81,62 +82,58 @@ export function FloralClassic({ data, preview }: TemplateProps) {
       `}</style>
 
       {/* Floating petals */}
-      {opened && !preview && (
-        <>
-          {PETALS.map((petal, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
-              key={i}
-              style={
-                {
-                  position: "fixed",
-                  top: "-20px",
-                  left: petal.left,
-                  width: `${petal.size}px`,
-                  height: `${Math.round(petal.size * 1.35)}px`,
-                  borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-                  backgroundColor: petal.color,
-                  opacity: 0,
-                  pointerEvents: "none",
-                  zIndex: 0,
-                  "--drift": `${-40 + (Math.round(i * 8.5) % 120)}px`,
-                  animation: `floatPetal ${petal.duration} ${petal.delay} infinite linear`,
-                } as React.CSSProperties
-              }
-            />
-          ))}
-        </>
-      )}
-
-      {/* Sparkle stars */}
-      {opened && !preview && (
-        <>
-          {SPARKLES.map((s, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
-              key={i}
-              style={{
+      {opened &&
+        !preview &&
+        PETALS.map((petal, i) => (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+            key={i}
+            style={
+              {
                 position: "fixed",
-                top: s.top,
-                left: s.left,
-                width: `${s.size}px`,
-                height: `${s.size}px`,
+                top: "-20px",
+                left: petal.left,
+                width: `${petal.size}px`,
+                height: `${Math.round(petal.size * 1.35)}px`,
+                borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
+                backgroundColor: petal.color,
+                opacity: 0,
                 pointerEvents: "none",
                 zIndex: 0,
-                animationDelay: `${s.delay}s`,
-                animationDuration: "2.5s",
-                animationName: "sparkle",
-                animationTimingFunction: "ease-in-out",
-                animationIterationCount: "infinite",
-              }}
-            >
-              <svg viewBox="0 0 10 10" fill={primary} aria-hidden="true">
-                <polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4" />
-              </svg>
-            </div>
-          ))}
-        </>
-      )}
+                "--drift": `${-40 + (Math.round(i * 8.5) % 120)}px`,
+                animation: `floatPetal ${petal.duration} ${petal.delay} infinite linear`,
+              } as React.CSSProperties
+            }
+          />
+        ))}
+
+      {/* Sparkle stars */}
+      {opened &&
+        !preview &&
+        SPARKLES.map((s, i) => (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: stable decorative items
+            key={i}
+            style={{
+              position: "fixed",
+              top: s.top,
+              left: s.left,
+              width: `${s.size}px`,
+              height: `${s.size}px`,
+              pointerEvents: "none",
+              zIndex: 0,
+              animationDelay: `${s.delay}s`,
+              animationDuration: "2.5s",
+              animationName: "sparkle",
+              animationTimingFunction: "ease-in-out",
+              animationIterationCount: "infinite",
+            }}
+          >
+            <svg viewBox="0 0 10 10" fill={primary} aria-hidden="true">
+              <polygon points="5,0 6,4 10,5 6,6 5,10 4,6 0,5 4,4" />
+            </svg>
+          </div>
+        ))}
 
       {/* Opening screen */}
       {!opened && (
@@ -445,6 +442,13 @@ export function FloralClassic({ data, preview }: TemplateProps) {
             gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-3 md:grid-cols-3"
             itemClassName="aspect-square w-full rounded-2xl object-cover shadow-sm cursor-pointer"
           />
+        </section>
+      )}
+
+      {/* Digital Amplop */}
+      {content.amplop && (
+        <section className="mx-auto max-w-xl px-6 py-16">
+          <DigitalAmplop amplop={content.amplop} primaryColor={primary} />
         </section>
       )}
 
