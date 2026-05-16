@@ -1,5 +1,6 @@
 "use client";
 
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { BarChart2, LayoutDashboard, Loader2, Plus, ScrollText, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -231,7 +232,10 @@ export function DashboardSidebar({ tenantSlug }: DashboardSidebarProps) {
             <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
             Buat Workspace
           </button>
-          <p className="px-3 text-xs text-muted-foreground truncate">{tenantSlug}</p>
+          <div className="flex items-center justify-between px-3 py-1">
+            <p className="text-xs text-muted-foreground truncate">{tenantSlug}</p>
+            <LanguageSwitcher />
+          </div>
         </div>
       </aside>
 

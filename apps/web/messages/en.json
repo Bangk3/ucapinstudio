@@ -2,33 +2,73 @@
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
+    "success": "Success",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "add": "Add",
     "back": "Back",
     "next": "Next",
     "submit": "Submit",
+    "send": "Send",
     "search": "Search",
     "filter": "Filter",
     "export": "Export",
-    "import": "Import"
+    "import": "Import",
+    "upload": "Upload",
+    "download": "Download",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "confirm": "Confirm"
   },
   "nav": {
     "dashboard": "Dashboard",
     "invitations": "Invitations",
     "guests": "Guests",
     "rsvp": "RSVP",
+    "wishes": "Guest Book",
     "analytics": "Analytics",
-    "settings": "Settings"
+    "broadcast": "Send Messages",
+    "checkin": "Check-in",
+    "settings": "Settings",
+    "logout": "Log out"
   },
   "auth": {
     "login": "Sign In",
     "register": "Sign Up",
-    "logout": "Sign Out",
+    "logout": "Log Out",
     "email": "Email",
     "password": "Password",
     "forgotPassword": "Forgot password?",
     "resetPassword": "Reset password"
+  },
+  "invitation": {
+    "create": "Create Invitation",
+    "edit": "Edit Invitation",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "duplicate": "Duplicate",
+    "delete": "Delete Invitation",
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "status": "Status",
+    "template": "Template",
+    "theme": "Theme"
+  },
+  "guest": {
+    "add": "Add Guest",
+    "import": "Import CSV",
+    "export": "Export CSV",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "category": "Category",
+    "family": "Family",
+    "friends": "Friends",
+    "colleagues": "Colleagues",
+    "vip": "VIP",
+    "other": "Other"
   }
 }

@@ -2,25 +2,37 @@
   "common": {
     "loading": "Memuat...",
     "error": "Terjadi kesalahan",
+    "success": "Berhasil",
     "save": "Simpan",
     "cancel": "Batal",
     "delete": "Hapus",
     "edit": "Ubah",
+    "add": "Tambah",
     "back": "Kembali",
     "next": "Lanjut",
     "submit": "Kirim",
+    "send": "Kirim",
     "search": "Cari",
     "filter": "Filter",
     "export": "Ekspor",
-    "import": "Impor"
+    "import": "Impor",
+    "upload": "Unggah",
+    "download": "Unduh",
+    "copy": "Salin",
+    "copied": "Tersalin!",
+    "confirm": "Konfirmasi"
   },
   "nav": {
     "dashboard": "Dasbor",
     "invitations": "Undangan",
     "guests": "Tamu",
     "rsvp": "RSVP",
+    "wishes": "Buku Tamu",
     "analytics": "Analitik",
-    "settings": "Pengaturan"
+    "broadcast": "Kirim Pesan",
+    "checkin": "Check-in",
+    "settings": "Pengaturan",
+    "logout": "Keluar"
   },
   "auth": {
     "login": "Masuk",
@@ -30,5 +42,33 @@
     "password": "Kata Sandi",
     "forgotPassword": "Lupa kata sandi?",
     "resetPassword": "Atur ulang kata sandi"
+  },
+  "invitation": {
+    "create": "Buat Undangan",
+    "edit": "Edit Undangan",
+    "publish": "Terbitkan",
+    "unpublish": "Cabut Terbit",
+    "duplicate": "Duplikat",
+    "delete": "Hapus Undangan",
+    "draft": "Draft",
+    "published": "Terbit",
+    "archived": "Diarsipkan",
+    "status": "Status",
+    "template": "Template",
+    "theme": "Tema"
+  },
+  "guest": {
+    "add": "Tambah Tamu",
+    "import": "Import CSV",
+    "export": "Export CSV",
+    "name": "Nama",
+    "phone": "Nomor HP",
+    "email": "Email",
+    "category": "Kategori",
+    "family": "Keluarga",
+    "friends": "Teman",
+    "colleagues": "Rekan Kerja",
+    "vip": "VIP",
+    "other": "Lainnya"
   }
 }

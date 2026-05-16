@@ -259,6 +259,12 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
               Kirim Pesan
             </Link>
             <Link
+              href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/checkin`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Check-in
+            </Link>
+            <Link
               href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/ai`}
               className="text-xs text-primary hover:text-primary/80 transition-colors font-medium"
             >
