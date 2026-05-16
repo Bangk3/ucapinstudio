@@ -12,6 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@invyte/db": "workspace:*",
+    "@invyte/messaging": "workspace:*",
     "@invyte/shared": "workspace:*",
     "@invyte/storage": "workspace:*",
     "@invyte/templates": "workspace:*",

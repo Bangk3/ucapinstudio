@@ -11,6 +11,7 @@ const config: NextConfig = {
     "@invyte/db",
     "@invyte/templates",
     "@invyte/storage",
+    "@invyte/messaging",
   ],
   turbopack: {
     root: "../../",

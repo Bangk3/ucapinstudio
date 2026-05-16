@@ -38,6 +38,9 @@ importers:
       '@invyte/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@invyte/messaging':
+        specifier: workspace:*
+        version: link:../../packages/messaging
       '@invyte/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -153,6 +156,19 @@ importers:
         version: 4.21.0
       typescript:
         specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/messaging:
+    dependencies:
+      nodemailer:
+        specifier: ^6.9.14
+        version: 6.10.1
+    devDependencies:
+      '@types/nodemailer':
+        specifier: ^6.4.14
+        version: 6.4.23
+      typescript:
+        specifier: ^5.0.0
         version: 5.9.3
 
   packages/shared:
@@ -2047,6 +2063,9 @@ packages:
   '@types/node@22.19.18':
     resolution: {integrity: sha512-9v00a+dn2yWVsYDEunWC4g/TcRKVq3r8N5FuZp7u0SGrPvdN9c2yXI9bBuf5Fl0hNCb+QTIePTn5pJs2pwBOQQ==}
 
+  '@types/nodemailer@6.4.23':
+    resolution: {integrity: sha512-aFV3/NsYFLSx9mbb5gtirBSXJnAlrusoKNuPbxsASWc7vrKLmIrTQRpdcxNcSFL3VW2A2XpeLEavwb2qMi6nlQ==}
+
   '@types/qrcode@1.5.6':
     resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
 
@@ -2878,6 +2897,10 @@ packages:
       next: '>= 6.0.0'
       react: '>= 16.0.0'
       react-dom: '>= 16.0.0'
+
+  nodemailer@6.10.1:
+    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
+    engines: {node: '>=6.0.0'}
 
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
@@ -5151,6 +5174,10 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/nodemailer@6.4.23':
+    dependencies:
+      '@types/node': 22.19.18
+
   '@types/qrcode@1.5.6':
     dependencies:
       '@types/node': 22.19.18
@@ -5845,6 +5872,8 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
+
+  nodemailer@6.10.1: {}
 
   npm-run-path@5.3.0:
     dependencies:

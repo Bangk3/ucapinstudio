@@ -252,6 +252,12 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
             >
               Analitik
             </Link>
+            <Link
+              href={`/${tenantSlug}/dashboard/invitations/${invitation.id}/broadcast`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Kirim Pesan
+            </Link>
             <a
               href={`/${tenantSlug}/u/${invitation.slug}`}
               target="_blank"
