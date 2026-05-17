@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft, Camera, Check, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Camera, Check, CloudOff, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -10,12 +10,40 @@ interface Props {
   backHref?: string;
 }
 
+interface QueuedCheckin {
+  id: string;
+  guestSlug: string;
+  tenantSlug: string;
+  invitationId: string;
+  timestamp: number;
+}
+
 type ScanState =
   | { status: "idle" }
   | { status: "scanning" }
-  | { status: "success"; guestName: string; alreadyCheckedIn: boolean }
+  | { status: "success"; guestName: string; alreadyCheckedIn: boolean; queued?: boolean }
   | { status: "error"; message: string }
   | { status: "no_camera"; message: string };
+
+const QUEUE_KEY = "invyte_checkin_queue";
+
+function readQueue(): QueuedCheckin[] {
+  try {
+    return JSON.parse(localStorage.getItem(QUEUE_KEY) ?? "[]") as QueuedCheckin[];
+  } catch {
+    return [];
+  }
+}
+
+function writeQueue(q: QueuedCheckin[]): void {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+}
+
+function enqueue(entry: Omit<QueuedCheckin, "id">): void {
+  const q = readQueue();
+  q.push({ ...entry, id: `${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  writeQueue(q);
+}
 
 // Extract guestSlug from a URL like: /[tenant]/u/[invitationSlug]/[guestSlug]
 function extractGuestSlug(rawText: string): string | null {
@@ -41,6 +69,88 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
 
   const [state, setState] = useState<ScanState>({ status: "idle" });
   const [cameraStarted, setCameraStarted] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [queueCount, setQueueCount] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ ok: number; fail: number } | null>(null);
+
+  // Refresh queue count from localStorage
+  const refreshQueueCount = useCallback(() => {
+    setQueueCount(readQueue().length);
+  }, []);
+
+  // Drain the offline queue — try each entry against the API
+  const drainQueue = useCallback(async () => {
+    const q = readQueue();
+    if (q.length === 0) return;
+
+    setSyncing(true);
+    let ok = 0;
+    let fail = 0;
+    const remaining: QueuedCheckin[] = [];
+
+    for (const entry of q) {
+      try {
+        const res = await fetch(`/api/v1/invitations/${entry.invitationId}/checkin-by-slug`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            guestSlug: entry.guestSlug,
+            tenantSlug: entry.tenantSlug,
+          }),
+        });
+        if (res.ok) {
+          ok++;
+        } else {
+          fail++;
+          remaining.push(entry);
+        }
+      } catch {
+        fail++;
+        remaining.push(entry);
+      }
+    }
+
+    writeQueue(remaining);
+    setQueueCount(remaining.length);
+    setSyncing(false);
+    setSyncResult({ ok, fail });
+    // Clear sync result after 4s
+    setTimeout(() => setSyncResult(null), 4000);
+  }, []);
+
+  // Online/offline detection + auto-sync
+  useEffect(() => {
+    const onOnline = () => {
+      setIsOnline(true);
+      drainQueue();
+    };
+    const onOffline = () => setIsOnline(false);
+
+    setIsOnline(navigator.onLine);
+    refreshQueueCount();
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, [drainQueue, refreshQueueCount]);
+
+  // Listen for SW message to drain queue (Background Sync)
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const handler = (event: MessageEvent) => {
+      if ((event.data as { type?: string })?.type === "DRAIN_CHECKIN_QUEUE") {
+        drainQueue();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener("message", handler);
+    return () => navigator.serviceWorker.removeEventListener("message", handler);
+  }, [drainQueue]);
 
   const stopCamera = useCallback(() => {
     if (rafRef.current !== null) {
@@ -68,6 +178,36 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         return;
       }
 
+      // Offline path: queue locally
+      if (!navigator.onLine) {
+        enqueue({ guestSlug, tenantSlug, invitationId, timestamp: Date.now() });
+        refreshQueueCount();
+        setState({
+          status: "success",
+          guestName: guestSlug,
+          alreadyCheckedIn: false,
+          queued: true,
+        });
+
+        // Register background sync if supported (Chrome / Edge only)
+        if ("serviceWorker" in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.ready;
+            // `sync` is only available in browsers that support Background Sync API
+            const syncReg = reg as ServiceWorkerRegistration & {
+              sync?: { register(tag: string): Promise<void> };
+            };
+            await syncReg.sync?.register("invyte-checkin-sync");
+          } catch {
+            // Background Sync not critical
+          }
+        }
+
+        resetTimerRef.current = setTimeout(() => setState({ status: "scanning" }), 3000);
+        return;
+      }
+
+      // Online path
       setState({ status: "success", guestName: "...", alreadyCheckedIn: false });
 
       try {
@@ -93,13 +233,20 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
           setState({ status: "error", message: data.error ?? "Gagal check-in" });
         }
       } catch {
-        setState({ status: "error", message: "Koneksi gagal" });
+        // Network failed even though we thought we were online — queue it
+        enqueue({ guestSlug, tenantSlug, invitationId, timestamp: Date.now() });
+        refreshQueueCount();
+        setState({
+          status: "success",
+          guestName: guestSlug,
+          alreadyCheckedIn: false,
+          queued: true,
+        });
       }
 
-      // Auto-reset to scanning after 3s
       resetTimerRef.current = setTimeout(() => setState({ status: "scanning" }), 3000);
     },
-    [invitationId, tenantSlug, state.status],
+    [invitationId, tenantSlug, state.status, refreshQueueCount],
   );
 
   // QR scan loop using requestAnimationFrame
@@ -128,7 +275,6 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
 
     if (code?.data) {
       await handleQrData(code.data);
-      // Pause scanning while showing result (don't schedule next frame)
       return;
     }
 
@@ -178,6 +324,7 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
       {/* Hidden canvas for QR processing */}
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* ── Idle screen ──────────────────────────────────────────────────────── */}
       {!cameraStarted && state.status === "idle" && (
         <div className="flex flex-col items-center gap-6 px-6 text-center">
           <div
@@ -190,6 +337,12 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
           <p className="text-sm text-gray-300 max-w-xs">
             Arahkan kamera ke QR Code tamu untuk melakukan check-in.
           </p>
+          {!isOnline && (
+            <div className="flex items-center gap-2 rounded-xl bg-yellow-500/20 border border-yellow-500/30 px-4 py-2 text-xs text-yellow-300">
+              <CloudOff className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              Offline — check-in akan disimpan lokal
+            </div>
+          )}
           <button
             type="button"
             onClick={startCamera}
@@ -200,6 +353,7 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         </div>
       )}
 
+      {/* ── No camera ────────────────────────────────────────────────────────── */}
       {state.status === "no_camera" && (
         <div className="flex flex-col items-center gap-4 px-6 text-center">
           <p className="text-red-400 font-medium">{state.message}</p>
@@ -213,7 +367,7 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         </div>
       )}
 
-      {/* Camera feed */}
+      {/* ── Camera feed ──────────────────────────────────────────────────────── */}
       <video
         ref={videoRef}
         playsInline
@@ -222,14 +376,13 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         style={{ maxHeight: "100dvh" }}
       />
 
-      {/* Scanning reticle overlay */}
+      {/* ── Scanning reticle ─────────────────────────────────────────────────── */}
       {state.status === "scanning" && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             className="relative w-64 h-64 border-2 border-white/70 rounded-2xl"
             aria-label="Area pemindaian QR"
           >
-            {/* Corner accents */}
             <span className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl" />
             <span className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl" />
             <span className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl" />
@@ -241,26 +394,26 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         </div>
       )}
 
-      {/* Result overlay */}
+      {/* ── Result overlay ───────────────────────────────────────────────────── */}
       {isOverlayVisible && (
-        <div
-          className={`absolute inset-0 flex items-center justify-center ${
-            state.status === "success" ? "bg-black/80" : "bg-black/80"
-          }`}
-        >
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
           <div
             className={`rounded-2xl px-8 py-10 text-center w-72 ${
               state.status === "success"
-                ? state.alreadyCheckedIn
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
+                ? state.queued
+                  ? "bg-blue-600"
+                  : state.alreadyCheckedIn
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
                 : "bg-red-500"
             }`}
           >
             {state.status === "success" ? (
               <>
                 <div className="flex justify-center mb-3" aria-hidden="true">
-                  {state.alreadyCheckedIn ? (
+                  {state.queued ? (
+                    <CloudOff className="h-12 w-12" />
+                  ) : state.alreadyCheckedIn ? (
                     <AlertTriangle className="h-12 w-12" />
                   ) : (
                     <Check className="h-12 w-12" strokeWidth={3} />
@@ -268,7 +421,11 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
                 </div>
                 <p className="text-xl font-bold">{state.guestName}</p>
                 <p className="text-sm mt-1 opacity-90">
-                  {state.alreadyCheckedIn ? "Sudah check-in sebelumnya" : "Check-in berhasil!"}
+                  {state.queued
+                    ? "Disimpan — akan sync saat online"
+                    : state.alreadyCheckedIn
+                      ? "Sudah check-in sebelumnya"
+                      : "Check-in berhasil!"}
                 </p>
               </>
             ) : (
@@ -284,7 +441,7 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         </div>
       )}
 
-      {/* Back link (top-left) */}
+      {/* ── Top-left: back link ───────────────────────────────────────────────── */}
       {backHref && (
         <Link
           href={backHref}
@@ -296,16 +453,52 @@ export function CheckinScanner({ invitationId, tenantSlug, backHref }: Props) {
         </Link>
       )}
 
-      {/* Stop button */}
-      {cameraStarted && (
-        <button
-          type="button"
-          onClick={stopCamera}
-          className="absolute top-4 right-4 rounded-full bg-black/50 px-3 py-1.5 text-xs text-white backdrop-blur hover:bg-black/70 transition-colors"
-        >
-          Stop
-        </button>
-      )}
+      {/* ── Top-right: stop + status indicators ─────────────────────────────── */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        {/* Offline badge */}
+        {!isOnline && (
+          <span className="flex items-center gap-1 rounded-full bg-yellow-500/80 px-2.5 py-1 text-xs font-medium text-black backdrop-blur">
+            <CloudOff className="h-3 w-3" aria-hidden="true" />
+            Offline
+          </span>
+        )}
+
+        {/* Queue count */}
+        {queueCount > 0 && (
+          <button
+            type="button"
+            onClick={drainQueue}
+            disabled={syncing || !isOnline}
+            className="flex items-center gap-1 rounded-full bg-blue-500/80 px-2.5 py-1 text-xs font-medium text-white backdrop-blur disabled:opacity-60"
+            aria-label={`${queueCount} check-in tertunda, klik untuk sync`}
+          >
+            {syncing ? (
+              <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
+            ) : (
+              <RefreshCw className="h-3 w-3" aria-hidden="true" />
+            )}
+            {queueCount}
+          </button>
+        )}
+
+        {/* Sync result flash */}
+        {syncResult && (
+          <span className="rounded-full bg-green-500/80 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
+            ✓ {syncResult.ok} sync
+            {syncResult.fail > 0 && ` · ${syncResult.fail} gagal`}
+          </span>
+        )}
+
+        {cameraStarted && (
+          <button
+            type="button"
+            onClick={stopCamera}
+            className="rounded-full bg-black/50 px-3 py-1.5 text-xs text-white backdrop-blur hover:bg-black/70 transition-colors"
+          >
+            Stop
+          </button>
+        )}
+      </div>
     </div>
   );
 }

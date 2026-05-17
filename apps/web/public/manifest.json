@@ -1,0 +1,22 @@
+{
+  "name": "Invyte Check-in",
+  "short_name": "Check-in",
+  "description": "QR check-in scanner untuk tamu undangan Invyte",
+  "start_url": "/checkin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#0f172a",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "/icons/checkin.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities"],
+  "prefer_related_applications": false
+}
