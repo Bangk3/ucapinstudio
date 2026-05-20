@@ -23,6 +23,11 @@
 | M10 | QR check-in PWA | 2 weeks | — |
 | M11 | Multi-bahasa & regional | 2 weeks | — |
 | **🎉** | **v0.2.0 — DIFFERENTIATOR RELEASE** | **+12 weeks** | — |
+| MON-0 | Legal foundation (CLA, dual-license) | 1 week | — |
+| MON-1 | Validate cashflow (AI credit + Sponsors + WA bundle) | 3 months | — |
+| MON-2 | WO pre-sell + white-label pilot | 3 months | — |
+| MON-3 | Lane decision: B2B scale OR B2C SaaS | 6+ months | — |
+| **💰** | **MONETIZATION LIVE** | **+12 months** | — |
 
 ---
 
@@ -368,6 +373,156 @@ User can manage guest list, bulk import via CSV, generate personalized links, re
 
 ---
 
+## 💰 Monetization Roadmap
+
+> **Strategy:** open-source freemium → paid kuota → B2B white-label.
+> **Constraint:** AGPLv3 core, no in-house payment processing, no listing fees in Phase 1.
+> **Principle:** validate willingness-to-pay before building infra. Pre-sell > pre-build.
+
+### Skip List (Permanent / Phase 3+ Re-eval)
+
+- ❌ **Print-on-demand** — logistik trap, complaint vortex
+- ❌ **Gift registry affiliate** (Tokopedia/Shopee wishlist) — Indonesia amplop culture, conversion ~0%
+- ❌ **In-house payment processing** — non-goal per PRD, regulatory + fraud risk
+- ⏸️ **Vendor marketplace** — re-eval at month 12, needs network effect
+- ⏸️ **Premium template pack** — re-eval at month 12, needs designer pipeline
+- ⚠️ **Baileys bundling** — legal landmine, plugin-only with disclaimer
+
+---
+
+### MON-0 — Legal Foundation (Week 23)
+
+> Must complete BEFORE accepting any external contribution or paying customer.
+
+#### License & Contributor Agreement
+- [ ] Add `LICENSE` at repo root (AGPLv3 full text)
+- [ ] Add `LICENSE-templates` for `/packages/templates` (MIT)
+- [ ] Draft `CLA.md` (individual + corporate variants)
+- [ ] Setup CLA Assistant bot on GitHub PRs
+- [ ] Draft `COMMERCIAL-LICENSE.md` template (for white-label buyers)
+- [ ] Trademark check on "Invyte" name (DJKI Indonesia)
+
+#### Business Entity
+- [ ] Decide entity form (PT Perorangan / CV / sole prop)
+- [ ] NPWP setup
+- [ ] Open business bank account (BCA/Mandiri)
+
+---
+
+### MON-1 — Validate Cashflow (Months 1-3 post-MVP)
+
+> Goal: prove paying users exist. Target Rp 500k/bulan MRR by end of month 3.
+
+#### AI Credit Top-Up
+- [ ] Add `credit_balance` column to `tenants` table
+- [ ] Add `credit_transactions` table (debit/credit ledger)
+- [ ] Wire AI generation endpoint to debit credits (cost = Rp 5k/gen)
+- [ ] UI: balance widget in dashboard header
+- [ ] UI: top-up modal (Rp 25k / 100k / 500k packs)
+- [ ] Payment redirect to Midtrans/Xendit (NOT in-house — they handle PCI)
+- [ ] Webhook handler for payment success → credit grant
+- [ ] Receipt email via SMTP adapter
+
+#### GitHub Sponsors / OpenCollective
+- [ ] Setup GitHub Sponsors profile
+- [ ] Add `FUNDING.yml` to repo
+- [ ] Add sponsor tiers ($5 / $25 / $100 / $500 / month)
+- [ ] Add sponsor logo block to README + homepage footer
+
+#### WhatsApp Bundle Positioning
+- [ ] Reposition WA credit: NOT standalone, only as "Paket Event Premium"
+- [ ] Bundle SKU: Rp 199k/event = 1000 WA msg + 10 AI gen + custom subdomain
+- [ ] UI: package selector in dashboard
+- [ ] Wholesale negotiate Fonnte/Wablas/Cloud API rate (>15% margin)
+
+#### Metrics
+- [ ] Setup analytics: signups, paid conversions, MRR, churn
+- [ ] Weekly report cron → email to founder
+- [ ] Definition of success: ≥ 10 paying tenants by end of month 3
+
+---
+
+### MON-2 — WO Pre-Sell + White-Label Pilot (Months 4-6)
+
+> Goal: 2-3 WO paying customers, signed contracts. NOT mass market.
+
+#### Pre-Sell Phase (Month 4)
+- [ ] Build sales deck (10 slides: problem, demo, pricing, ROI)
+- [ ] Build demo environment with sample WO branding
+- [ ] List 20 target WO (Jakarta/Bandung/Surabaya tier)
+- [ ] Cold outreach via Instagram DM + LinkedIn
+- [ ] Pricing: Rp 2.5jt/tahun base + Rp 500k setup
+- [ ] **GATE: ≥ 1 signed LOI before building white-label features**
+
+#### White-Label Features (Month 5-6, only if Pre-Sell gate passes)
+- [ ] Custom subdomain per tenant (e.g. `weddingco.invyte.io`)
+- [ ] Hide "Powered by Invyte" footer (configurable)
+- [ ] Custom logo + favicon per tenant
+- [ ] Custom email sender domain (DKIM setup helper)
+- [ ] Branded email templates
+- [ ] Per-tenant terms-of-service + privacy policy hosting
+- [ ] Multi-event template lock (WO can lock 1 template to all clients)
+
+#### Onboarding & Support
+- [ ] White-label tenant onboarding checklist
+- [ ] Dedicated Slack/Discord channel per WO partner
+- [ ] SLA document (response time, uptime guarantee)
+- [ ] Quarterly business review template
+
+#### Metrics
+- [ ] Track: deals closed, ACV, churn, NPS per WO
+- [ ] Definition of success: ≥ 3 paying WO by end of month 6
+
+---
+
+### MON-3 — Lane Decision (Months 7-12)
+
+> At month 6 checkpoint, choose ONE lane based on data. Do NOT pursue both.
+
+#### Decision Matrix (evaluate at month 6)
+
+| Signal | Lane A (B2B) | Lane B (B2C) |
+|---|---|---|
+| MON-2 WO closing rate ≥ 30% | ✅ | ❌ |
+| MON-1 individual user MRR ≥ Rp 5jt | ❌ | ✅ |
+| Founder has sales/BD bandwidth | ✅ | ❌ |
+| Founder prefers product/UX work | ❌ | ✅ |
+
+#### Lane A — B2B Scale (if WO pilot succeeds)
+- [ ] Hire 1 part-time sales (commission-based)
+- [ ] Build WO admin dashboard (manage multi-tenant)
+- [ ] WO affiliate program (20% commission for referring new WO)
+- [ ] Vendor marketplace v1 (MUA/foto/katering) — referral fee model only
+- [ ] Verified Vendor Badge (Rp 1jt/year, manual QC)
+- [ ] Annual contract upgrades (Pro Rp 5jt, Enterprise Rp 15jt)
+- [ ] **Target: 20 WO × Rp 3jt avg = Rp 60jt ARR**
+
+#### Lane B — B2C Managed Cloud (if individual demand stronger)
+- [ ] Provision multi-tenant SaaS infra (k8s or single-node Docker)
+- [ ] Hosted at `invyte.id` with subdomain per tenant
+- [ ] Pricing tiers: Free (3 invitations) / Pro Rp 99k/event / Lifetime Rp 299k
+- [ ] Custom domain feature (Rp 50k setup + DNS proxy)
+- [ ] Photo hosting tier (500MB free, 5GB Rp 50k/event)
+- [ ] Auto-scaling for traffic spikes (wedding season peaks)
+- [ ] CS chat widget (Tawk.to or Crisp free tier)
+- [ ] **Target: 200 events/bulan × Rp 99k = Rp 19.8jt/bulan MRR**
+
+#### Universal (both lanes)
+- [ ] Quarterly financial review
+- [ ] Update PRD with monetization features as P1
+- [ ] Tax compliance (PPN 11% if revenue > Rp 4.8M/year)
+
+---
+
+### 💰 Monetization Release Gate
+- [ ] MON-0: legal docs published, CLA enforced
+- [ ] MON-1: ≥ Rp 500k MRR sustained for 2 months
+- [ ] MON-2: ≥ 3 paying WO contracts (Lane A) OR ≥ 50 paying individuals (Lane B precursor)
+- [ ] MON-3 lane selected based on data, not gut
+- [ ] **Tag v1.0.0 (post-monetization)**
+
+---
+
 ## 📝 Review Section
 
 ### Key Decisions Made
@@ -384,3 +539,12 @@ User can manage guest list, bulk import via CSV, generate personalized links, re
 3. Rate limiting — not yet implemented on any public endpoints (RSVP, wishes); critical before M3 launch
 4. RLS — DB-level row security is placeholder only; must implement before v0.1.0
 5. Google OAuth — credentials stub done, needs real client ID/secret in env
+
+### Monetization Risks
+6. **CLA must be in place BEFORE first external PR merged** — retroactive CLA is legal nightmare
+7. **Dual-license positioning** — AGPLv3 + Commercial license requires single copyright holder (no co-owned IP)
+8. **WO pre-sell gate (MON-2)** — do NOT build white-label features until ≥1 signed LOI; sunk-cost trap
+9. **Payment processor selection** — Midtrans vs Xendit, KYC takes 2-4 weeks; start early in MON-1
+10. **WA wholesale rate** — Fonnte retail margin is 10-15% only; must negotiate wholesale tier or skip standalone WA pricing
+11. **Lane decision discipline** — pursuing both B2B + B2C at month 7 = founder burnout, pick ONE
+12. **Tax compliance trigger** — PPN at Rp 4.8M/year revenue; setup NPWP business before MON-1 launch

@@ -1,7 +1,7 @@
 import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
-import { guests } from "./guests.js";
-import { invitations } from "./invitations.js";
-import { tenants } from "./tenants.js";
+import { guests } from "./guests";
+import { invitations } from "./invitations";
+import { tenants } from "./tenants";
 
 export const checkins = pgTable(
   "checkins",

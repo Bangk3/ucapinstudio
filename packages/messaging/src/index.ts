@@ -1,18 +1,16 @@
-export * from "./types.js";
-export { WhatsAppCloudAdapter } from "./adapters/whatsapp-cloud.js";
-export { FonnteAdapter } from "./adapters/fonnte.js";
-export { SmtpAdapter } from "./adapters/smtp.js";
-
-import { FonnteAdapter } from "./adapters/fonnte.js";
-import { SmtpAdapter } from "./adapters/smtp.js";
-import { WhatsAppCloudAdapter } from "./adapters/whatsapp-cloud.js";
+import { FonnteAdapter } from "./adapters/fonnte";
+import { SmtpAdapter } from "./adapters/smtp";
+import { WhatsAppCloudAdapter } from "./adapters/whatsapp-cloud";
 import type {
   FonnteConfig,
   MessagingProvider,
   MessagingProviderType,
   SmtpConfig,
   WhatsAppCloudConfig,
-} from "./types.js";
+} from "./types";
+
+export * from "./types";
+export { FonnteAdapter, SmtpAdapter, WhatsAppCloudAdapter };
 
 export function createProvider(type: MessagingProviderType, config: unknown): MessagingProvider {
   switch (type) {
@@ -21,7 +19,6 @@ export function createProvider(type: MessagingProviderType, config: unknown): Me
     case "fonnte":
       return new FonnteAdapter(config as FonnteConfig);
     case "wablas":
-      // Wablas is not yet implemented; fall through with a stub
       throw new Error("Wablas adapter not yet implemented");
     case "smtp":
       return new SmtpAdapter(config as SmtpConfig);

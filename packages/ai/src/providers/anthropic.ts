@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiProviderConfig } from "../types.js";
+import type { AiProviderConfig } from "../types";
 
 export class AnthropicProvider {
   private client: Anthropic;
@@ -34,15 +34,26 @@ export class AnthropicProvider {
   }
 }
 
-// Cost per token (Haiku pricing as of 2024)
-// Input: $0.80/M tokens, Output: $4.00/M tokens
+/**
+ * Estimate cost in USD for a generation given token counts and model name.
+ * Covers Claude (Haiku/Sonnet) and Gemini (Flash/Pro) pricing tiers.
+ */
 export function estimateCostUsd(inputTokens: number, outputTokens: number, model: string): number {
-  if (model.includes("haiku")) {
-    return (inputTokens / 1_000_000) * 0.8 + (outputTokens / 1_000_000) * 4.0;
-  }
-  if (model.includes("sonnet")) {
-    return (inputTokens / 1_000_000) * 3.0 + (outputTokens / 1_000_000) * 15.0;
-  }
-  // Fallback
-  return (inputTokens / 1_000_000) * 0.8 + (outputTokens / 1_000_000) * 4.0;
+  const i = inputTokens / 1_000_000;
+  const o = outputTokens / 1_000_000;
+  // Claude
+  if (model.includes("haiku")) return i * 0.8 + o * 4.0;
+  if (model.includes("sonnet")) return i * 3.0 + o * 15.0;
+  if (model.includes("opus")) return i * 15.0 + o * 75.0;
+  // Gemini
+  if (model.includes("gemini-3-flash")) return i * 0.1 + o * 0.4;
+  if (model.includes("gemini-2.0-flash")) return i * 0.1 + o * 0.4;
+  if (model.includes("gemini-1.5-flash")) return i * 0.075 + o * 0.3;
+  if (model.includes("gemini-1.5-pro")) return i * 3.5 + o * 10.5;
+  if (model.includes("gemini-2.5-pro")) return i * 1.25 + o * 10.0;
+  // NVIDIA NIM (free-tier models — identified by NIM base URL or known free models)
+  if (model.includes("glm")) return 0;
+  if (model === "meta/llama-3.1-8b-instruct") return 0;
+  // Fallback (treat as Haiku)
+  return i * 0.8 + o * 4.0;
 }

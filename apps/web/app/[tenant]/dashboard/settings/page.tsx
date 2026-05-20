@@ -1,4 +1,5 @@
 import { MembersSection } from "@/components/dashboard/members-section";
+import { MessagingCredentialsForm } from "@/components/dashboard/messaging-credentials-form";
 import { TenantSettingsForm } from "@/components/dashboard/tenant-settings-form";
 import { getServerSession } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant";
@@ -45,6 +46,8 @@ export default async function SettingsPage({ params }: Props) {
         tenantType={tenantRecord.type}
         plan={tenantRecord.plan}
       />
+
+      <MessagingCredentialsForm tenantSlug={tenant} />
 
       {canSeeMembers && (
         <Suspense

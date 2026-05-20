@@ -47,6 +47,16 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", ".next", "dist", ".turbo", "*.min.js", "pnpm-lock.yaml"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      "dist",
+      ".turbo",
+      "*.min.js",
+      "pnpm-lock.yaml",
+      ".claude/worktrees",
+      "packages/db/migrations",
+      "packages/db/migrations_archive"
+    ]
   }
 }

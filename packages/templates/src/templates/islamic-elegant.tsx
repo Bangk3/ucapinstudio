@@ -8,10 +8,12 @@ import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
+import { InvyteCredit } from "../components/invyte-credit";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import { PoweredByDevLab } from "../components/powered-by";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -593,6 +595,9 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
           <p className="mt-4 text-gray-500 text-sm">وَاللَّهُ وَلِيُّ التَّوْفِيق</p>
         </section>
       </AnimateIn>
+
+      <InvyteCredit dark />
+      <PoweredByDevLab />
     </div>
   );
 }

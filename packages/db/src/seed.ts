@@ -59,9 +59,9 @@ async function seed() {
     .onConflictDoNothing();
 
   console.log("✅ Seed complete");
-  console.log(`   Admin: admin@undangan.local`);
-  console.log(`   Personal tenant slug: see tenants table`);
-  console.log(`   Org tenant: demo-wo`);
+  console.log("   Admin: admin@undangan.local");
+  console.log("   Personal tenant slug: see tenants table");
+  console.log("   Org tenant: demo-wo");
 
   process.exit(0);
 }

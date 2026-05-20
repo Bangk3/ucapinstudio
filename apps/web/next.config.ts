@@ -34,6 +34,9 @@ const config: NextConfig = {
       fullUrl: true,
     },
   },
+  devIndicators: {
+    position: "bottom-right", // Anda bisa memilih 'bottom-left', 'bottom-right', 'top-left', atau 'top-right'
+  },
 };
 
 export default withNextIntl(config);

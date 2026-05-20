@@ -16,7 +16,7 @@
  */
 import { getServerSession } from "@/lib/session";
 import { uuidv7 } from "@/lib/uuid";
-import { AnthropicProvider, generateVariants } from "@invyte/ai";
+import { AnthropicProvider, GeminiProvider, NvidiaNimProvider, generateVariants } from "@invyte/ai";
 import { aiGenerations, db, invitations, memberships, tenants } from "@invyte/db";
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
@@ -28,6 +28,7 @@ const generateSchema = z.object({
   brideName: z.string().min(1),
   style: z.string().optional(),
   mood: z.string().optional(),
+  aiProvider: z.enum(["claude", "gemini", "nvidia-nim"]).optional().default("claude"),
 });
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -35,11 +36,6 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getServerSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI generation not configured" }, { status: 503 });
-  }
 
   const { id: invitationId } = await ctx.params;
 
@@ -49,7 +45,31 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
   }
 
-  const { tenantSlug, groomName, brideName, style, mood } = parsed.data;
+  const { tenantSlug, groomName, brideName, style, mood, aiProvider } = parsed.data;
+
+  // Validate API key for selected provider
+  if (aiProvider === "gemini") {
+    if (!process.env.GOOGLE_API_KEY) {
+      return NextResponse.json(
+        { error: "Gemini AI belum dikonfigurasi (GOOGLE_API_KEY)" },
+        { status: 503 },
+      );
+    }
+  } else if (aiProvider === "nvidia-nim") {
+    if (!process.env.NVIDIA_NIM_API_KEY) {
+      return NextResponse.json(
+        { error: "NVIDIA NIM belum dikonfigurasi (NVIDIA_NIM_API_KEY)" },
+        { status: 503 },
+      );
+    }
+  } else {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: "Claude AI belum dikonfigurasi (ANTHROPIC_API_KEY)" },
+        { status: 503 },
+      );
+    }
+  }
 
   // Verify user has access to this invitation via tenant membership
   const [row] = await db
@@ -111,7 +131,16 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       .set({ status: "running", updatedAt: new Date() })
       .where(eq(aiGenerations.id, generationId));
 
-    const provider = new AnthropicProvider({ apiKey });
+    const provider =
+      aiProvider === "gemini"
+        ? new GeminiProvider({ apiKey: process.env.GOOGLE_API_KEY! })
+        : aiProvider === "nvidia-nim"
+          ? new NvidiaNimProvider({
+              apiKey: process.env.NVIDIA_NIM_API_KEY!,
+              model: process.env.NVIDIA_NIM_MODEL ?? "z-ai/glm4.7",
+            })
+          : new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY! });
+
     const result = await generateVariants(provider, {
       groomName,
       brideName,

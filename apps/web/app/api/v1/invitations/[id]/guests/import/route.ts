@@ -1,7 +1,8 @@
+import { resolveGuestPhone } from "@/lib/guest-phone";
 import { getServerSession } from "@/lib/session";
 import { uuidv7 } from "@/lib/uuid";
 import { db, guests, invitations, memberships, tenants } from "@invyte/db";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const now = new Date();
   const toInsert: (typeof guests.$inferInsert)[] = [];
   const errors: { row: number; reason: string }[] = [];
+  const seenHashes = new Set<string>(); // dedup within batch
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i]!;
@@ -127,11 +129,24 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       continue;
     }
 
-    const phone = row[1]?.trim() || undefined;
+    const rawPhone = row[1]?.trim() || undefined;
     const email = row[2]?.trim() || undefined;
     const rawCategory = row[3]?.trim().toLowerCase() || "other";
     const category = VALID_CATEGORIES.has(rawCategory) ? rawCategory : "other";
     const notes = row[4]?.trim() || undefined;
+
+    // Normalize + hash phone for dedup
+    const { normalized: phone, hash: phoneHash } = await resolveGuestPhone(
+      rawPhone ?? null,
+      resolved.tenantId,
+    );
+
+    // In-batch dedup check
+    if (phoneHash && seenHashes.has(phoneHash)) {
+      errors.push({ row: rowNum, reason: `duplicate phone in file (${rawPhone})` });
+      continue;
+    }
+    if (phoneHash) seenHashes.add(phoneHash);
 
     toInsert.push({
       id: uuidv7(),
@@ -148,12 +163,41 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         | "vip"
         | "other",
       plusOneAllowed: false,
-      ...(phone !== undefined ? { phone } : {}),
+      ...(phone !== null ? { phone } : {}),
+      ...(phoneHash !== null ? { phoneHash } : {}),
       ...(email !== undefined ? { email } : {}),
       ...(notes !== undefined ? { notes } : {}),
       createdAt: now,
       updatedAt: now,
     });
+  }
+
+  // Pre-flight DB dedup: filter out rows whose phoneHash already exists in this invitation
+  const hashList = toInsert
+    .map((r) => r.phoneHash)
+    .filter((h): h is string => typeof h === "string");
+  if (hashList.length > 0) {
+    const existing = await db
+      .select({ phoneHash: guests.phoneHash, name: guests.name })
+      .from(guests)
+      .where(and(eq(guests.invitationId, id), inArray(guests.phoneHash, hashList)));
+    const existingHashes = new Map(existing.map((e) => [e.phoneHash, e.name]));
+    if (existingHashes.size > 0) {
+      // Reject conflicting rows, keep the rest
+      const filtered: typeof toInsert = [];
+      for (const r of toInsert) {
+        if (r.phoneHash && existingHashes.has(r.phoneHash)) {
+          errors.push({
+            row: 0,
+            reason: `phone already used by existing guest "${existingHashes.get(r.phoneHash)}" (${r.name})`,
+          });
+          continue;
+        }
+        filtered.push(r);
+      }
+      toInsert.length = 0;
+      toInsert.push(...filtered);
+    }
   }
 
   let imported = 0;

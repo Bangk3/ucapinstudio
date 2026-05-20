@@ -21,6 +21,14 @@ export function PublicInvitation({ invitation, tenantSlug, guestName, guestId }:
     );
   }
 
+  const rawContent = invitation.content as InvitationContent;
+  const safeContent: InvitationContent = {
+    ...rawContent,
+    hosts: rawContent?.hosts ?? {},
+    events: rawContent?.events ?? [],
+    galleryUrls: rawContent?.galleryUrls ?? [],
+  };
+
   return (
     <Template
       data={{
@@ -28,7 +36,7 @@ export function PublicInvitation({ invitation, tenantSlug, guestName, guestId }:
         slug: invitation.slug,
         tenantSlug,
         templateId: invitation.templateId ?? "minimalist-modern",
-        content: invitation.content as InvitationContent,
+        content: safeContent,
         theme: invitation.theme as ThemeConfig,
         ...(guestName !== undefined ? { guestName } : {}),
         ...(guestId !== undefined ? { guestId } : {}),

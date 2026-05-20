@@ -5,7 +5,7 @@ import type {
   SendMessageParams,
   SendResult,
   SmtpConfig,
-} from "../types.js";
+} from "../types";
 
 export class SmtpAdapter implements MessagingProvider {
   readonly name: MessagingProviderType = "smtp";

@@ -8,6 +8,7 @@ export { IslamicElegant } from "./templates/islamic-elegant";
 export { TropicalBali } from "./templates/tropical-bali";
 export { RoyalJava } from "./templates/royal-java";
 export { SereneGarden } from "./templates/serene-garden";
+export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
   TemplateProps,
@@ -16,6 +17,13 @@ export type {
   ThemeConfig,
   HostInfo,
   EventInfo,
+  ComposerRecipe,
+  ComposerSection,
+  HeroVariant,
+  GalleryVariant,
+  StoryVariant,
+  AnimationPreset,
+  DividerStyle,
 } from "./types";
 
 export interface TemplateMeta {
@@ -77,11 +85,20 @@ export const TEMPLATES: TemplateMeta[] = [
     accentColor: "#c9a87a",
     tags: ["islami", "romantis", "floral", "elegan"],
   },
+  {
+    id: "ai-composer",
+    name: "AI Composer",
+    description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
+    primaryColor: "#DB2777",
+    accentColor: "#A16207",
+    tags: ["ai", "dinamis", "kustom"],
+  },
 ];
 
 export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
+import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynamic";
 import { FloralClassic } from "./templates/floral-classic";
 import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
@@ -97,6 +114,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "tropical-bali": TropicalBali,
   "royal-java": RoyalJava,
   "serene-garden": SereneGarden,
+  "ai-composer": _ComposerDynamic,
 };
 
 export function getTemplate(id: string): ComponentType<TemplateProps> | undefined {

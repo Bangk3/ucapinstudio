@@ -21,9 +21,9 @@ const RESERVED_SLUGS = new Set([
 const PUBLIC_PATHS = ["/", "/auth", "/api/auth", "/_next", "/favicon.ico", "/robots.txt"];
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p),
-  );
+  // Strict prefix match: must be exact OR followed by "/" — prevents
+  // path-confusion bypass (e.g. "/authfoo" would otherwise match "/auth")
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 function isTenantPath(pathname: string) {

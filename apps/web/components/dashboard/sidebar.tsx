@@ -19,6 +19,8 @@ const NAV_ITEMS = [
 
 interface DashboardSidebarProps {
   tenantSlug: string;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 function toSlug(value: string): string {
@@ -188,15 +190,29 @@ function CreateWorkspaceDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function DashboardSidebar({ tenantSlug }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  tenantSlug,
+  mobileOpen = false,
+  onMobileClose,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const [showDialog, setShowDialog] = useState(false);
 
-  return (
-    <>
-      <aside className="w-56 shrink-0 border-r bg-card flex flex-col">
+  function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
+    return (
+      <>
         <div className="flex h-14 items-center border-b px-4">
           <span className="font-serif text-lg font-bold tracking-tight">Invyte</span>
+          {onNavClick && (
+            <button
+              type="button"
+              onClick={onNavClick}
+              className="ml-auto rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors md:hidden"
+              aria-label="Tutup menu"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          )}
         </div>
 
         <nav className="flex-1 space-y-1 p-3">
@@ -209,7 +225,8 @@ export function DashboardSidebar({ tenantSlug }: DashboardSidebarProps) {
               <Link
                 key={item.href}
                 href={href}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                {...(onNavClick ? { onClick: onNavClick } : {})}
+                className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
                     ? "bg-brand-50 text-brand-700"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -226,7 +243,7 @@ export function DashboardSidebar({ tenantSlug }: DashboardSidebarProps) {
           <button
             type="button"
             onClick={() => setShowDialog(true)}
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             aria-label="Buat Workspace Baru"
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -237,7 +254,37 @@ export function DashboardSidebar({ tenantSlug }: DashboardSidebarProps) {
             <LanguageSwitcher />
           </div>
         </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop sidebar — hidden on mobile */}
+      <aside className="hidden md:flex w-56 shrink-0 border-r bg-card flex-col">
+        <SidebarContent />
       </aside>
+
+      {/* Mobile overlay drawer */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={onMobileClose}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") onMobileClose?.();
+            }}
+            aria-hidden="true"
+          />
+          {/* Drawer */}
+          <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-card md:hidden">
+            <SidebarContent
+              {...(onMobileClose !== undefined ? { onNavClick: onMobileClose } : {})}
+            />
+          </aside>
+        </>
+      )}
 
       {showDialog && <CreateWorkspaceDialog onClose={() => setShowDialog(false)} />}
     </>

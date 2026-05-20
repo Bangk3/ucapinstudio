@@ -29,6 +29,13 @@ export function InvitationPreview({
     );
   }
 
+  const safeContent: InvitationContent = {
+    ...content,
+    hosts: content.hosts ?? {},
+    events: content.events ?? [],
+    galleryUrls: content.galleryUrls ?? [],
+  };
+
   return (
     <Template
       data={{
@@ -36,7 +43,7 @@ export function InvitationPreview({
         slug,
         tenantSlug,
         templateId,
-        content,
+        content: safeContent,
         theme,
         ...(guestName !== undefined ? { guestName } : {}),
         rsvpEnabled: true,

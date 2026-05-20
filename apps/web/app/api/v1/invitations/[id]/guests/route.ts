@@ -1,3 +1,4 @@
+import { resolveGuestPhone } from "@/lib/guest-phone";
 import { countGuests, listGuests } from "@/lib/guests";
 import { getServerSession } from "@/lib/session";
 import { uuidv7 } from "@/lib/uuid";
@@ -95,6 +96,31 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const resolved = await resolveTenantAndInvitation(id, session.user.id, tenantSlug);
   if (!resolved) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  // Normalize + hash phone for dedup (NULL if no phone given)
+  const { normalized: normalizedPhone, hash: phoneHash } = await resolveGuestPhone(
+    fields.phone ?? null,
+    resolved.tenantId,
+  );
+
+  // Dedup check: same phone hash already in this invitation = duplicate guest
+  if (phoneHash) {
+    const [existing] = await db
+      .select({ id: guests.id, name: guests.name })
+      .from(guests)
+      .where(and(eq(guests.invitationId, id), eq(guests.phoneHash, phoneHash)))
+      .limit(1);
+    if (existing) {
+      return NextResponse.json(
+        {
+          error: "duplicate_phone",
+          message: `Tamu dengan nomor ini sudah terdaftar (${existing.name})`,
+          existingGuestId: existing.id,
+        },
+        { status: 409 },
+      );
+    }
+  }
+
   const guestId = uuidv7();
   const slug = nanoid(8);
   const now = new Date();
@@ -109,7 +135,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       name: fields.name,
       category: fields.category,
       plusOneAllowed: fields.plusOneAllowed,
-      ...(fields.phone !== undefined ? { phone: fields.phone } : {}),
+      ...(normalizedPhone !== null ? { phone: normalizedPhone } : {}),
+      ...(phoneHash !== null ? { phoneHash } : {}),
       ...(fields.email !== undefined ? { email: fields.email } : {}),
       ...(fields.notes !== undefined ? { notes: fields.notes } : {}),
       createdAt: now,

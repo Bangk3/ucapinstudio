@@ -24,6 +24,36 @@ export interface EventInfo {
   dressCode?: string;
 }
 
+export type HeroVariant = 1 | 2 | 3; // 1=centered, 2=split, 3=botanical
+export type GalleryVariant = 1 | 2 | 3; // 1=masonry, 2=carousel, 3=polaroid
+export type StoryVariant = 1 | 2; // 1=prose, 2=timeline
+export type AnimationPreset = "soft-fade" | "slide-up" | "spring" | "minimal" | "dramatic";
+export type DividerStyle = "petal" | "geometric" | "wave" | "none";
+
+export interface ComposerSection {
+  type:
+    | "hero"
+    | "couple"
+    | "countdown"
+    | "events"
+    | "story"
+    | "gallery"
+    | "amplop"
+    | "rsvp"
+    | "wishes";
+  enabled: boolean;
+}
+
+export interface ComposerRecipe {
+  version: 1;
+  heroVariant: HeroVariant;
+  galleryVariant: GalleryVariant;
+  storyVariant: StoryVariant;
+  animationPreset: AnimationPreset;
+  dividerStyle: DividerStyle;
+  sections: ComposerSection[];
+}
+
 export interface InvitationContent {
   hosts: HostInfo;
   events: EventInfo[];
@@ -40,6 +70,7 @@ export interface InvitationContent {
     description?: string;
     emoji?: string;
   }>;
+  composerRecipe?: ComposerRecipe;
   amplop?: {
     /** URL to QRIS image (uploaded to storage) */
     qrisUrl?: string;

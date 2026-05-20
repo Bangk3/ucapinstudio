@@ -76,10 +76,32 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
   }
 
+  // Deep-merge content, theme, and settings with existing values so partial
+  // updates (e.g. AI composer only sending composerRecipe, or settings only
+  // sending guestOnly) don't wipe other fields.
+  const {
+    content: contentPatch,
+    theme: themePatch,
+    settings: settingsPatch,
+    ...otherUpdates
+  } = updates;
+  const mergedContent = contentPatch
+    ? { ...((existing.content as Record<string, unknown>) ?? {}), ...contentPatch }
+    : undefined;
+  const mergedTheme = themePatch
+    ? { ...((existing.theme as Record<string, unknown>) ?? {}), ...themePatch }
+    : undefined;
+  const mergedSettings = settingsPatch
+    ? { ...((existing.settings as Record<string, unknown>) ?? {}), ...settingsPatch }
+    : undefined;
+
   const [updated] = await db
     .update(invitations)
     .set({
-      ...updates,
+      ...otherUpdates,
+      ...(mergedContent !== undefined ? { content: mergedContent } : {}),
+      ...(mergedTheme !== undefined ? { theme: mergedTheme } : {}),
+      ...(mergedSettings !== undefined ? { settings: mergedSettings } : {}),
       ...(slug ? { slug } : {}),
       ...(expiresAt !== undefined ? { expiresAt: expiresAt ? new Date(expiresAt) : null } : {}),
       updatedAt: new Date(),

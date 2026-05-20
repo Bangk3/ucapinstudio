@@ -1,7 +1,8 @@
+import { resolveGuestPhone } from "@/lib/guest-phone";
 import { getGuest } from "@/lib/guests";
 import { getServerSession } from "@/lib/session";
 import { db, guests, invitations, memberships, tenants } from "@invyte/db";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -71,11 +72,35 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   const updateFields: Record<string, unknown> = { updatedAt: new Date() };
   if (fields.name !== undefined) updateFields.name = fields.name;
-  if (fields.phone !== undefined) updateFields.phone = fields.phone;
   if (fields.email !== undefined) updateFields.email = fields.email;
   if (fields.category !== undefined) updateFields.category = fields.category;
   if (fields.plusOneAllowed !== undefined) updateFields.plusOneAllowed = fields.plusOneAllowed;
   if (fields.notes !== undefined) updateFields.notes = fields.notes;
+
+  // Phone update: re-normalize, re-hash, dedup-check against OTHER guests
+  if (fields.phone !== undefined) {
+    const { normalized, hash } = await resolveGuestPhone(fields.phone, resolved.tenantId);
+    updateFields.phone = normalized;
+    updateFields.phoneHash = hash;
+    // Dedup: ensure no other guest in same invitation has this phone hash
+    if (hash) {
+      const [other] = await db
+        .select({ id: guests.id, name: guests.name })
+        .from(guests)
+        .where(and(eq(guests.invitationId, id), eq(guests.phoneHash, hash), ne(guests.id, guestId)))
+        .limit(1);
+      if (other) {
+        return NextResponse.json(
+          {
+            error: "duplicate_phone",
+            message: `Nomor ini sudah dipakai tamu lain (${other.name})`,
+            existingGuestId: other.id,
+          },
+          { status: 409 },
+        );
+      }
+    }
+  }
 
   const [updated] = await db
     .update(guests)

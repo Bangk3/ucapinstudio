@@ -15,6 +15,11 @@ export function EditorSettings({ invitation, tenantSlug }: Props) {
   const [rsvpEnabled, setRsvpEnabled] = useState(invitation.rsvpEnabled);
   const [wishesEnabled, setWishesEnabled] = useState(invitation.wishesEnabled);
   const [wishesModerated, setWishesModerated] = useState(invitation.wishesModerated);
+  const initialGuestOnly =
+    typeof (invitation.settings as { guestOnly?: unknown } | null)?.guestOnly === "boolean"
+      ? (invitation.settings as { guestOnly: boolean }).guestOnly
+      : false;
+  const [guestOnly, setGuestOnly] = useState<boolean>(initialGuestOnly);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [deleting, setDeleting] = useState(false);
@@ -27,7 +32,13 @@ export function EditorSettings({ invitation, tenantSlug }: Props) {
       const res = await fetch(`/api/v1/invitations/${invitation.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rsvpEnabled, wishesEnabled, wishesModerated, tenantSlug }),
+        body: JSON.stringify({
+          rsvpEnabled,
+          wishesEnabled,
+          wishesModerated,
+          settings: { guestOnly },
+          tenantSlug,
+        }),
       });
       setSaveStatus(res.ok ? "success" : "error");
       setTimeout(() => setSaveStatus("idle"), 3000);
@@ -98,6 +109,13 @@ export function EditorSettings({ invitation, tenantSlug }: Props) {
         {wishesEnabled && (
           <Toggle label="Moderasi ucapan" checked={wishesModerated} onChange={setWishesModerated} />
         )}
+        <div className="pt-2 border-t">
+          <Toggle label="Hanya tamu terdaftar" checked={guestOnly} onChange={setGuestOnly} />
+          <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+            Aktifkan untuk memblokir akses dari link publik. Tamu hanya bisa membuka via link
+            personal mereka (<span className="font-mono">/u/slug/tamu</span>).
+          </p>
+        </div>
 
         {/* Issue #3: save feedback */}
         {saveStatus === "success" && (

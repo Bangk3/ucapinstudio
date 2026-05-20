@@ -122,6 +122,13 @@ function VariantCard({
   );
 }
 
+type AiProvider = "claude" | "gemini";
+
+const PROVIDER_OPTIONS: { value: AiProvider; label: string; sublabel: string; color: string }[] = [
+  { value: "claude", label: "Claude", sublabel: "Anthropic · Haiku 4.5", color: "#d97706" },
+  { value: "gemini", label: "Gemini", sublabel: "Google · 3 Flash Preview", color: "#2563eb" },
+];
+
 export function AiGenerationWizard({
   invitationId,
   tenantSlug,
@@ -134,6 +141,7 @@ export function AiGenerationWizard({
   const [mood, setMood] = useState<string>("elegant");
   const [groom, setGroom] = useState(initialGroom);
   const [bride, setBride] = useState(initialBride);
+  const [aiProvider, setAiProvider] = useState<AiProvider>("claude");
   const [variants, setVariants] = useState<GenerationVariant[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +161,7 @@ export function AiGenerationWizard({
           brideName: bride,
           style,
           mood,
+          aiProvider,
         }),
       });
 
@@ -230,6 +239,33 @@ export function AiGenerationWizard({
           </div>
         </div>
 
+        {/* AI Provider */}
+        <div>
+          <span className="block text-xs font-medium text-muted-foreground mb-1.5">Model AI</span>
+          <div className="grid grid-cols-2 gap-2">
+            {PROVIDER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setAiProvider(opt.value)}
+                className={`flex flex-col items-center gap-0.5 rounded-xl border-2 px-3 py-2.5 text-xs font-medium transition-all ${
+                  aiProvider === opt.value
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: aiProvider === opt.value ? opt.color : undefined }}
+                >
+                  {opt.label}
+                </span>
+                <span className="text-[10px] opacity-70">{opt.sublabel}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Style */}
         <div>
           <span className="block text-xs font-medium text-muted-foreground mb-1.5">
@@ -287,7 +323,9 @@ export function AiGenerationWizard({
         </button>
 
         <p className="text-[10px] text-muted-foreground text-center">
-          Menggunakan Claude AI · Estimasi 5–15 detik
+          {aiProvider === "gemini"
+            ? "Menggunakan Gemini 3 Flash Preview · Estimasi 3–10 detik"
+            : "Menggunakan Claude Haiku · Estimasi 5–15 detik"}
         </p>
       </div>
     );
@@ -305,7 +343,9 @@ export function AiGenerationWizard({
           <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-primary" aria-hidden="true" />
         </div>
         <div className="text-center">
-          <p className="text-sm font-medium">AI sedang merancang...</p>
+          <p className="text-sm font-medium">
+            {aiProvider === "gemini" ? "Gemini" : "Claude"} sedang merancang...
+          </p>
           <p className="text-xs text-muted-foreground mt-1">
             Membuat 3 variasi desain untuk {groom} & {bride}
           </p>

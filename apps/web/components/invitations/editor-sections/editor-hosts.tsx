@@ -113,7 +113,7 @@ function PhotoField({
 }
 
 export function EditorHosts({ content, onChange, tenantId }: Props) {
-  const { hosts } = content;
+  const hosts = content.hosts ?? {};
   const update = (patch: Partial<typeof hosts>) => onChange({ hosts: { ...hosts, ...patch } });
 
   const [groomLoading, setGroomLoading] = useState(false);

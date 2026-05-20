@@ -1,8 +1,6 @@
-import { DashboardHeader } from "@/components/dashboard/header";
-import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { DashboardShell } from "@/components/dashboard/shell";
 import { getServerSession } from "@/lib/session";
-import { getTenantBySlug } from "@/lib/tenant";
-import { assertTenantMember } from "@/lib/tenant";
+import { assertTenantMember, getTenantBySlug } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
 interface Props {
@@ -25,12 +23,8 @@ export default async function DashboardLayout({ children, params }: Props) {
   await assertTenantMember(session.user.id, tenantRecord.id);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <DashboardSidebar tenantSlug={tenant} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <DashboardHeader user={session.user} tenantSlug={tenant} tenantName={tenantRecord.name} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell user={session.user} tenantSlug={tenant} tenantName={tenantRecord.name}>
+      {children}
+    </DashboardShell>
   );
 }

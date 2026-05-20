@@ -9,8 +9,8 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { invitations } from "./invitations.js";
-import { tenants } from "./tenants.js";
+import { invitations } from "./invitations";
+import { tenants } from "./tenants";
 
 export const aiGenerationStatusEnum = pgEnum("ai_generation_status", [
   "pending",

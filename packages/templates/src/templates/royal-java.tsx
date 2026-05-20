@@ -8,10 +8,12 @@ import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
+import { InvyteCredit } from "../components/invyte-credit";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import { PoweredByDevLab } from "../components/powered-by";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -601,6 +603,9 @@ export function RoyalJava({ data, preview }: TemplateProps) {
         </defs>
         <rect width="100%" height="16" fill="url(#batikBottom)" />
       </svg>
+
+      <InvyteCredit dark />
+      <PoweredByDevLab />
     </div>
   );
 }

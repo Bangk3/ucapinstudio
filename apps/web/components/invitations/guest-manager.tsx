@@ -76,6 +76,43 @@ export function GuestManager({
     notes: "",
   });
 
+  /**
+   * Build display-name map: when same name appears 2+ times in the guest list,
+   * append a disambiguator suffix.
+   *   - Has phone → "Budi (•••• 7890)"
+   *   - No phone → "Budi #2", "Budi #3"
+   * Pure derived state (no extra fetch).
+   */
+  const displayNames = (() => {
+    const nameGroups = new Map<string, Guest[]>();
+    for (const g of guests) {
+      const key = g.name.trim().toLowerCase();
+      const arr = nameGroups.get(key) ?? [];
+      arr.push(g);
+      nameGroups.set(key, arr);
+    }
+    const result = new Map<string, string>();
+    for (const group of nameGroups.values()) {
+      if (group.length === 1) {
+        const g = group[0];
+        if (g) result.set(g.id, g.name);
+        continue;
+      }
+      // Same-name collision: disambiguate
+      let nextSequence = 1;
+      for (const g of group) {
+        const digits = (g.phone ?? "").replace(/\D/g, "");
+        if (digits.length >= 4) {
+          result.set(g.id, `${g.name} (•••• ${digits.slice(-4)})`);
+        } else {
+          result.set(g.id, nextSequence === 1 ? g.name : `${g.name} #${nextSequence}`);
+          nextSequence++;
+        }
+      }
+    }
+    return result;
+  })();
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
@@ -96,8 +133,12 @@ export function GuestManager({
         }),
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? "Gagal menambah tamu");
+        const j = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          message?: string;
+        };
+        // Duplicate-phone error includes a friendlier `message` field
+        throw new Error(j.message ?? j.error ?? "Gagal menambah tamu");
       }
       const { guest } = await res.json();
       setGuests((prev) => [...prev, guest]);
@@ -482,7 +523,7 @@ export function GuestManager({
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <p className="font-medium">{guest.name}</p>
+                    <p className="font-medium">{displayNames.get(guest.id) ?? guest.name}</p>
                     {guest.phone && <p className="text-xs text-muted-foreground">{guest.phone}</p>}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground capitalize hidden sm:table-cell">

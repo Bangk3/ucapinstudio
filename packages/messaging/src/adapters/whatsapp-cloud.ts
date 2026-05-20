@@ -5,7 +5,7 @@ import type {
   SendResult,
   WebhookEvent,
   WhatsAppCloudConfig,
-} from "../types.js";
+} from "../types";
 
 interface WhatsAppApiResponse {
   messages?: Array<{ id: string }>;

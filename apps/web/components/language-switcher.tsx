@@ -1,19 +1,30 @@
 "use client";
 
-import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const LOCALES = ["id", "en"] as const;
 type Locale = (typeof LOCALES)[number];
 
+function readLocaleCookie(): Locale {
+  if (typeof document === "undefined") return "id";
+  const match = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+  const val = match?.[1];
+  return val === "en" ? "en" : "id";
+}
+
 export function LanguageSwitcher() {
-  const locale = useLocale();
+  const [locale, setLocale] = useState<Locale>("id");
   const router = useRouter();
 
+  // Read cookie on mount (avoids SSR mismatch)
+  useEffect(() => {
+    setLocale(readLocaleCookie());
+  }, []);
+
   function switchLocale(newLocale: Locale) {
-    // The request config reads the "locale" cookie (see i18n/request.ts).
-    // Write it and refresh so Server Components pick up the new value.
     document.cookie = `locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    setLocale(newLocale);
     router.refresh();
   }
 

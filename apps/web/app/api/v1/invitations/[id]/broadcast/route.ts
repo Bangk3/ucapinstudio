@@ -47,9 +47,9 @@ async function resolveTenantAndInvitation(
   invitationId: string,
   userId: string,
   tenantSlug: string,
-): Promise<{ tenantId: string } | null> {
+): Promise<{ tenantId: string; invitationSlug: string } | null> {
   const [row] = await db
-    .select({ tenantId: tenants.id })
+    .select({ tenantId: tenants.id, invitationSlug: invitations.slug })
     .from(tenants)
     .innerJoin(memberships, eq(memberships.tenantId, tenants.id))
     .innerJoin(invitations, eq(invitations.tenantId, tenants.id))
@@ -64,6 +64,19 @@ async function resolveTenantAndInvitation(
     )
     .limit(1);
   return row ?? null;
+}
+
+/** Render message template: replace {nama} and {link} per guest. */
+function renderMessage(
+  template: string,
+  guestName: string,
+  guestSlug: string,
+  tenantSlug: string,
+  invitationSlug: string,
+): string {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const link = `${appUrl}/${tenantSlug}/u/${invitationSlug}/${guestSlug}`;
+  return template.replace(/\{nama\}/g, guestName).replace(/\{link\}/g, link);
 }
 
 export async function POST(req: NextRequest, ctx: Ctx) {
@@ -83,7 +96,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const resolved = await resolveTenantAndInvitation(invitationId, session.user.id, tenantSlug);
   if (!resolved) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { tenantId } = resolved;
+  const { tenantId, invitationSlug } = resolved;
 
   // Load the active credentials for the requested provider
   const [cred] = await db
@@ -118,6 +131,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       phone: guests.phone,
       email: guests.email,
       name: guests.name,
+      slug: guests.slug,
     })
     .from(guests)
     .where(guestWhereClause);
@@ -131,7 +145,9 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   // Determine channel from provider
   const channel = provider === "smtp" ? ("email" as const) : ("whatsapp" as const);
 
-  // Insert all message records as pending up-front
+  // Insert all message records as pending up-front.
+  // Render template variables {nama} and {link} per guest here so guests
+  // receive personalized messages, not raw placeholder text.
   const now = new Date();
   const messageRecords = targetGuests.map((g) => ({
     id: uuidv7(),
@@ -141,7 +157,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     channel,
     provider: provider as MessagingProviderType,
     to: (isWhatsApp ? g.phone : g.email) as string,
-    body: message,
+    body: renderMessage(message, g.name, g.slug, tenantSlug, invitationSlug),
     status: "pending" as const,
     createdAt: now,
     updatedAt: now,
