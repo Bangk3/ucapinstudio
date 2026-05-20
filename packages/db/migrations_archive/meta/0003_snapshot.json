@@ -1,6 +1,6 @@
 {
-  "id": "91b994e8-bfa6-4dcf-972c-f371fd52e3d8",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "d93f86bd-b79a-4fb4-83c1-453df51bcaad",
+  "prevId": "7482a91f-bb69-4073-b780-9df3f3ba5b9a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1054,12 +1054,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "phone_hash": {
-          "name": "phone_hash",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "email": {
           "name": "email",
           "type": "varchar(255)",
@@ -1175,28 +1169,6 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "guests_invitation_phone_hash_unique": {
-          "name": "guests_invitation_phone_hash_unique",
-          "columns": [
-            {
-              "expression": "invitation_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "phone_hash",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"guests\".\"phone_hash\" IS NOT NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778606390785,
-      "tag": "0000_curved_rick_jones",
+      "when": 1779264705694,
+      "tag": "0000_yummy_iceman",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1747267200000,
+      "when": 1779264800000,
       "tag": "0001_rls_policies",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778961605693,
-      "tag": "0002_lazy_thundra",
       "breakpoints": true
     }
   ]

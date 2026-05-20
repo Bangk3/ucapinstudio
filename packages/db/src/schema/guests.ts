@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -6,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { invitations } from "./invitations";
@@ -34,6 +36,12 @@ export const guests = pgTable(
     slug: varchar("slug", { length: 12 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     phone: varchar("phone", { length: 20 }),
+    /**
+     * SHA-256 hex of (salt + tenantId + normalized E.164 phone). Used for
+     * dedup detection within an invitation. NULL when guest has no phone.
+     * Plaintext phone never appears in URLs — only here, hashed.
+     */
+    phoneHash: varchar("phone_hash", { length: 64 }),
     email: varchar("email", { length: 255 }),
     category: guestCategoryEnum("category").notNull().default("other"),
     plusOneAllowed: boolean("plus_one_allowed").notNull().default(false),
@@ -49,6 +57,11 @@ export const guests = pgTable(
     index("guests_invitation_idx").on(t.invitationId),
     index("guests_slug_idx").on(t.invitationId, t.slug),
     index("guests_tenant_idx").on(t.tenantId),
+    // Partial unique: only rows where phone_hash IS NOT NULL participate.
+    // Prevents same person added twice to same invitation.
+    uniqueIndex("guests_invitation_phone_hash_unique")
+      .on(t.invitationId, t.phoneHash)
+      .where(sql`${t.phoneHash} IS NOT NULL`),
   ],
 );
 
