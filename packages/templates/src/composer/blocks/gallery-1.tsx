@@ -9,7 +9,7 @@ interface GalleryMasonryProps {
   preview?: boolean;
 }
 
-export function GalleryMasonry({ galleryUrls }: GalleryMasonryProps) {
+export function GalleryMasonry({ galleryUrls, preview }: GalleryMasonryProps) {
   const shouldReduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [direction, setDirection] = useState(0);

@@ -14,6 +14,8 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/templates/package.json ./packages/templates/
 COPY packages/storage/package.json ./packages/storage/
+COPY packages/messaging/package.json ./packages/messaging/
+COPY packages/ai/package.json ./packages/ai/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod=false
 
