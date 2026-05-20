@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
 import { auth } from "@/lib/auth";
+
+// Auth routes always run server-side at request time — never statically generated
+export const dynamic = "force-dynamic";
 import { rateLimitIp } from "@/lib/rate-limit";
 import { toNextJsHandler } from "better-auth/next-js";
 import { type NextRequest, NextResponse } from "next/server";

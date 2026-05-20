@@ -5,7 +5,23 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "REDIS_URL",
+        "BETTER_AUTH_SECRET",
+        "APP_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "MINIO_ENDPOINT",
+        "MINIO_PORT",
+        "MINIO_ACCESS_KEY",
+        "MINIO_SECRET_KEY",
+        "MINIO_BUCKET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXT_TELEMETRY_DISABLED",
+        "NODE_ENV"
+      ]
     },
     "dev": {
       "cache": false,
