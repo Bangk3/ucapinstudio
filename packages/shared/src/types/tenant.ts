@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MEMBER_ROLES, RESERVED_SLUGS, TENANT_PLANS, TENANT_TYPES } from "../constants/index.js";
+import { MEMBER_ROLES, RESERVED_SLUGS, TENANT_PLANS, TENANT_TYPES } from "../constants/index";
 
 export const tenantSlugSchema = z
   .string()

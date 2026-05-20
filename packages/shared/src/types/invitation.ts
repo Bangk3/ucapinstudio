@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INVITATION_KINDS, INVITATION_STATUSES } from "../constants/index.js";
+import { INVITATION_KINDS, INVITATION_STATUSES } from "../constants/index";
 
 export const invitationStatusSchema = z.enum(INVITATION_STATUSES);
 export const invitationKindSchema = z.enum(INVITATION_KINDS);
