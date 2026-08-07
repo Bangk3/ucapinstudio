@@ -2298,22 +2298,17 @@ export function AdminNav({ role }: { role: string }) {
 
 - [ ] **Step 3: Overview page**
 
-Create `apps/web/app/admin/page.tsx`:
+Create `apps/web/app/admin/page.tsx`. This is a server component — it calls
+the DB helpers directly with normal top-level imports, the same way every
+other server-component page in this codebase does (e.g. `[tenant]/dashboard/billing/page.tsx`
+from Task 9), rather than hitting our own `/api/v1/admin/overview` HTTP
+route and taking a pointless self-fetch round trip:
 
 ```tsx
-import { requireAdminSession } from "@/lib/require-admin";
-import { headers } from "next/headers";
-import { NextRequest } from "next/server";
+import { aiGenerations, creditTransactions, tenants, topupRequests, withAdminDb } from "@invyte/db";
+import { and, eq, gte, isNull, sql } from "drizzle-orm";
 
 async function fetchOverview() {
-  // Server component — call the DB helpers directly instead of hitting our
-  // own HTTP route (avoids a self-fetch round trip for a page that only
-  // renders on the server).
-  const { withAdminDb, aiGenerations, creditTransactions, tenants, topupRequests } = await import(
-    "@invyte/db"
-  );
-  const { and, eq, gte, isNull, sql } = await import("drizzle-orm");
-
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -2371,7 +2366,7 @@ export default async function AdminOverviewPage() {
 }
 ```
 
-Note: this duplicates the query logic from `/api/v1/admin/overview/route.ts` rather than fetching it over HTTP — acceptable duplication for a server component (no client-side fetch needed, avoids an extra round trip), but if this bothers a future reviewer, both call sites could be collapsed into one `apps/web/lib/admin-metrics.ts` helper — not doing that split now since it's exactly two call sites and YAGNI applies. The `headers`/`NextRequest`/`requireAdminSession` imports at the top of this file are unused after this design decision — remove them; the actual auth gate for this page is the parent `admin/layout.tsx`, which already redirects non-admins before this page renders. Final imports for this file are only `withAdminDb, aiGenerations, creditTransactions, tenants, topupRequests` from `@invyte/db` and `and, eq, gte, isNull, sql` from `drizzle-orm`, both dynamically imported inside `fetchOverview` as shown — do not add unused top-level imports.
+Note: this duplicates the query logic from `/api/v1/admin/overview/route.ts` rather than fetching it over HTTP — acceptable duplication for a server component (no client-side fetch needed, avoids an extra round trip), but if this bothers a future reviewer, both call sites could be collapsed into one `apps/web/lib/admin-metrics.ts` helper — not doing that split now since it's exactly two call sites and YAGNI applies. This page needs no `requireAdminSession` call and no auth-related imports of its own — the parent `admin/layout.tsx` (Step 1) already redirects non-admins before this page renders.
 
 - [ ] **Step 4: Top-up queue component and page**
 
