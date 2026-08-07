@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { db } from "./client";
 import { InsufficientCreditError, creditTopup, debitCredit } from "./credit";
-import { tenants } from "./schema";
+import { creditTransactions, tenants } from "./schema";
 
 async function makeTenant(creditBalance = 0): Promise<string> {
   const id = randomUUID();
@@ -38,6 +38,15 @@ describe("credit ledger", () => {
 
     const [row] = await db.select().from(tenants).where(eq(tenants.id, tenantId));
     expect(row?.creditBalance).toBe(25_000);
+
+    const [ledgerRow] = await db
+      .select()
+      .from(creditTransactions)
+      .where(eq(creditTransactions.tenantId, tenantId));
+    expect(ledgerRow?.type).toBe("topup");
+    expect(ledgerRow?.amount).toBe(25_000);
+    expect(ledgerRow?.balanceAfter).toBe(25_000);
+    expect(ledgerRow?.referenceId).toBe("req-1");
   });
 
   it("debitCredit decreases balance when sufficient", async () => {
@@ -48,6 +57,15 @@ describe("credit ledger", () => {
       referenceId: "gen-1",
     });
     expect(balanceAfter).toBe(5_000);
+
+    const [ledgerRow] = await db
+      .select()
+      .from(creditTransactions)
+      .where(eq(creditTransactions.tenantId, tenantId));
+    expect(ledgerRow?.type).toBe("debit_ai_generation");
+    expect(ledgerRow?.amount).toBe(-5_000);
+    expect(ledgerRow?.balanceAfter).toBe(5_000);
+    expect(ledgerRow?.referenceId).toBe("gen-1");
   });
 
   it("debitCredit rejects when balance is insufficient and leaves balance unchanged", async () => {
