@@ -2696,27 +2696,21 @@ git commit -m "feat(admin): add admin panel — overview, topup queue, users, tr
 ## Task 12: Bootstrap superadmin + full-stack verification pass
 
 **Files:**
-- Modify: `packages/db/src/seed.ts` (optional convenience — promote the existing seed admin to `superadmin`)
-- No other files — this task is verification, not new code.
+- No files — this task is a DB command plus verification, not new code.
 
-- [ ] **Step 1: Promote the seed admin to `superadmin`**
+- [ ] **Step 1: Promote Kelvin's real account to `superadmin`**
 
-Edit `packages/db/src/seed.ts`. After the existing admin `user` insert block (the one with `onConflictDoNothing()` for `admin@undangan.local`), add:
+The account already exists (created via real signup ahead of this plan's
+execution, not seed data). Once Task 1's migration has added the `role`
+column, run directly against the dev database (with `.env` exported):
 
-```ts
-  await db
-    .update(user)
-    .set({ role: "superadmin" })
-    .where(eq(user.id, adminId));
+```bash
+psql "$DATABASE_URL" -c "UPDATE \"user\" SET role = 'superadmin' WHERE email = 'kelvinprasetya2701@gmail.com';"
 ```
 
-Add `eq` to the drizzle-orm import at the top of the file if not already present: `import { eq } from "drizzle-orm";`.
-
-Note: this only takes effect for a fresh seed run (the `adminId` variable is a freshly generated nanoid each run, same pre-existing idempotency caveat as the rest of `seed.ts` — see Task 1's migration notes if reseeding an already-seeded DB; for a first-time seed this works correctly). For anyone promoting an already-existing account (e.g. Kelvin's real login), the one-time manual command from the spec still applies:
-
-```sql
-UPDATE "user" SET role = 'superadmin' WHERE email = 'kelvin@example.com';
-```
+Do **not** promote the `seed.ts` admin (`admin@undangan.local`) — that
+account is test/seed data, not the operator account. Leave `seed.ts`
+unmodified in this task.
 
 - [ ] **Step 2: Run the full test suite**
 
