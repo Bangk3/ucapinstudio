@@ -50,3 +50,6 @@ docker/volumes/
 # graphify
 graphify-out/
 .claude/worktrees/
+
+# Subagent-driven-development scratch workspace
+.superpowers/
