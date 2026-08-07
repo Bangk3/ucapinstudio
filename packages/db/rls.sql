@@ -91,6 +91,58 @@ CREATE POLICY media_tenant_iso ON media
   USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''))
   WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''));
 
+-- ── credit_transactions ─────────────────────────────────────
+ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_transactions FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS credit_transactions_tenant_iso ON credit_transactions;
+CREATE POLICY credit_transactions_tenant_iso ON credit_transactions
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''))
+  WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''));
+
+-- Admin panel needs cross-tenant reads/writes (approve top-ups touch any
+-- tenant's ledger). Set only by withAdminDb() after requireAdminSession()
+-- has already checked the caller's role server-side — this is additive
+-- (permissive policies OR together), not a bypass of the tenant policy.
+DROP POLICY IF EXISTS credit_transactions_admin_all ON credit_transactions;
+CREATE POLICY credit_transactions_admin_all ON credit_transactions
+  USING (current_setting('app.is_admin', true) = 'true')
+  WITH CHECK (current_setting('app.is_admin', true) = 'true');
+
+-- ── topup_requests ───────────────────────────────────────────
+ALTER TABLE topup_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE topup_requests FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS topup_requests_tenant_iso ON topup_requests;
+CREATE POLICY topup_requests_tenant_iso ON topup_requests
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''))
+  WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''));
+
+DROP POLICY IF EXISTS topup_requests_admin_all ON topup_requests;
+CREATE POLICY topup_requests_admin_all ON topup_requests
+  USING (current_setting('app.is_admin', true) = 'true')
+  WITH CHECK (current_setting('app.is_admin', true) = 'true');
+
+-- ── template_unlocks ─────────────────────────────────────────
+ALTER TABLE template_unlocks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE template_unlocks FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS template_unlocks_tenant_iso ON template_unlocks;
+CREATE POLICY template_unlocks_tenant_iso ON template_unlocks
+  USING (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''))
+  WITH CHECK (tenant_id = NULLIF(current_setting('app.tenant_id', true), ''));
+
+DROP POLICY IF EXISTS template_unlocks_admin_all ON template_unlocks;
+CREATE POLICY template_unlocks_admin_all ON template_unlocks
+  USING (current_setting('app.is_admin', true) = 'true')
+  WITH CHECK (current_setting('app.is_admin', true) = 'true');
+
+-- ── memberships: admin cross-tenant read (for user-list join) ──
+DROP POLICY IF EXISTS memberships_admin_read ON memberships;
+CREATE POLICY memberships_admin_read ON memberships
+  FOR SELECT
+  USING (current_setting('app.is_admin', true) = 'true');
+
 -- ── auth tables: no RLS ───────────────────────────────────────
 -- user, session, account, verification — not tenant-scoped.
 -- Better Auth manages these; app-layer session checks provide isolation.

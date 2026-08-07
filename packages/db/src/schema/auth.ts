@@ -14,6 +14,11 @@ export const user = pgTable(
     locale: varchar("locale", { length: 10 }).notNull().default("id"),
     timezone: varchar("timezone", { length: 64 }).notNull().default("Asia/Jakarta"),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    // Better Auth admin plugin
+    role: text("role").notNull().default("user"),
+    banned: boolean("banned").notNull().default(false),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires", { withTimezone: true }),
   },
   (t) => [index("user_email_idx").on(t.email)],
 );
@@ -33,6 +38,7 @@ export const session = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     // Active tenant context
     activeTenantId: text("active_tenant_id"),
+    impersonatedBy: text("impersonated_by"),
   },
   (t) => [index("session_user_idx").on(t.userId), index("session_token_idx").on(t.token)],
 );

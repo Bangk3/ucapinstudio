@@ -11,3 +11,4 @@ export * from "./analytics";
 export * from "./messaging";
 export * from "./ai-generations";
 export * from "./checkins";
+export * from "./credits";

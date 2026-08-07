@@ -1,5 +1,6 @@
 import {
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -25,6 +26,7 @@ export const tenants = pgTable(
     customDomain: varchar("custom_domain", { length: 255 }),
     settings: jsonb("settings").notNull().default({}),
     limits: jsonb("limits").notNull().default({}),
+    creditBalance: integer("credit_balance").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
