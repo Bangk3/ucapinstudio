@@ -260,6 +260,7 @@ git commit -m "feat(db): add credit ledger, topup requests, template unlocks, ad
 
 **Files:**
 - Create: `packages/db/src/credit.ts`
+- Create: `packages/db/src/uuid.ts`
 - Create: `packages/db/vitest.config.ts`
 - Create: `packages/db/src/credit.test.ts`
 - Modify: `packages/db/package.json`
@@ -305,13 +306,46 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3: Write the credit ledger helper**
+- [ ] **Step 3: Add a `uuidv7` helper to `packages/db`**
+
+`credit.ts` needs to generate `credit_transactions.id` itself (callers don't
+pass one in). The existing `uuidv7()` lives at `apps/web/lib/uuid.ts`, but
+`packages/db` cannot import from `apps/web` (wrong dependency direction —
+apps depend on packages, never the reverse). Create
+`packages/db/src/uuid.ts` with the identical implementation rather than
+inventing a different ID scheme, so `credit_transactions.id` still sorts
+the same way every other UUID v7 primary key in this schema does:
+
+```ts
+/**
+ * UUID v7 — time-ordered, sortable. Inline implementation (no external dep).
+ * Mirrors apps/web/lib/uuid.ts exactly — packages/db can't import from
+ * apps/web (wrong dependency direction), so this is a deliberate duplicate
+ * of that one small leaf utility, not a second ID scheme.
+ */
+export function uuidv7(): string {
+  const now = BigInt(Date.now());
+  const hi = Number((now >> BigInt(28)) & BigInt(0xffffffff));
+  const mid = Number((now >> BigInt(12)) & BigInt(0xffff));
+  const lo = Number(now & BigInt(0xfff));
+  const rand = crypto.getRandomValues(new Uint8Array(8));
+  rand[0] = (rand[0]! & 0x3f) | 0x80; // set variant bits
+  const hex = (n: number, pad: number) => n.toString(16).padStart(pad, "0");
+  const randHex = Array.from(rand)
+    .map((b) => hex(b, 2))
+    .join("");
+  return `${hex(hi, 8)}-${hex(mid, 4)}-7${hex(lo, 3)}-${randHex.slice(0, 4)}-${randHex.slice(4)}`;
+}
+```
+
+- [ ] **Step 4: Write the credit ledger helper**
 
 Create `packages/db/src/credit.ts`:
 
 ```ts
 import { eq, sql } from "drizzle-orm";
 import { creditTransactions, tenants } from "./schema";
+import { uuidv7 } from "./uuid";
 import { withTenantRls } from "./with-tenant";
 
 export class InsufficientCreditError extends Error {
@@ -361,7 +395,7 @@ async function writeLedgerEntry(
       .where(eq(tenants.id, tenantId));
 
     await tx.insert(creditTransactions).values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       tenantId,
       type,
       amount,
@@ -411,7 +445,7 @@ export async function creditTopup(
 
 Note: `.for("update")` is Drizzle's row-lock modifier (`SELECT ... FOR UPDATE`) — available on `pg` select queries.
 
-- [ ] **Step 4: Export from package index**
+- [ ] **Step 5: Export from package index**
 
 Edit `packages/db/src/index.ts` — add after the existing exports:
 
@@ -422,7 +456,7 @@ export * from "./with-tenant";
 export * from "./credit";
 ```
 
-- [ ] **Step 5: Write the failing tests**
+- [ ] **Step 6: Write the failing tests**
 
 Create `packages/db/src/credit.test.ts`:
 
@@ -515,7 +549,7 @@ describe("credit ledger", () => {
 
 This test suite hits the real dev Postgres via `DATABASE_URL` (same pattern the project already relies on for manual verification — there's no separate test DB configured anywhere in this repo yet). Requires `docker-compose.dev.yml` running and `.env` exported before running.
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [ ] **Step 7: Run tests to verify they pass**
 
 Run (with `.env` exported):
 ```bash
@@ -523,12 +557,12 @@ cd packages/db && pnpm test
 ```
 Expected: 4 passing tests. If `InsufficientCreditError` isn't exported correctly or the row lock doesn't serialize, the concurrency test will show 2 fulfilled/0 rejected or a balance other than 4,000 — fix `credit.ts` until it's green.
 
-- [ ] **Step 7: Typecheck and commit**
+- [ ] **Step 8: Typecheck and commit**
 
 Run: `pnpm --filter @invyte/db typecheck`
 
 ```bash
-git add packages/db/src/credit.ts packages/db/src/credit.test.ts \
+git add packages/db/src/credit.ts packages/db/src/credit.test.ts packages/db/src/uuid.ts \
   packages/db/vitest.config.ts packages/db/package.json packages/db/src/index.ts \
   pnpm-lock.yaml
 git commit -m "feat(db): add credit ledger helper with concurrency-safe debit/topup"
