@@ -202,7 +202,7 @@ export function DashboardSidebar({
     return (
       <>
         <div className="flex h-14 items-center border-b px-4">
-          <span className="font-serif text-lg font-bold tracking-tight">Invyte</span>
+          <span className="font-serif text-lg font-bold tracking-tight">UcapinStudio</span>
           {onNavClick && (
             <button
               type="button"

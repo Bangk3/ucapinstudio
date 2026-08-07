@@ -40,7 +40,9 @@ export function DashboardHeader({ user, tenantName, onMobileMenuToggle }: Dashbo
           {tenantName}
         </span>
         {/* Logo — mobile only */}
-        <span className="md:hidden font-serif text-base font-bold tracking-tight">Invyte</span>
+        <span className="md:hidden font-serif text-base font-bold tracking-tight">
+          UcapinStudio
+        </span>
       </div>
 
       <div className="relative">

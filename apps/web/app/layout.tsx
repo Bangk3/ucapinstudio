@@ -26,11 +26,10 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Invyte",
-    default: "Invyte — Digital Wedding Invitation Platform",
+    template: "%s | UcapinStudio",
+    default: "UcapinStudio — Digital Wedding Invitation Platform",
   },
-  description:
-    "Open-source, self-hosted digital wedding invitation platform for Indonesia and beyond.",
+  description: "Digital wedding invitation platform for Indonesia and beyond.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
 };
 

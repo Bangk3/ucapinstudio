@@ -2,7 +2,7 @@
 
 Open-source, self-hosted SaaS for digital wedding invitations. Target market: Indonesia. License: AGPLv3 (core) + MIT (templates).
 
-**Status:** Design/planning phase — no code yet. All context lives in the docs files this summarizes.
+**Status:** MVP core built — M0–M4 (setup, auth/multi-tenancy, invitation editor + templates, guests/RSVP, public invitation polish) are done. M5 (Docker self-host packaging) and Phase 2 milestones (M6–M11) are in progress or pending. See `todo.md` for the live milestone table.
 
 ---
 

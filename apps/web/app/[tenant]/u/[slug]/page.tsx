@@ -39,7 +39,7 @@ function GuestOnlyGate() {
         </div>
         <div className="pt-4">
           <p className="text-[11px] uppercase tracking-widest text-stone-400">
-            Dibuat dengan Invyte
+            Dibuat dengan UcapinStudio
           </p>
         </div>
       </div>

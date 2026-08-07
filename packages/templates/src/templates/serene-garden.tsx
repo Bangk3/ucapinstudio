@@ -7,7 +7,6 @@ import { Countdown } from "../components/countdown";
 import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
-import { InvyteCredit } from "../components/invyte-credit";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
@@ -1091,7 +1090,6 @@ export function SereneGarden({ data, preview }: TemplateProps) {
         </section>
       </GardenSection>
 
-      <InvyteCredit dark />
       <PoweredByDevLab />
     </div>
   );

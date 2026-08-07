@@ -1,5 +1,8 @@
+import { hashPassword } from "better-auth/crypto";
 import { nanoid } from "nanoid";
-import { db, memberships, tenants, user } from "./index";
+import { account, db, memberships, tenants, user } from "./index";
+
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "admin12345";
 
 async function seed() {
   console.log("🌱 Seeding database...");
@@ -15,6 +18,20 @@ async function seed() {
       emailVerified: true,
       locale: "id",
       timezone: "Asia/Jakarta",
+    })
+    .onConflictDoNothing();
+
+  // Credential account so the admin can actually log in (better-auth needs
+  // both `user` and `account` rows — a `user`-only insert is not a working
+  // login). Uses better-auth's own hasher, same as its real signup flow.
+  await db
+    .insert(account)
+    .values({
+      id: nanoid(),
+      accountId: adminId,
+      providerId: "credential",
+      userId: adminId,
+      password: await hashPassword(ADMIN_PASSWORD),
     })
     .onConflictDoNothing();
 
@@ -59,7 +76,7 @@ async function seed() {
     .onConflictDoNothing();
 
   console.log("✅ Seed complete");
-  console.log("   Admin: admin@undangan.local");
+  console.log(`   Admin: admin@undangan.local / ${ADMIN_PASSWORD}`);
   console.log("   Personal tenant slug: see tenants table");
   console.log("   Org tenant: demo-wo");
 

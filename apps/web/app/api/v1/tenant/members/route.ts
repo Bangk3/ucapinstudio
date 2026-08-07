@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   if (!foundUser) {
     return NextResponse.json(
-      { error: "Pengguna dengan email ini belum terdaftar di Invyte" },
+      { error: "Pengguna dengan email ini belum terdaftar di UcapinStudio" },
       { status: 404 },
     );
   }

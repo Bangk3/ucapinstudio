@@ -36,7 +36,9 @@ if [[ ! -f "${ENV_FILE}" ]]; then
 fi
 
 # shellcheck disable=SC1090
+set -a
 source "${ENV_FILE}"
+set +a
 
 # ── Start infrastructure services ───────────────────────────
 echo ""

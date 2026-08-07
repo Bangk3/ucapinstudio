@@ -86,7 +86,7 @@ const TEMPLATES = [
 
 const FEATURES = [
   {
-    title: "7 Template Gratis",
+    title: "7 Template Siap Pakai",
     desc: "Minimalist Modern, Floral Classic, Islamic Elegant, Tropical Bali, Royal Java, Serene Garden, AI Composer.",
     icon: "✦",
     size: "tall",
@@ -114,15 +114,8 @@ const FEATURES = [
     color: "from-violet-50 to-purple-100",
   },
   {
-    title: "Self-Hosted",
-    desc: "Data di server sendiri. Privasi penuh. Deploy Docker sekali klik.",
-    icon: "🔒",
-    size: "normal",
-    color: "from-slate-50 to-gray-100",
-  },
-  {
-    title: "Open Source",
-    desc: "AGPLv3. Komunitas berkontribusi. Tidak ada vendor lock-in.",
+    title: "Dukungan Cepat",
+    desc: "Tim support responsif. Bantuan setup dan kustomisasi kapan pun dibutuhkan.",
     icon: "⚙️",
     size: "normal",
     color: "from-blue-50 to-indigo-100",
@@ -133,7 +126,7 @@ const STEPS = [
   {
     num: "01",
     title: "Buat Workspace",
-    desc: "Daftar gratis, pilih nama workspace. Selesai dalam 30 detik.",
+    desc: "Daftar dan pilih nama workspace. Selesai dalam 30 detik.",
   },
   {
     num: "02",
@@ -161,7 +154,7 @@ const TESTIMONIALS = [
   {
     name: "Dita & Farel",
     loc: "Bandung",
-    text: "Template Lotus persis vibe yang kami mau. Self-hosted jadi privasi terjaga.",
+    text: "Template Lotus persis vibe yang kami mau. Privasi terjaga.",
   },
   {
     name: "Mega & Rio",
@@ -176,22 +169,18 @@ const TESTIMONIALS = [
   {
     name: "Dewi & Hendra",
     loc: "Medan",
-    text: "Open source jadi kami bisa custom sesuai adat Batak kami. Keren!",
+    text: "Bisa custom sesuai adat Batak kami. Keren!",
   },
 ];
 
 const FAQS = [
   {
-    q: "Apakah Invyte benar-benar gratis?",
-    a: "Ya. Invyte open-source (AGPLv3) dan gratis di-deploy sendiri. Tidak ada biaya langganan untuk core features.",
-  },
-  {
-    q: "Apa yang dibutuhkan untuk self-hosting?",
-    a: "Sebuah VPS atau server dengan Docker. Satu perintah `docker compose up` sudah cukup untuk menjalankan semua layanan.",
+    q: "Berapa biaya menggunakan UcapinStudio?",
+    a: "Hubungi tim kami untuk info paket dan harga yang sesuai kebutuhan pernikahan Anda.",
   },
   {
     q: "Bisakah mengirim ke WhatsApp tanpa Cloud API?",
-    a: "Ya. Invyte mendukung Fonnte dan Wablas sebagai alternatif Cloud API resmi Meta. Juga bisa via SMTP untuk email.",
+    a: "Ya. UcapinStudio mendukung Fonnte dan Wablas sebagai alternatif Cloud API resmi Meta. Juga bisa via SMTP untuk email.",
   },
   {
     q: "Berapa banyak tamu yang bisa diundang?",
@@ -199,7 +188,7 @@ const FAQS = [
   },
   {
     q: "Apakah data kami aman?",
-    a: "Karena self-hosted, data sepenuhnya ada di server Anda. Kami tidak menyimpan data apapun di server Invyte.",
+    a: "Data Anda dienkripsi dan disimpan dengan aman di server kami, dilindungi sesuai standar keamanan data.",
   },
 ];
 
@@ -244,7 +233,7 @@ function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <span className="font-script text-3xl leading-none" style={{ color: "var(--hp-pink)" }}>
-            Invyte
+            UcapinStudio
           </span>
         </Link>
 
@@ -279,7 +268,7 @@ function Navbar() {
               background: "linear-gradient(135deg, var(--hp-pink), var(--color-brand-600))",
             }}
           >
-            Mulai Gratis
+            Mulai Sekarang
           </Link>
         </div>
 
@@ -327,7 +316,7 @@ function Navbar() {
                     background: "linear-gradient(135deg, var(--hp-pink), var(--color-brand-600))",
                   }}
                 >
-                  Mulai Gratis
+                  Mulai Sekarang
                 </Link>
               </div>
             </div>
@@ -529,20 +518,6 @@ function HeroSection() {
           animate="visible"
           className="flex flex-col gap-6"
         >
-          {/* Eyebrow */}
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 self-start">
-            <span
-              className="text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full border"
-              style={{
-                borderColor: "var(--hp-gold)",
-                color: "var(--hp-gold)",
-                background: "var(--hp-gold-light)22",
-              }}
-            >
-              Open Source · Self-Hosted · Indonesia
-            </span>
-          </motion.div>
-
           {/* Headline */}
           <motion.div variants={fadeUp}>
             <h1
@@ -566,13 +541,13 @@ function HeroSection() {
             className="text-base md:text-lg text-slate-500 max-w-md leading-relaxed"
           >
             Buat undangan pernikahan digital yang indah, kirim ke semua tamu via WhatsApp, dan
-            pantau RSVP secara real-time — gratis, open-source, data di server Anda.
+            pantau RSVP secara real-time.
           </motion.p>
 
           {/* CTAs */}
           <motion.div variants={fadeUp} className="flex flex-wrap gap-4 items-center">
             <MagneticButton href="/auth/register" primary>
-              Mulai Gratis Sekarang
+              Mulai Sekarang
             </MagneticButton>
             <a
               href="#templates"
@@ -697,12 +672,12 @@ function MagneticButton({
 
 function TrustBar() {
   const items = [
-    "🌸 7 Template Gratis",
+    "🌸 7 Template Siap Pakai",
     "💬 WhatsApp Broadcast",
     "✨ AI Text Generator",
     "📊 RSVP Real-Time",
-    "🔒 Self-Hosted",
-    "⚙️ Open Source AGPLv3",
+    "🔒 Data Aman",
+    "⚙️ Dukungan Cepat",
     "🎯 Multi-Tenant",
     "📁 Manajemen Tamu CSV",
   ];
@@ -937,7 +912,7 @@ function AIGenerateSection() {
             <span style={{ color: activeModel.color, transition: "color 0.3s" }}>Ditulis AI</span>
           </h2>
           <p className="text-sm max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Pilih model AI favoritmu — Invyte kirim prompt terstruktur, AI tulis teksnya dalam
+            Pilih model AI favoritmu — UcapinStudio kirim prompt terstruktur, AI tulis teksnya dalam
             hitungan detik.
           </p>
         </motion.div>
@@ -1151,7 +1126,7 @@ function AIGenerateSection() {
               boxShadow: "0 4px 20px rgba(124,58,237,0.35)",
             }}
           >
-            Coba AI Composer Gratis
+            Coba AI Composer
             <svg
               width="14"
               height="14"
@@ -1167,7 +1142,7 @@ function AIGenerateSection() {
             </svg>
           </a>
           <p className="mt-3 text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-            Claude · GPT-4o · Gemini · DeepSeek · Llama (self-hosted)
+            Claude · GPT-4o · Gemini · DeepSeek · Llama
           </p>
         </motion.div>
       </div>
@@ -1203,7 +1178,7 @@ function TemplatesSection() {
             className="text-sm font-semibold tracking-widest uppercase mb-3"
             style={{ color: "var(--hp-gold)" }}
           >
-            7 Template Gratis
+            7 Template Siap Pakai
           </motion.p>
           <motion.h2
             variants={fadeUp}
@@ -1290,7 +1265,7 @@ function TemplatesSection() {
                   ))}
                 </div>
 
-                {/* Color swatches + free badge */}
+                {/* Color swatches + badge */}
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex gap-1.5">
                     {tpl.palette.map((c, j) => (
@@ -1305,7 +1280,7 @@ function TemplatesSection() {
                     className="text-[11px] font-bold px-3 py-1 rounded-full border"
                     style={{ borderColor: tpl.palette[1], color: tpl.palette[1] }}
                   >
-                    Gratis
+                    Siap Pakai
                   </div>
                 </div>
               </div>
@@ -1428,7 +1403,7 @@ function StatsSection() {
   const stats = [
     { val: 500, suffix: "+", label: "Pasangan Bahagia" },
     { val: 50000, suffix: "+", label: "Tamu Diundang" },
-    { val: 7, suffix: " Template", label: "Desain Gratis" },
+    { val: 7, suffix: " Template", label: "Desain Siap Pakai" },
     { val: 99, suffix: "%", label: "Tingkat Pengiriman WA" },
   ];
 
@@ -1505,7 +1480,7 @@ function CulturalSection() {
               dalam sentuhan modern
             </h2>
             <p className="text-slate-500 leading-relaxed mb-6">
-              Dari undangan adat Jawa yang penuh makna hingga desain modern minimalis — Invyte
+              Dari undangan adat Jawa yang penuh makna hingga desain modern minimalis — UcapinStudio
               memahami kekayaan budaya pernikahan Indonesia. Dukungan multi-bahasa (ID, EN, JV, SU,
               AR) segera hadir.
             </p>
@@ -1648,21 +1623,15 @@ function PricingSection() {
   const plans = [
     {
       name: "Personal",
-      price: "Gratis",
+      price: "Hubungi Kami",
       desc: "Untuk pasangan yang ingin mencoba",
-      features: [
-        "3 Undangan",
-        "Semua 7 Template",
-        "RSVP & Buku Tamu",
-        "WhatsApp Broadcast",
-        "Self-Hosted",
-      ],
-      cta: "Mulai Gratis",
+      features: ["3 Undangan", "Semua 7 Template", "RSVP & Buku Tamu", "WhatsApp Broadcast"],
+      cta: "Mulai Sekarang",
       highlight: false,
     },
     {
       name: "Organisasi",
-      price: "Gratis",
+      price: "Hubungi Kami",
       desc: "Untuk wedding organizer & bisnis",
       features: [
         "Unlimited Undangan",
@@ -1704,17 +1673,16 @@ function PricingSection() {
             className="font-serif text-4xl md:text-5xl font-bold"
             style={{ color: "var(--hp-dark)" }}
           >
-            Selalu{" "}
+            Transparan{" "}
             <span
               className="font-script font-normal text-5xl md:text-6xl"
               style={{ color: "var(--hp-pink)" }}
             >
-              gratis
+              & jelas
             </span>
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-slate-500">
-            Open source tidak berarti murahan. Self-host sendiri, kontrol penuh, tanpa biaya
-            tersembunyi.
+            Kontrol penuh, tanpa biaya tersembunyi.
           </motion.p>
         </motion.div>
 
@@ -1939,215 +1907,15 @@ function FinalCTASection() {
             yang <span style={{ color: "var(--hp-pink)" }}>tidak terlupakan</span>
           </motion.h2>
           <motion.p variants={fadeUp} className="text-white/60 text-lg mb-10 max-w-xl mx-auto">
-            Gratis selamanya. Self-hosted. Open source. Deploy dalam hitungan menit.
+            Cepat, mudah, dan siap kirim dalam hitungan menit.
           </motion.p>
           <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center">
             <MagneticButton href="/auth/register" primary>
-              Mulai Gratis — Sekarang
+              Mulai Sekarang
             </MagneticButton>
-            <MagneticButton href="https://github.com/invyte">⭐ Star di GitHub</MagneticButton>
+            <MagneticButton href="#pricing">💬 Hubungi Kami</MagneticButton>
           </motion.div>
         </motion.div>
-      </div>
-    </section>
-  );
-}
-
-// ── DevLab Section ─────────────────────────────────────────────────────────────
-
-function DevLabSection() {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-
-  return (
-    <section
-      ref={ref}
-      className="py-24 px-6 relative overflow-hidden"
-      style={{ background: "var(--hp-dark)" }}
-      aria-label="Tentang DevLab.tgk"
-    >
-      {/* Subtle background circuit pattern */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-5"
-        aria-hidden="true"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <defs>
-          <pattern id="circuit" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-            <path
-              d="M40 0 L40 30 M40 50 L40 80 M0 40 L30 40 M50 40 L80 40"
-              stroke="#60a5fa"
-              strokeWidth="0.8"
-              fill="none"
-            />
-            <circle cx="40" cy="40" r="4" stroke="#60a5fa" strokeWidth="0.8" fill="none" />
-            <circle cx="0" cy="0" r="2" fill="#60a5fa" />
-            <circle cx="80" cy="0" r="2" fill="#60a5fa" />
-            <circle cx="0" cy="80" r="2" fill="#60a5fa" />
-            <circle cx="80" cy="80" r="2" fill="#60a5fa" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#circuit)" />
-      </svg>
-
-      <div className="max-w-5xl mx-auto relative z-10">
-        {/* Section label */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="text-center text-xs font-semibold uppercase tracking-widest mb-12"
-          style={{ color: "rgba(96,165,250,0.7)" }}
-        >
-          Di Balik Invyte
-        </motion.p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left: DevLab branding */}
-          <motion.div
-            initial={{ opacity: 0, x: -32 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col items-center md:items-start gap-5"
-          >
-            {/* Large DL icon */}
-            <div
-              className="flex items-center justify-center rounded-2xl font-black text-white text-3xl shadow-2xl"
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 20,
-                background: "linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)",
-                boxShadow: "0 8px 32px rgba(37,99,235,0.45)",
-                letterSpacing: "-2px",
-                fontSize: 28,
-                fontFamily: "system-ui, sans-serif",
-              }}
-              aria-hidden="true"
-            >
-              DL
-            </div>
-
-            <div className="text-center md:text-left">
-              <h2
-                className="font-bold leading-none"
-                style={{ fontSize: 36, color: "rgba(255,255,255,0.92)" }}
-              >
-                DevLab.tgk
-              </h2>
-              <p
-                className="mt-1 font-medium"
-                style={{ fontSize: 13, color: "rgba(96,165,250,0.8)" }}
-              >
-                Trenggalek · Indonesia
-              </p>
-            </div>
-
-            {/* Attribute pills */}
-            <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-              {["🇮🇩 Berbasis di Indonesia", "Open Source First", "Product-Led"].map((pill) => (
-                <span
-                  key={pill}
-                  className="text-xs px-3 py-1 rounded-full border font-medium"
-                  style={{
-                    borderColor: "rgba(96,165,250,0.2)",
-                    color: "rgba(255,255,255,0.45)",
-                    background: "rgba(96,165,250,0.08)",
-                  }}
-                >
-                  {pill}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right: Description */}
-          <motion.div
-            initial={{ opacity: 0, x: 32 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-5"
-          >
-            <p
-              className="leading-relaxed"
-              style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.75 }}
-            >
-              DevLab.tgk adalah software house Indonesia yang berfokus membangun solusi digital
-              berkualitas tinggi. Kami percaya teknologi terbaik adalah teknologi yang terbuka,
-              dapat diakses semua orang, dan dibangun bersama komunitas.
-            </p>
-
-            <p
-              className="leading-relaxed"
-              style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.75 }}
-            >
-              <span style={{ color: "rgba(255,255,255,0.65)", fontWeight: 500 }}>Invyte</span>{" "}
-              adalah produk andalan kami — platform undangan pernikahan digital open-source yang
-              dirancang khusus untuk pasangan Indonesia dengan standar kelas dunia.
-            </p>
-
-            {/* Instagram CTA */}
-            <a
-              href="https://instagram.com/devlab.tgk/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 group"
-              style={{ marginTop: 8 }}
-              aria-label="Kunjungi Instagram DevLab.tgk"
-            >
-              {/* Instagram icon */}
-              <span
-                className="flex items-center justify-center rounded-lg transition-all group-hover:scale-110"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background:
-                    "linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
-                  flexShrink: 0,
-                  borderRadius: 10,
-                }}
-                aria-hidden="true"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
-              </span>
-              <span
-                className="font-semibold transition-colors group-hover:text-blue-300"
-                style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}
-              >
-                @devlab.tgk
-              </span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ color: "rgba(255,255,255,0.3)" }}
-                className="transition-transform group-hover:translate-x-1"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
-          </motion.div>
-        </div>
-
-        {/* Bottom divider */}
-        <div
-          className="mt-16 h-px w-full"
-          style={{
-            background: "linear-gradient(to right, transparent, rgba(96,165,250,0.2), transparent)",
-          }}
-          aria-hidden="true"
-        />
-        <p className="mt-6 text-center text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>
-          Invyte × DevLab.tgk — membangun masa depan undangan digital Indonesia
-        </p>
       </div>
     </section>
   );
@@ -2166,21 +1934,27 @@ function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <span className="font-script text-4xl" style={{ color: "var(--hp-pink)" }}>
-              Invyte
+              UcapinStudio
             </span>
             <p className="mt-2 text-sm text-slate-500 max-w-xs leading-relaxed">
-              Platform undangan pernikahan digital open-source untuk Indonesia. Self-hosted, aman,
-              gratis selamanya.
+              Platform undangan pernikahan digital untuk Indonesia. Aman dan privat.
             </p>
             <div className="flex gap-3 mt-4">
-              {["GitHub", "Twitter", "Instagram"].map((s) => (
+              {[
+                // AGPLv3 §13: prominent link to this instance's corresponding source.
+                { label: "Source Code", href: "https://github.com/Bangk3/ucapinstudio" },
+                { label: "Twitter", href: "/" },
+                { label: "Instagram", href: "/" },
+              ].map((s) => (
                 <a
-                  key={s}
-                  href="/"
+                  key={s.label}
+                  href={s.href}
+                  target={s.href.startsWith("http") ? "_blank" : undefined}
+                  rel={s.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors hover:bg-brand-50"
                   style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
                 >
-                  {s}
+                  {s.label}
                 </a>
               ))}
             </div>
@@ -2204,7 +1978,7 @@ function Footer() {
           <div>
             <p className="text-xs font-bold tracking-widest uppercase mb-4 text-slate-400">Legal</p>
             <ul className="space-y-2 text-sm text-slate-500">
-              {["AGPLv3 License", "Privasi", "Syarat Layanan", "Kontribusi"].map((l) => (
+              {["Lisensi", "Privasi", "Syarat Layanan", "Kontribusi"].map((l) => (
                 <li key={l}>
                   <a href="/" className="hover:text-brand-600 transition-colors">
                     {l}
@@ -2219,7 +1993,7 @@ function Footer() {
           className="border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400"
           style={{ borderColor: "var(--hp-gold-light)" }}
         >
-          <p>© 2025 Invyte. Open source under AGPLv3.</p>
+          <p>© 2025 UcapinStudio. Modifikasi oleh Kelvin Prasetya. Open source under AGPLv3.</p>
 
           {/* DevLab.tgk attribution */}
           <a
@@ -2277,7 +2051,6 @@ export function HomepageClient() {
       <PricingSection />
       <FAQSection />
       <FinalCTASection />
-      <DevLabSection />
       <Footer />
     </>
   );
