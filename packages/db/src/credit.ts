@@ -112,6 +112,27 @@ export async function debitCredit(
 }
 
 /**
+ * Same as `creditTopup`, but assumes `tx` is already an open `withTenantRls`
+ * transaction — for callers (the top-up approval route) that need the
+ * credit atomic with the request's status update, so two concurrent
+ * approve/reject calls on the same request can't both credit the tenant.
+ */
+export async function creditTopupInTx(
+  tx: Database,
+  tenantId: string,
+  amount: number,
+  referenceId: string,
+  description?: string,
+): Promise<{ balanceAfter: number }> {
+  if (amount <= 0) throw new Error("creditTopup amount must be positive");
+  return writeLedgerEntryInTx(tx, tenantId, amount, "topup", {
+    referenceType: "topup_request",
+    referenceId,
+    ...(description !== undefined ? { description } : {}),
+  });
+}
+
+/**
  * Add `amount` (positive number) to tenant's credit balance. Used only by
  * the admin top-up approval flow.
  */
