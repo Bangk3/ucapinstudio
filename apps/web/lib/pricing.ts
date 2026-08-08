@@ -1,0 +1,3 @@
+export const AI_GENERATION_COST_RUPIAH = 5_000;
+export const TEMPLATE_UNLOCK_COST_RUPIAH = 15_000;
+export const TOPUP_PACKAGES_RUPIAH = [25_000, 100_000, 500_000] as const;

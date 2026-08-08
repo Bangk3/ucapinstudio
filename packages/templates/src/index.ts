@@ -34,6 +34,7 @@ export interface TemplateMeta {
   accentColor: string;
   tags: string[];
   previewImageUrl?: string;
+  isPremium: boolean;
 }
 
 export const TEMPLATES: TemplateMeta[] = [
@@ -44,6 +45,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#6b8f6e",
     accentColor: "#6b8f6e",
     tags: ["modern", "minimalis", "hijau"],
+    isPremium: false,
   },
   {
     id: "floral-classic",
@@ -52,6 +54,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#c4826a",
     accentColor: "#f5ede8",
     tags: ["romantis", "floral", "klasik"],
+    isPremium: true,
   },
   {
     id: "islamic-elegant",
@@ -60,6 +63,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#c9a84c",
     accentColor: "#0f1b2d",
     tags: ["islami", "elegan", "gelap"],
+    isPremium: false,
   },
   {
     id: "tropical-bali",
@@ -68,6 +72,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#2d6a4f",
     accentColor: "#c87941",
     tags: ["tropis", "bali", "alam"],
+    isPremium: true,
   },
   {
     id: "royal-java",
@@ -76,6 +81,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#8b1a2e",
     accentColor: "#c9a84c",
     tags: ["jawa", "batik", "mewah"],
+    isPremium: true,
   },
   {
     id: "serene-garden",
@@ -84,6 +90,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#9c7050",
     accentColor: "#c9a87a",
     tags: ["islami", "romantis", "floral", "elegan"],
+    isPremium: true,
   },
   {
     id: "ai-composer",
@@ -92,6 +99,7 @@ export const TEMPLATES: TemplateMeta[] = [
     primaryColor: "#DB2777",
     accentColor: "#A16207",
     tags: ["ai", "dinamis", "kustom"],
+    isPremium: true,
   },
 ];
 
