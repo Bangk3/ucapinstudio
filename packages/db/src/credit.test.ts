@@ -2,8 +2,9 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { db } from "./client";
-import { InsufficientCreditError, creditTopup, debitCredit } from "./credit";
+import { InsufficientCreditError, creditTopup, debitCredit, debitCreditInTx } from "./credit";
 import { creditTransactions, tenants } from "./schema";
+import { withTenantRls } from "./with-tenant";
 
 async function makeTenant(creditBalance = 0): Promise<string> {
   const id = randomUUID();
@@ -98,5 +99,32 @@ describe("credit ledger", () => {
 
     const [row] = await db.select().from(tenants).where(eq(tenants.id, tenantId));
     expect(row?.creditBalance).toBe(4_000);
+  });
+
+  it("debitCreditInTx rolls back the debit if a later write in the same transaction fails", async () => {
+    // Mirrors the unlock route's shape: debit inside withTenantRls, then a
+    // second write that fails — the whole transaction (including the debit
+    // and its ledger row) must roll back together, not leave a charged but
+    // unrecorded state.
+    const tenantId = await makeTenant(10_000);
+    createdTenantIds.push(tenantId);
+
+    await expect(
+      withTenantRls(tenantId, async (tx) => {
+        await debitCreditInTx(tx, tenantId, 5_000, "debit_template_unlock", {
+          referenceId: "tpl-1",
+        });
+        throw new Error("simulated failure after debit, before the paired insert");
+      }),
+    ).rejects.toThrow("simulated failure after debit, before the paired insert");
+
+    const [row] = await db.select().from(tenants).where(eq(tenants.id, tenantId));
+    expect(row?.creditBalance).toBe(10_000);
+
+    const ledgerRows = await db
+      .select()
+      .from(creditTransactions)
+      .where(eq(creditTransactions.tenantId, tenantId));
+    expect(ledgerRows).toHaveLength(0);
   });
 });

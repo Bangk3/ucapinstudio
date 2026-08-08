@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import type { Database } from "./client";
 import { creditTransactions, tenants } from "./schema";
 import { uuidv7 } from "./uuid";
 import { withTenantRls } from "./with-tenant";
@@ -21,48 +22,79 @@ interface LedgerOpts {
   description?: string;
 }
 
+/**
+ * Core ledger write. Assumes it's already running inside a `withTenantRls`
+ * transaction (`tx`) — does not open its own. Callers that need the debit
+ * atomic with other writes (e.g. template unlock) call this directly inside
+ * their own `withTenantRls` block via `debitCreditInTx`.
+ */
+async function writeLedgerEntryInTx(
+  tx: Database,
+  tenantId: string,
+  amount: number,
+  type: CreditTransactionType,
+  opts: LedgerOpts,
+): Promise<{ balanceAfter: number }> {
+  // Row lock — serializes concurrent debits/topups for the same tenant so
+  // two simultaneous requests can't both read a stale balance and both
+  // succeed past zero.
+  const [row] = await tx
+    .select({ creditBalance: tenants.creditBalance })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+    .for("update");
+
+  if (!row) throw new Error(`Tenant not found: ${tenantId}`);
+
+  const newBalance = row.creditBalance + amount;
+  if (newBalance < 0) {
+    throw new InsufficientCreditError(-amount, row.creditBalance);
+  }
+
+  await tx
+    .update(tenants)
+    .set({ creditBalance: newBalance, updatedAt: new Date() })
+    .where(eq(tenants.id, tenantId));
+
+  await tx.insert(creditTransactions).values({
+    id: uuidv7(),
+    tenantId,
+    type,
+    amount,
+    balanceAfter: newBalance,
+    referenceType: opts.referenceType ?? null,
+    referenceId: opts.referenceId ?? null,
+    description: opts.description ?? null,
+    createdAt: new Date(),
+  });
+
+  return { balanceAfter: newBalance };
+}
+
 async function writeLedgerEntry(
   tenantId: string,
   amount: number,
   type: CreditTransactionType,
   opts: LedgerOpts,
 ): Promise<{ balanceAfter: number }> {
-  return withTenantRls(tenantId, async (tx) => {
-    // Row lock — serializes concurrent debits/topups for the same tenant so
-    // two simultaneous requests can't both read a stale balance and both
-    // succeed past zero.
-    const [row] = await tx
-      .select({ creditBalance: tenants.creditBalance })
-      .from(tenants)
-      .where(eq(tenants.id, tenantId))
-      .for("update");
+  return withTenantRls(tenantId, (tx) => writeLedgerEntryInTx(tx, tenantId, amount, type, opts));
+}
 
-    if (!row) throw new Error(`Tenant not found: ${tenantId}`);
-
-    const newBalance = row.creditBalance + amount;
-    if (newBalance < 0) {
-      throw new InsufficientCreditError(-amount, row.creditBalance);
-    }
-
-    await tx
-      .update(tenants)
-      .set({ creditBalance: newBalance, updatedAt: new Date() })
-      .where(eq(tenants.id, tenantId));
-
-    await tx.insert(creditTransactions).values({
-      id: uuidv7(),
-      tenantId,
-      type,
-      amount,
-      balanceAfter: newBalance,
-      referenceType: opts.referenceType ?? null,
-      referenceId: opts.referenceId ?? null,
-      description: opts.description ?? null,
-      createdAt: new Date(),
-    });
-
-    return { balanceAfter: newBalance };
-  });
+/**
+ * Same as `debitCredit`, but assumes `tx` is already an open `withTenantRls`
+ * transaction — for callers that need the debit atomic with another write
+ * (e.g. recording a template unlock) so a crash or a concurrent duplicate
+ * request can't charge without recording, or record without charging.
+ */
+export async function debitCreditInTx(
+  tx: Database,
+  tenantId: string,
+  amount: number,
+  type: Exclude<CreditTransactionType, "topup">,
+  opts: LedgerOpts = {},
+): Promise<{ balanceAfter: number }> {
+  if (amount <= 0) throw new Error("debitCredit amount must be positive");
+  return writeLedgerEntryInTx(tx, tenantId, -amount, type, opts);
 }
 
 /**
