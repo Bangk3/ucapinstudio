@@ -1,5 +1,10 @@
 import { getInvitation, slugExists } from "@/lib/invitations";
 import { getServerSession } from "@/lib/session";
+import {
+  TemplateLockedError,
+  UnknownTemplateError,
+  assertTemplateAccess,
+} from "@/lib/template-access";
 import { db, invitations, memberships, tenants } from "@invyte/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
@@ -71,6 +76,20 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
   const existing = await getInvitation(tenantId, id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  if (updates.templateId && updates.templateId !== existing.templateId) {
+    try {
+      await assertTemplateAccess(tenantId, updates.templateId);
+    } catch (err) {
+      if (err instanceof TemplateLockedError) {
+        return NextResponse.json({ error: "Template ini belum di-unlock" }, { status: 402 });
+      }
+      if (err instanceof UnknownTemplateError) {
+        return NextResponse.json({ error: "Template tidak dikenal" }, { status: 404 });
+      }
+      throw err;
+    }
+  }
 
   if (slug && slug !== existing.slug && (await slugExists(tenantId, slug, id))) {
     return NextResponse.json({ error: "Slug already taken" }, { status: 409 });

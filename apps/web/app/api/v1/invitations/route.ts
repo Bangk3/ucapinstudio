@@ -1,5 +1,10 @@
 import { listInvitations, slugExists } from "@/lib/invitations";
 import { getServerSession } from "@/lib/session";
+import {
+  TemplateLockedError,
+  UnknownTemplateError,
+  assertTemplateAccess,
+} from "@/lib/template-access";
 import { uuidv7 } from "@/lib/uuid";
 import { db, invitations, memberships, tenants } from "@invyte/db";
 import { and, eq, isNull } from "drizzle-orm";
@@ -78,6 +83,19 @@ export async function POST(req: NextRequest) {
   const tenantId = await resolveTenantId(tenantSlug, session.user.id);
   if (!tenantId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const resolvedTemplateId = templateId ?? "minimalist-modern";
+  try {
+    await assertTemplateAccess(tenantId, resolvedTemplateId);
+  } catch (err) {
+    if (err instanceof TemplateLockedError) {
+      return NextResponse.json({ error: "Template ini belum di-unlock" }, { status: 402 });
+    }
+    if (err instanceof UnknownTemplateError) {
+      return NextResponse.json({ error: "Template tidak dikenal" }, { status: 404 });
+    }
+    throw err;
+  }
+
   const slug = rawSlug
     ? (await slugExists(tenantId, rawSlug))
       ? await uniqueSlug(tenantId, rawSlug)
@@ -95,7 +113,7 @@ export async function POST(req: NextRequest) {
       name,
       slug,
       kind,
-      templateId: templateId ?? "minimalist-modern",
+      templateId: resolvedTemplateId,
       status: "draft",
       content: {
         hosts: { groomName: "", brideName: "" },
