@@ -16,3 +16,5 @@ export const IMAGE_SIZES: Record<Exclude<StorageVariant, "original">, number> = 
   md: 1080,
   lg: 1920,
 };
+
+export const MAX_IMAGE_BYTES = 20 * 1024 * 1024;

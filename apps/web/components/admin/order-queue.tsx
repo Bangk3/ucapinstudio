@@ -10,6 +10,7 @@ interface OrderRow {
     paymentStatus: "pending" | "paid" | "rejected";
     proofImageUrl: string | null;
     invitationId: string | null;
+    accessToken: string;
   };
   tenantSlug: string;
 }
@@ -22,6 +23,7 @@ export function OrderQueue({
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -84,6 +86,13 @@ export function OrderQueue({
     setActioningId(null);
   }
 
+  async function copyLink(order: OrderRow["order"]) {
+    const url = `${window.location.origin}/order/${order.accessToken}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(order.id);
+    setTimeout(() => setCopiedId((id) => (id === order.id ? null : id)), 2000);
+  }
+
   if (loading) return <p className="text-sm text-muted-foreground">Memuat...</p>;
   if (rows.length === 0) return <p className="text-sm text-muted-foreground">Belum ada order.</p>;
 
@@ -91,7 +100,14 @@ export function OrderQueue({
     <div className="space-y-3">
       {error && <p className="text-sm text-destructive">{error}</p>}
       {rows.map(({ order, tenantSlug }) => (
-        <div key={order.id} className="rounded-xl border bg-card p-4 flex items-center gap-4">
+        <div key={order.id} className="rounded-xl border bg-card p-4 flex items-start gap-4">
+          {order.proofImageUrl && (
+            <img
+              src={order.proofImageUrl}
+              alt="Bukti transfer"
+              className="h-20 w-20 rounded-lg object-cover border shrink-0"
+            />
+          )}
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm">{order.customerName}</p>
             <p className="text-xs text-muted-foreground">
@@ -106,6 +122,13 @@ export function OrderQueue({
                 : ""}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => void copyLink(order)}
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium shrink-0"
+          >
+            {copiedId === order.id ? "Tersalin!" : "Salin Link"}
+          </button>
           {canApprove && order.paymentStatus === "pending" && order.proofImageUrl && (
             <div className="flex gap-2 shrink-0">
               <button

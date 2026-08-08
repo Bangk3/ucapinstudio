@@ -27,8 +27,9 @@ export default async function PublicOrderPage({ params }: Props) {
         <div className="rounded-xl border bg-white p-6 shadow-sm">
           <OrderIntakeForm
             token={token}
-            alreadySubmitted={order.submittedData !== null}
+            alreadySubmitted={order.submittedData !== null && order.paymentStatus !== "rejected"}
             paymentStatus={order.paymentStatus}
+            rejectionReason={order.paymentStatus === "rejected" ? order.rejectionReason : null}
           />
         </div>
       </div>

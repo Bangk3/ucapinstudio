@@ -34,6 +34,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
           reviewedBy: auth.session.user.id,
           reviewedAt: new Date(),
           rejectionReason: parsed.data.reason,
+          // Clear the prior submission so the customer can resubmit — a
+          // rejected order is otherwise permanently stuck (submit route 409s
+          // whenever submittedData is non-null).
+          submittedData: null,
+          proofImageUrl: null,
         })
         .where(eq(orders.id, id))
         .returning();

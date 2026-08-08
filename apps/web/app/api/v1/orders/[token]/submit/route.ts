@@ -1,10 +1,16 @@
+import { createHash } from "node:crypto";
+import { rateLimitIp } from "@/lib/rate-limit";
 import { uuidv7 } from "@/lib/uuid";
 import { db, media, orders } from "@invyte/db";
-import { uploadImage } from "@invyte/storage";
+import { MAX_IMAGE_BYTES, deleteUploadResult, uploadImage } from "@invyte/storage";
 import type { UploadResult } from "@invyte/storage";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+function hashIp(ip: string): string {
+  return createHash("sha256").update(ip).digest("hex");
+}
 
 type Ctx = { params: Promise<{ token: string }> };
 
@@ -59,6 +65,23 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const [order] = await db.select().from(orders).where(eq(orders.accessToken, token)).limit(1);
   if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Rate limit: this is the app's only unauthenticated write path — same
+  // limit/window as the RSVP route for consistency (10/hour per IP).
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+  const rl = await rateLimitIp("order-submit", hashIp(ip), 10, 60 * 60 * 1000);
+  if (rl && !rl.success) {
+    return NextResponse.json(
+      { error: "Terlalu banyak percobaan. Coba lagi nanti." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+      },
+    );
+  }
+
   // Finding 2: one-time public form — never silently overwrite a prior submission.
   if (order.submittedData !== null) {
     return NextResponse.json(
@@ -101,18 +124,35 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Maksimal 10 foto galeri" }, { status: 422 });
   }
 
+  // Cheap pre-filter before buffering anything into memory — uploadImage
+  // enforces the same 20MB limit itself, this just avoids paying for
+  // .arrayBuffer() on a deliberately huge file first.
+  for (const file of [proofFile, ...galleryFiles]) {
+    if (file.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json({ error: "Ukuran file maksimal 20MB" }, { status: 422 });
+    }
+  }
+
   // Finding 1: upload+validate every file first, insert media rows only after
   // ALL uploads succeed — otherwise a later failure leaves earlier media rows
   // dangling with no order ever referencing them.
   let proofResult: UploadResult;
   const galleryResults: UploadResult[] = [];
+  const uploadedSoFar: UploadResult[] = [];
   try {
     proofResult = await uploadOneImage(order.tenantId, proofFile);
+    uploadedSoFar.push(proofResult);
     if (!proofResult.url) throw new Error("Upload succeeded but no public URL was returned");
     for (const file of galleryFiles) {
-      galleryResults.push(await uploadOneImage(order.tenantId, file));
+      const result = await uploadOneImage(order.tenantId, file);
+      uploadedSoFar.push(result);
+      galleryResults.push(result);
     }
   } catch (err) {
+    // Finding 3: a mid-batch failure leaves earlier files sitting in MinIO
+    // with no media row ever created for them — clean those up now rather
+    // than leaving permanent orphaned blobs.
+    await Promise.all(uploadedSoFar.map((result) => deleteUploadResult(result)));
     const message = err instanceof Error ? err.message : "Upload gagal";
     return NextResponse.json({ error: message }, { status: 422 });
   }
@@ -128,7 +168,14 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   await db
     .update(orders)
-    .set({ submittedData, proofImageUrl: proofResult.url })
+    .set({
+      submittedData,
+      proofImageUrl: proofResult.url,
+      // A resubmission after a rejection must re-enter the admin review
+      // queue — the queue only shows approve/reject for "pending" orders.
+      // No-op for a first-time submission (already "pending").
+      paymentStatus: "pending",
+    })
     .where(eq(orders.id, order.id));
 
   return NextResponse.json({ ok: true });

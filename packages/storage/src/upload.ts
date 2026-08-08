@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import sharp from "sharp";
-import { getPublicUrl, putObject } from "./client";
-import { IMAGE_SIZES, type StorageVariant, type UploadResult } from "./types";
+import { deleteObject, getPublicUrl, putObject } from "./client";
+import { IMAGE_SIZES, MAX_IMAGE_BYTES, type StorageVariant, type UploadResult } from "./types";
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
@@ -29,7 +29,7 @@ export async function uploadImage(
     throw new Error("Invalid image type");
   }
 
-  if (buffer.length > 20 * 1024 * 1024) {
+  if (buffer.length > MAX_IMAGE_BYTES) {
     throw new Error("Image too large (max 20MB)");
   }
 
@@ -91,4 +91,30 @@ export async function uploadAudio(
     sizeBytes: buffer.length,
     mimeType: "audio/mpeg",
   };
+}
+
+/**
+ * Best-effort cleanup for an already-uploaded result that ended up orphaned
+ * (e.g. a later file in the same batch failed, so no media row will ever
+ * reference this one). Reconstructs the object keys from the result's own
+ * naming convention — `${key}/${variant}.webp` + `${key}/original` for
+ * images with variants, or `key` itself for a single-object upload (audio).
+ * Swallows individual delete failures so cleanup of the rest still proceeds.
+ */
+export async function deleteUploadResult(result: UploadResult): Promise<void> {
+  const variantNames = Object.keys(result.variants);
+  const keys =
+    variantNames.length > 0
+      ? variantNames.map((name) =>
+          name === "original" ? `${result.key}/original` : `${result.key}/${name}.webp`,
+        )
+      : [result.key];
+
+  await Promise.all(
+    keys.map((key) =>
+      deleteObject(key).catch((err) => {
+        console.error("[storage] failed to clean up orphaned object", key, err);
+      }),
+    ),
+  );
 }

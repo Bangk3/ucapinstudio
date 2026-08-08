@@ -28,9 +28,15 @@ interface Props {
   token: string;
   alreadySubmitted: boolean;
   paymentStatus: "pending" | "paid" | "rejected";
+  rejectionReason?: string | null;
 }
 
-export function OrderIntakeForm({ token, alreadySubmitted, paymentStatus }: Props) {
+export function OrderIntakeForm({
+  token,
+  alreadySubmitted,
+  paymentStatus,
+  rejectionReason,
+}: Props) {
   const [groomName, setGroomName] = useState("");
   const [brideName, setBrideName] = useState("");
   const [story, setStory] = useState("");
@@ -124,6 +130,13 @@ export function OrderIntakeForm({ token, alreadySubmitted, paymentStatus }: Prop
 
   return (
     <div className="space-y-6">
+      {paymentStatus === "rejected" && (
+        <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive space-y-1">
+          <p className="font-medium">Pengajuan sebelumnya ditolak</p>
+          {rejectionReason && <p>{rejectionReason}</p>}
+          <p>Silakan lengkapi kembali data dan bukti transfer di bawah ini.</p>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label htmlFor="groom-name" className="text-sm font-medium">

@@ -56,59 +56,66 @@ export async function POST(req: NextRequest) {
   const accessToken = randomBytes(32).toString("base64url");
   const now = new Date();
 
-  await db.insert(tenants).values({
-    id: tenantId,
-    slug: tenantSlug,
-    name: customerName,
-    type: "organization",
-    plan: "free",
-    settings: { source: "staff_order" },
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  await db.insert(memberships).values({
-    userId: auth.session.user.id,
-    tenantId,
-    role: "owner",
-    joinedAt: now,
-  });
-
-  // Attach UcapinStudio's shared WhatsApp credential, if configured, so
-  // broadcast to the couple's guest list works with zero extra setup.
-  // Silently skipped if unset — see Step 2's note.
-  if (process.env.WA_CLOUD_API_TOKEN && process.env.WA_PHONE_NUMBER_ID) {
-    await db.insert(messagingCredentials).values({
-      id: uuidv7(),
-      tenantId,
-      provider: "whatsapp_cloud",
-      encryptedConfig: encrypt(
-        JSON.stringify({
-          phoneNumberId: process.env.WA_PHONE_NUMBER_ID,
-          accessToken: process.env.WA_CLOUD_API_TOKEN,
-        }),
-      ),
-      isActive: true,
+  // Finding 4: one transaction for all 4 writes — encrypt() (called below for
+  // the optional WA credential) can throw if ENCRYPTION_KEY is unset/malformed,
+  // which previously left an orphaned tenant+membership with no order. None
+  // of these tables have RLS policies needing a session variable, so a bare
+  // db.transaction (not withTenantRls/withAdminDb) is correct here.
+  const [order] = await db.transaction(async (tx) => {
+    await tx.insert(tenants).values({
+      id: tenantId,
+      slug: tenantSlug,
+      name: customerName,
+      type: "organization",
+      plan: "free",
+      settings: { source: "staff_order" },
       createdAt: now,
       updatedAt: now,
     });
-  }
 
-  const [order] = await db
-    .insert(orders)
-    .values({
-      id: orderId,
-      customerName,
-      customerContact,
-      notes: notes ?? null,
-      price: orderPackagePrice,
-      createdBy: auth.session.user.id,
+    await tx.insert(memberships).values({
+      userId: auth.session.user.id,
       tenantId,
-      accessToken,
-      paymentStatus: "pending",
-      createdAt: now,
-    })
-    .returning();
+      role: "owner",
+      joinedAt: now,
+    });
+
+    // Attach UcapinStudio's shared WhatsApp credential, if configured, so
+    // broadcast to the couple's guest list works with zero extra setup.
+    // Silently skipped if unset — see Step 2's note.
+    if (process.env.WA_CLOUD_API_TOKEN && process.env.WA_PHONE_NUMBER_ID) {
+      await tx.insert(messagingCredentials).values({
+        id: uuidv7(),
+        tenantId,
+        provider: "whatsapp_cloud",
+        encryptedConfig: encrypt(
+          JSON.stringify({
+            phoneNumberId: process.env.WA_PHONE_NUMBER_ID,
+            accessToken: process.env.WA_CLOUD_API_TOKEN,
+          }),
+        ),
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    return tx
+      .insert(orders)
+      .values({
+        id: orderId,
+        customerName,
+        customerContact,
+        notes: notes ?? null,
+        price: orderPackagePrice,
+        createdBy: auth.session.user.id,
+        tenantId,
+        accessToken,
+        paymentStatus: "pending",
+        createdAt: now,
+      })
+      .returning();
+  });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   return NextResponse.json({ order, publicUrl: `${appUrl}/order/${accessToken}` }, { status: 201 });
