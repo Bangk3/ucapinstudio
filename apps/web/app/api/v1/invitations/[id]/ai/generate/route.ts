@@ -1,3 +1,4 @@
+import { AI_GENERATION_COST_RUPIAH } from "@/lib/pricing";
 /**
  * POST /api/v1/invitations/[id]/ai/generate
  *
@@ -17,7 +18,7 @@
 import { getServerSession } from "@/lib/session";
 import { uuidv7 } from "@/lib/uuid";
 import { AnthropicProvider, GeminiProvider, NvidiaNimProvider, generateVariants } from "@invyte/ai";
-import { aiGenerations, db, invitations, memberships, tenants } from "@invyte/db";
+import { aiGenerations, db, debitCredit, invitations, memberships, tenants } from "@invyte/db";
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -112,6 +113,23 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Batas biaya bulanan AI tercapai ($5)" }, { status: 429 });
   }
 
+  // Credit balance check — AI generation costs credits, checked before we
+  // even create the pending row.
+  const [tenantRow] = await db
+    .select({ creditBalance: tenants.creditBalance })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+    .limit(1);
+
+  if (!tenantRow || tenantRow.creditBalance < AI_GENERATION_COST_RUPIAH) {
+    return NextResponse.json(
+      {
+        error: `Saldo tidak cukup. Butuh Rp ${AI_GENERATION_COST_RUPIAH.toLocaleString("id-ID")}, tersedia Rp ${(tenantRow?.creditBalance ?? 0).toLocaleString("id-ID")}.`,
+      },
+      { status: 402 },
+    );
+  }
+
   // Create ai_generation record in pending state
   const generationId = uuidv7();
   const now = new Date();
@@ -162,6 +180,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         updatedAt: ts,
       })
       .where(eq(aiGenerations.id, generationId));
+
+    await debitCredit(tenantId, AI_GENERATION_COST_RUPIAH, "debit_ai_generation", {
+      referenceType: "ai_generation",
+      referenceId: generationId,
+      description: `AI generation (${result.model})`,
+    });
 
     return NextResponse.json({ generationId, variants: result.variants });
   } catch (err) {
