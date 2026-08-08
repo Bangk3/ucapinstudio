@@ -20,6 +20,23 @@ this spec makes **all** pricing values superadmin-editable through one
 settings page rather than adding a one-off mechanism for just the order
 price.
 
+**The end-to-end flow, confirmed during brainstorming:** staff logs an order
+from an initial WA conversation (name + contact only) → staff sends the
+customer a unique link → customer opens that link (no account, no login —
+public, scoped to their order only) and fills in their own wedding data
+(names, event details, photos, story) and uploads payment proof, all on one
+page → `superadmin` approves the payment → staff opens the order in the
+admin panel and creates the invitation pre-filled with what the customer
+submitted → staff picks a template and polishes in the **existing** invitation
+editor → staff publishes and sends the resulting public invitation link
+back to the customer over the same WA thread. The customer never needs an
+account at any point in this flow — invitation delivery reuses the
+already-existing public `/{tenant}/u/{slug}` link every self-serve
+invitation already gets. An account only enters the picture later, if the
+customer specifically asks to manage the invitation themselves (guest list,
+RSVP data) — handled by the already-existing `POST /api/v1/tenant/members`,
+not by anything new in this spec.
+
 ## Goals
 
 1. A `/admin/settings` page where `superadmin` can view and edit every price
@@ -29,33 +46,44 @@ price.
 2. Staff (`admin` or `superadmin`) can record a WhatsApp-originated order:
    customer name/contact, at the current order price (snapshotted, not a
    live reference to settings). Recording an order creates a dedicated
-   tenant, adds the staff member to it, and hands off into the **existing**
-   invitation-creation flow — no new editor UI.
-3. Order payment is confirmed the same way top-ups are (proof upload,
+   tenant, adds the staff member to it, and generates a unique public link
+   for the customer.
+3. A public, unauthenticated page at that unique link lets the customer
+   submit their own wedding data (host names, event details, photos, short
+   story) and upload payment proof — no account required.
+4. Order payment is confirmed the same way top-ups are (proof upload,
    `superadmin` approves) but through its own table and its own admin queue
    — visually and structurally distinct from `topup_requests`, so the two
    never get confused in the UI.
-4. The admin overview's "Revenue This Month" metric includes paid orders,
+5. Once paid, staff creates the invitation from the order with one action —
+   pre-filled from the customer's submission — then finishes it in the
+   **existing** invitation editor (template choice, polish). No new editor
+   UI.
+6. The admin overview's "Revenue This Month" metric includes paid orders,
    not just credit top-ups — otherwise order revenue is invisible in
    reporting despite being tracked.
-5. Staff-created tenants are tagged distinctly from self-serve signups, so
+7. Staff-created tenants are tagged distinctly from self-serve signups, so
    future analytics (and today's "active tenants" overview metric) can tell
    the two apart.
 
 ## Non-goals
 
 - No WhatsApp bot, webhook message parsing, or Cloud API message-content
-  integration — intake is 100% manual (staff reads WA in a normal client,
-  types the order into the dashboard). No Baileys, no Meta app setup.
+  integration — the only manual step is staff typing the customer's
+  name/contact from the initial chat; everything else the customer provides
+  themselves through the public order page, not through WA message parsing.
+  No Baileys, no Meta app setup.
+- No account/login for the customer at any point in this flow (see Context)
+  — the public order-intake page and the public invitation link are both
+  unauthenticated by design, not a gap to fill later.
 - No mechanism to revoke a staff member's tenant access after an order is
   handed to the customer — staff stays a member indefinitely. Revisit later
   if it becomes a real problem, not before.
 - No change to how many top-up packages exist (still exactly 3) — only
   their amounts become editable.
-- Giving the customer their own login is **not new work**: this app already
-  has `POST /api/v1/tenant/members` (add a member to a tenant by email).
-  Once a customer wants access, staff uses that existing flow on the
-  order's tenant. Nothing in this spec needs to build that.
+- Giving the customer their own login is **not new work** if they ever ask
+  for it: this app already has `POST /api/v1/tenant/members` (add a member
+  to a tenant by email). Nothing in this spec needs to build that.
 
 ## Data Model
 
@@ -88,18 +116,46 @@ Key-value settings table, one row per price.
   tenant in the same transaction as the order row (see Backend Flows), so
   there is never a valid state where an order exists without one
 - `invitationId` → `invitations.id` nullable, `ON DELETE SET NULL` (set once
-  staff actually creates the invitation inside the new tenant — this spec
-  doesn't require it to happen atomically with order creation, staff may
-  create the order, then build the invitation in a separate action)
+  staff actually creates the invitation via the "create invitation from
+  order" action — see Backend Flows)
+- `accessToken` text not null, unique — a high-entropy random string (32+
+  bytes, `crypto.randomBytes(32).toString("base64url")` or equivalent — this
+  gates access to money and a customer's private wedding data, so it gets
+  meaningfully more entropy than the existing 8-char guest-slug nanoids used
+  for invitation personalization elsewhere in this codebase, which don't
+  guard payment). This is the only credential the public order page checks
+  — no login, just "did the request include the right token."
+- `submittedData` jsonb nullable — filled when the customer submits the
+  public form. Shape is deliberately a subset of
+  `@invyte/templates`'s `InvitationContent` (`hosts: HostInfo`,
+  `events: EventInfo[]`, `story?: string`, `galleryUrls?: string[]`) so it
+  can be copied close to verbatim into a new invitation's `content` field
+  with no translation layer — see "Create invitation from order" below.
 - `paymentStatus` enum: `pending`, `paid`, `rejected`, default `pending`
-- `proofImageUrl` text nullable (set when staff/customer uploads transfer
-  proof — reuses the existing `/api/v1/media/upload` endpoint, same as
-  top-up requests)
+- `proofImageUrl` text nullable (set when the customer uploads transfer
+  proof through the public order page — reuses the existing
+  `/api/v1/media/upload` endpoint, same as top-up requests)
 - `reviewedBy` → `user.id` nullable
 - `reviewedAt` timestamptz nullable
 - `rejectionReason` text nullable
 - `createdAt` timestamptz default now
 - index on `(paymentStatus, createdAt)` for the admin queue
+- unique index on `accessToken` (the public page's only lookup key)
+
+### `orders` and `platform_settings`: no RLS
+
+Both tables deliberately get **no RLS policy**, joining the existing
+`user`/`session`/`account`/`verification`/`tenants` "no RLS, app-level check
+only" precedent already documented in `packages/db/rls.sql` — not an
+oversight. Neither table fits the tenant-scoped mold every other new table
+in this feature area got: `orders` is read either cross-tenant by staff
+(`withAdminDb`, same as everywhere else in the admin surface) or by an
+anonymous customer through a single-row token lookup that has no tenant
+context to set at all (`app.tenant_id` would be meaningless for "look up
+the one row matching this token"); `platform_settings` has no `tenant_id`
+column full stop, it's global by definition. Both are protected entirely by
+their route handlers — `requireAdminSession` for the admin routes, the
+`accessToken` equality check for the public ones.
 
 ### `tenants` (no schema change — reuse existing `settings` jsonb)
 Staff-created tenants get `settings: { source: "staff_order" }` set at
@@ -149,7 +205,7 @@ prop-threading pattern already established for `unlockedTemplateIds`).
 body is a partial map of key→value, validates each value is a positive
 integer, updates the matching rows, sets `updatedBy`/`updatedAt`.
 
-### Order creation
+### Order creation (staff-facing)
 
 `POST /api/v1/admin/orders` — gated by `requireAdminSession(req)` (the
 default read tier, which already means "role is `admin` or `superadmin`").
@@ -167,30 +223,67 @@ In one transaction:
    already get elsewhere in this codebase).
 3. Add the creating staff member (`memberships`, `role: "owner"`) to that
    tenant.
-4. Insert the `orders` row: `price` = the value read in step 1,
-   `tenantId` = the new tenant's id, `createdBy` = the staff user id.
+4. Generate `accessToken` (see Data Model).
+5. Insert the `orders` row: `price` = the value read in step 1,
+   `tenantId` = the new tenant's id, `createdBy` = the staff user id,
+   `accessToken` from step 4.
 
-Returns `{ order, tenantSlug }` — the admin UI redirects staff straight into
-`/${tenantSlug}/dashboard/invitations/new` (the existing, unmodified
-new-invitation flow) so they can build the invitation immediately.
+Returns `{ order }`, including the full public URL
+(`${APP_URL}/order/${accessToken}`) the admin UI displays for staff to copy
+and paste into the WA conversation with the customer.
 
-### Order payment — submit & approve
+### Public order page (customer-facing, no auth)
+
+- `GET /api/v1/orders/[token]` — public, no session check. Looks up the
+  order by `accessToken`. Returns only what the public page needs to render
+  (`customerName`, `price`, `paymentStatus`, whether `submittedData`/
+  `proofImageUrl` are already set) — never returns `customerContact`,
+  `notes`, `tenantId`, `createdBy`, or any other internal field. A token
+  that doesn't match any row returns 404, indistinguishable from a
+  never-issued token (no signal to an attacker about whether a guessed
+  token is "close").
+- `POST /api/v1/orders/[token]/submit` — public, no session check. Body:
+  `{ submittedData: {...}, proofImageUrl }` (the image itself goes through
+  the existing `/api/v1/media/upload` endpoint first, same as every other
+  upload in this codebase — the public order page calls that directly
+  before submitting here, exactly like `topup-form.tsx` already does for
+  top-up proof). Validates `submittedData` against a zod schema matching
+  the `HostInfo`/`EventInfo` subset (Data Model). Sets `submittedData` and
+  `proofImageUrl` on the order. Does **not** change `paymentStatus` — that
+  only moves on explicit `superadmin` approval, so a customer submitting
+  data can never itself mark an order as paid.
+
+### Order payment — approve & reject (staff-facing)
 
 Mirrors the top-up flow's already-fixed atomicity pattern from the start
 (no separate "find the bug, then fix it" cycle needed this time — apply the
 lesson immediately):
 
-- `POST /api/v1/admin/orders/[id]/proof` (`requireAdminSession()`) — sets
-  `proofImageUrl` on the order (staff uploads on the customer's behalf,
-  since the customer has no login yet in the common case).
 - `POST /api/v1/admin/orders/[id]/approve` (`requireAdminSession({write:
   true})`) — single transaction: row-locked re-read of the `orders` row,
   verify `paymentStatus === "pending"`, update to `paid` +
   `reviewedBy`/`reviewedAt`. No credit-ledger interaction — this is a
   one-off service fee, not a top-up, so it does not touch
   `tenants.credit_balance` or `credit_transactions` at all.
-- `POST /api/v1/admin/orders/[id]/reject` — same shape as the top-up
-  reject route (row-locked, one transaction, `rejectionReason` required).
+- `POST /api/v1/admin/orders/[id]/reject` — same shape (row-locked, one
+  transaction, `rejectionReason` required).
+
+### Create invitation from order (staff-facing)
+
+`POST /api/v1/admin/orders/[id]/create-invitation` —
+`requireAdminSession(req)` (default read tier — same `admin`-can-write
+carve-out as order creation, since building the invitation is `admin`'s
+job). Requires `paymentStatus === "paid"` (402/409 otherwise) and
+`invitationId IS NULL` (409 if already created — this action runs once per
+order). Creates an `invitations` row in the order's `tenantId`,
+`content` initialized from `orders.submittedData` (host/event/story/gallery
+fields copied directly — nothing else in `InvitationContent` is populated,
+staff fills the rest via the normal editor), `templateId` defaulted to
+`"minimalist-modern"` (staff changes it in the editor same as any other
+invitation), `status: "draft"`. Sets `orders.invitationId`. Returns
+`{ invitation, tenantSlug }` — the admin UI redirects staff straight into
+`/${tenantSlug}/dashboard/invitations/${invitation.id}` (the existing,
+unmodified invitation editor) to pick a template and polish.
 
 ### Revenue metric fix
 
@@ -213,12 +306,51 @@ for `admin`, matching the existing pattern from top-up-queue/user-table).
 ### `/admin/orders` (new page)
 
 Two sections:
-- "Buat Order Baru" — form (customer name, contact, notes) + submit →
-  redirects to the new tenant's invitation-creation flow on success.
+- "Buat Order Baru" — form (customer name, contact, notes) + submit → shows
+  the generated public link (`${APP_URL}/order/${accessToken}`) with a
+  copy-to-clipboard button, for staff to paste into the WA conversation.
+  No redirect — staff's next action happens later, once the customer has
+  submitted data and paid.
 - Queue of existing orders — table/list showing customer, price, payment
-  status, with an upload-proof action (if no proof yet) and
-  approve/reject buttons (`superadmin`-only, same visibility pattern as
-  `topup-queue.tsx`).
+  status, whether data has been submitted yet. Approve/reject buttons
+  (`superadmin`-only, same visibility pattern as `topup-queue.tsx`). Once
+  `paymentStatus === "paid"` and `invitationId IS NULL`, a "Buat Undangan"
+  button appears (visible to `admin` too) that calls the create-invitation
+  route and redirects into the existing editor.
+
+### `/order/[token]` (new page, public, no layout auth)
+
+Lives outside both `[tenant]` and `/admin` — a standalone public route
+(`apps/web/app/order/[token]/page.tsx`), no session required, no
+`middleware.ts` gate (the token itself is the access control, checked
+server-side by the page and its one API route). `middleware.ts`'s
+`RESERVED_SLUGS` set (which already contains `"admin"` for exactly this
+reason) needs `"order"` added too — otherwise a tenant could register the
+slug `order` and create ambiguity with this route, even though Next.js's
+own static-route-wins-over-dynamic-segment resolution means it wouldn't
+actually break anything technically. Shows the order's price and
+a form: host names (groom/bride, matching `HostInfo`'s required fields),
+at least one event (name/date/time/venue, matching `EventInfo`), a short
+story text area, and a multi-photo upload (reusing the existing
+`/api/v1/media/upload` pattern already used for cover photos and top-up
+proof — same component shape, just multiple files instead of one). A
+separate section below for payment: the same placeholder QRIS/bank-info
+block already used on `topup-form.tsx` (identical placeholder text,
+replaced by Kelvin later, not duplicated new copy), plus a proof-of-transfer
+upload. One submit button posts everything to
+`POST /api/v1/orders/[token]/submit`. After a successful submit, the page
+shows a simple "terkirim, kami akan segera memproses" confirmation — no
+further interaction, the customer's part is done until staff sends them the
+finished invitation link over WA.
+
+### Delivery — no new UI needed
+
+Once staff publishes the invitation in the existing editor, the editor
+already displays the invitation's public link (`/${tenantSlug}/u/${slug}`)
+for staff to copy — this UI already exists for every self-serve invitation
+today. Staff pastes that link into the same WA thread. Nothing in this spec
+adds a "send" feature; it's the existing copy-link affordance, used the same
+way it already is.
 
 ### Admin nav
 
@@ -233,10 +365,15 @@ Two sections:
   concurrency test (same row-lock technique, no ledger interaction to
   duplicate-test since orders don't touch `credit_transactions`).
 - Manual verification checklist (documented in the implementation plan):
-  create an order, confirm tenant+membership+invitation-flow handoff works,
-  submit proof, approve as superadmin, confirm revenue metric includes it,
-  confirm `admin` role can create orders but not approve them, confirm
-  editing a setting doesn't change already-recorded order prices.
+  create an order, confirm the public order page works with the right
+  token and 404s on a wrong/guessed one, confirm `GET /api/v1/orders/[token]`
+  never leaks `customerContact`/`notes`/`tenantId`/`createdBy`, submit data
+  + proof as the customer, approve as superadmin, create the invitation
+  from the order and confirm the submitted data actually lands in the new
+  invitation's content, confirm revenue metric includes the paid order,
+  confirm `admin` role can create orders and invitations but not approve
+  payment, confirm editing a setting doesn't change already-recorded order
+  prices.
 
 ## Open Items Deferred to Implementation Plan
 
