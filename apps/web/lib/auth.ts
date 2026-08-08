@@ -2,9 +2,15 @@ import { account, db, memberships, session, tenants, user, verification } from "
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 import { nanoid } from "nanoid";
 
-export const auth = betterAuth({
+// better-auth's inferred return type embeds a pnpm-store-relative zod path that
+// TS can't portably name once the admin plugin's schemas are in the mix — same
+// issue auth-client.ts below works around. Annotate + cast to the plugin-agnostic
+// base shape; api.getSession/handler (all this codebase uses) are unaffected.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: { user, session, account, verification },
@@ -94,7 +100,13 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [nextCookies()],
-});
+  plugins: [
+    admin({
+      defaultRole: "user",
+      adminRoles: ["superadmin", "admin"],
+    }),
+    nextCookies(),
+  ],
+}) as any;
 
 export type Auth = typeof auth;

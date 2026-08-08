@@ -42,6 +42,20 @@ export async function withPublicDb<T>(fn: (db: Database) => Promise<T>): Promise
 }
 
 /**
+ * Execute `fn` with the admin cross-tenant RLS bypass flag set. Only call
+ * this after requireAdminSession() has already verified the caller's role
+ * server-side — this function itself does no authorization, it only sets
+ * the DB session flag the RLS admin policies check.
+ */
+export async function withAdminDb<T>(fn: (db: Database) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT set_config('app.tenant_id', '', true)`);
+    await tx.execute(sql`SELECT set_config('app.is_admin', 'true', true)`);
+    return fn(tx as unknown as Database);
+  });
+}
+
+/**
  * @deprecated Use withTenantRls for new code.
  * Kept for backward compat during incremental migration.
  */

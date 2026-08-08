@@ -39,6 +39,19 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Admin panel — requires a session; role is checked again server-side in
+  // requireAdminSession() (this is just the fast reject for anonymous
+  // requests, matching the same two-layer pattern as the tenant dashboard).
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const sessionCookie = getSessionCookie(req);
+    if (!sessionCookie) {
+      const loginUrl = new URL("/auth/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
   // Tenant-scoped paths — check session for dashboard routes
   if (isTenantPath(pathname)) {
     const tenantSlug = pathname.split("/")[1] as string;
