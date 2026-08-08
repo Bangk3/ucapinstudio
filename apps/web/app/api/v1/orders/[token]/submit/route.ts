@@ -1,11 +1,14 @@
 import { uuidv7 } from "@/lib/uuid";
 import { db, media, orders } from "@invyte/db";
 import { uploadImage } from "@invyte/storage";
+import type { UploadResult } from "@invyte/storage";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 type Ctx = { params: Promise<{ token: string }> };
+
+const MAX_GALLERY_IMAGES = 10;
 
 const eventSchema = z.object({
   id: z.string(),
@@ -29,11 +32,13 @@ const submittedDataSchema = z.object({
   story: z.string().max(5000).optional(),
 });
 
-async function uploadOneImage(tenantId: string, file: File): Promise<string> {
+async function uploadOneImage(tenantId: string, file: File): Promise<UploadResult> {
   const buffer = Buffer.from(await file.arrayBuffer());
-  const result = await uploadImage(tenantId, buffer, "order-submission");
+  return uploadImage(tenantId, buffer, "order-submission");
+}
 
-  await db.insert(media).values({
+function insertMediaRow(tenantId: string, result: UploadResult) {
+  return db.insert(media).values({
     id: uuidv7(),
     tenantId,
     type: "image",
@@ -46,9 +51,6 @@ async function uploadOneImage(tenantId: string, file: File): Promise<string> {
     variants: result.variants as Record<string, string>,
     createdAt: new Date(),
   });
-
-  if (!result.url) throw new Error("Upload succeeded but no public URL was returned");
-  return result.url;
 }
 
 export async function POST(req: NextRequest, ctx: Ctx) {
@@ -56,6 +58,14 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const [order] = await db.select().from(orders).where(eq(orders.accessToken, token)).limit(1);
   if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Finding 2: one-time public form — never silently overwrite a prior submission.
+  if (order.submittedData !== null) {
+    return NextResponse.json(
+      { error: "Data untuk order ini sudah pernah dikirim" },
+      { status: 409 },
+    );
+  }
 
   let formData: FormData;
   try {
@@ -86,21 +96,40 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const galleryFiles = formData.getAll("galleryImages").filter((f): f is File => f instanceof File);
 
-  let proofImageUrl: string;
-  const galleryUrls: string[] = [];
+  // Finding 3: cap gallery file count before any upload processing begins.
+  if (galleryFiles.length > MAX_GALLERY_IMAGES) {
+    return NextResponse.json({ error: "Maksimal 10 foto galeri" }, { status: 422 });
+  }
+
+  // Finding 1: upload+validate every file first, insert media rows only after
+  // ALL uploads succeed — otherwise a later failure leaves earlier media rows
+  // dangling with no order ever referencing them.
+  let proofResult: UploadResult;
+  const galleryResults: UploadResult[] = [];
   try {
-    proofImageUrl = await uploadOneImage(order.tenantId, proofFile);
+    proofResult = await uploadOneImage(order.tenantId, proofFile);
+    if (!proofResult.url) throw new Error("Upload succeeded but no public URL was returned");
     for (const file of galleryFiles) {
-      galleryUrls.push(await uploadOneImage(order.tenantId, file));
+      galleryResults.push(await uploadOneImage(order.tenantId, file));
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload gagal";
     return NextResponse.json({ error: message }, { status: 422 });
   }
 
+  await insertMediaRow(order.tenantId, proofResult);
+  for (const result of galleryResults) {
+    await insertMediaRow(order.tenantId, result);
+  }
+
+  const galleryUrls = galleryResults.map((r) => r.url).filter((u): u is string => u !== undefined);
+
   const submittedData = { ...parsedSubmitted.data, galleryUrls };
 
-  await db.update(orders).set({ submittedData, proofImageUrl }).where(eq(orders.id, order.id));
+  await db
+    .update(orders)
+    .set({ submittedData, proofImageUrl: proofResult.url })
+    .where(eq(orders.id, order.id));
 
   return NextResponse.json({ ok: true });
 }
