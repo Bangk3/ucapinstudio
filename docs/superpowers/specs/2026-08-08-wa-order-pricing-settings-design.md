@@ -242,16 +242,27 @@ and paste into the WA conversation with the customer.
   that doesn't match any row returns 404, indistinguishable from a
   never-issued token (no signal to an attacker about whether a guessed
   token is "close").
-- `POST /api/v1/orders/[token]/submit` — public, no session check. Body:
-  `{ submittedData: {...}, proofImageUrl }` (the image itself goes through
-  the existing `/api/v1/media/upload` endpoint first, same as every other
-  upload in this codebase — the public order page calls that directly
-  before submitting here, exactly like `topup-form.tsx` already does for
-  top-up proof). Validates `submittedData` against a zod schema matching
-  the `HostInfo`/`EventInfo` subset (Data Model). Sets `submittedData` and
-  `proofImageUrl` on the order. Does **not** change `paymentStatus` — that
-  only moves on explicit `superadmin` approval, so a customer submitting
-  data can never itself mark an order as paid.
+- `POST /api/v1/orders/[token]/submit` — public, no session check.
+  **Correction from an earlier draft of this spec:** the existing
+  `/api/v1/media/upload` endpoint requires an authenticated session
+  (`requireSession()` + tenant-membership check) — the anonymous customer
+  has neither, so this route cannot reuse it as a separate client-side hop
+  the way `topup-form.tsx` does. Instead, this route accepts
+  `multipart/form-data` directly (photos + proof-of-transfer file +
+  `submittedData` as a JSON-stringified field, in one request) and calls
+  `uploadImage()` from `@invyte/storage` itself, server-side — the same
+  underlying function `/api/v1/media/upload` calls internally, just invoked
+  directly here instead of through that session-gated route. Each uploaded
+  file gets a `media` row (scoped to the order's `tenantId`, same shape
+  every other media row already gets). Validates `submittedData` (parsed
+  from the JSON field) against a zod schema matching the `HostInfo`/
+  `EventInfo` subset (Data Model), and validates file types/sizes the same
+  way `/api/v1/media/upload` already does (magic-byte sniffing via the
+  existing storage adapter — not re-implemented, just called directly).
+  Sets `submittedData` (with the resulting upload URLs filled in) and
+  `proofImageUrl` on the order in one update. Does **not** change
+  `paymentStatus` — that only moves on explicit `superadmin` approval, so a
+  customer submitting data can never itself mark an order as paid.
 
 ### Order payment — approve & reject (staff-facing)
 
@@ -331,17 +342,21 @@ own static-route-wins-over-dynamic-segment resolution means it wouldn't
 actually break anything technically. Shows the order's price and
 a form: host names (groom/bride, matching `HostInfo`'s required fields),
 at least one event (name/date/time/venue, matching `EventInfo`), a short
-story text area, and a multi-photo upload (reusing the existing
-`/api/v1/media/upload` pattern already used for cover photos and top-up
-proof — same component shape, just multiple files instead of one). A
-separate section below for payment: the same placeholder QRIS/bank-info
-block already used on `topup-form.tsx` (identical placeholder text,
-replaced by Kelvin later, not duplicated new copy), plus a proof-of-transfer
-upload. One submit button posts everything to
-`POST /api/v1/orders/[token]/submit`. After a successful submit, the page
-shows a simple "terkirim, kami akan segera memproses" confirmation — no
-further interaction, the customer's part is done until staff sends them the
-finished invitation link over WA.
+story text area, and a multi-photo picker (file inputs collected client-side
+— unlike the editor's `editor-story.tsx` gallery uploader, these files are
+**not** uploaded one-by-one as they're picked, since there's no session to
+authorize each individual `/api/v1/media/upload` call; they're held in
+browser state and sent together with the rest of the form). A separate
+section below for payment: the same placeholder QRIS/bank-info block
+already used on `topup-form.tsx` (identical placeholder text, replaced by
+Kelvin later, not duplicated new copy), plus a proof-of-transfer file
+picker. One submit button sends everything — form fields plus every
+selected file — as a single `multipart/form-data` POST to
+`POST /api/v1/orders/[token]/submit` (see Backend Flows for why this
+differs from every other upload flow in this codebase). After a successful
+submit, the page shows a simple "terkirim, kami akan segera memproses"
+confirmation — no further interaction, the customer's part is done until
+staff sends them the finished invitation link over WA.
 
 ### Delivery — no new UI needed
 
