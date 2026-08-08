@@ -1,6 +1,6 @@
 import { hashPassword } from "better-auth/crypto";
 import { nanoid } from "nanoid";
-import { account, db, memberships, tenants, user } from "./index";
+import { account, db, memberships, platformSettings, tenants, user } from "./index";
 
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "admin12345";
 
@@ -73,6 +73,19 @@ async function seed() {
   await db
     .insert(memberships)
     .values({ userId: adminId, tenantId: orgTenantId, role: "owner" })
+    .onConflictDoNothing();
+
+  // Initial platform pricing (admin-editable afterward via settings UI)
+  await db
+    .insert(platformSettings)
+    .values([
+      { key: "ai_generation_cost", value: 5000 },
+      { key: "template_unlock_cost", value: 15000 },
+      { key: "order_package_price", value: 150000 },
+      { key: "topup_package_1", value: 25000 },
+      { key: "topup_package_2", value: 100000 },
+      { key: "topup_package_3", value: 500000 },
+    ])
     .onConflictDoNothing();
 
   console.log("✅ Seed complete");

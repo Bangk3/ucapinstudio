@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const RESERVED_SLUGS = new Set([
   "system",
   "admin",
+  "order",
   "api",
   "auth",
   "health",

@@ -12,3 +12,5 @@ export * from "./messaging";
 export * from "./ai-generations";
 export * from "./checkins";
 export * from "./credits";
+export * from "./settings";
+export * from "./orders";
