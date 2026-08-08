@@ -4,7 +4,7 @@ import { requireAdminSession } from "@/lib/require-admin";
 import { getPricingSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import { db, memberships, messagingCredentials, orders, tenants } from "@invyte/db";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -112,4 +112,22 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   return NextResponse.json({ order, publicUrl: `${appUrl}/order/${accessToken}` }, { status: 201 });
+}
+
+export async function GET(req: NextRequest) {
+  const auth = await requireAdminSession(req);
+  if (!auth.ok) return NextResponse.json({ error: "Forbidden" }, { status: auth.status });
+
+  const statusFilter = req.nextUrl.searchParams.get("status");
+  const base = db
+    .select({ order: orders, tenantSlug: tenants.slug })
+    .from(orders)
+    .innerJoin(tenants, eq(orders.tenantId, tenants.id))
+    .orderBy(desc(orders.createdAt));
+
+  const rows = statusFilter
+    ? await base.where(eq(orders.paymentStatus, statusFilter as "pending" | "paid" | "rejected"))
+    : await base;
+
+  return NextResponse.json({ orders: rows });
 }
