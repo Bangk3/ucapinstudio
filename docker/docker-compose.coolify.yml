@@ -20,6 +20,26 @@ services:
       - invyte
     entrypoint: ["pnpm", "--filter", "@invyte/db", "db:migrate"]
 
+  createbucket:
+    image: minio/mc:latest
+    container_name: invyte_createbucket
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:-invyte}
+    networks:
+      - invyte
+    entrypoint: >
+      sh -c "
+      mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\" &&
+      (mc ls local/$$STORAGE_BUCKET > /dev/null 2>&1 || mc mb local/$$STORAGE_BUCKET) &&
+      mc anonymous set download local/$$STORAGE_BUCKET
+      "
+
   web:
     build:
       context: ..
@@ -35,12 +55,16 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      createbucket:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${APP_URL}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      GUEST_PHONE_HASH_SALT: ${GUEST_PHONE_HASH_SALT}
       STORAGE_ENDPOINT: http://minio:9000
       STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER}
       STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -49,6 +73,11 @@ services:
       STORAGE_PUBLIC_URL: ${STORAGE_PUBLIC_URL}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       FAL_API_KEY: ${FAL_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      WA_CLOUD_API_TOKEN: ${WA_CLOUD_API_TOKEN:-}
+      WA_PHONE_NUMBER_ID: ${WA_PHONE_NUMBER_ID:-}
+      WA_BUSINESS_ACCOUNT_ID: ${WA_BUSINESS_ACCOUNT_ID:-}
       APP_URL: ${APP_URL}
       NEXT_PUBLIC_APP_URL: ${APP_URL}
     expose:

@@ -97,6 +97,28 @@ Open `https://your-domain.com` — Caddy auto-obtains a TLS certificate on first
 
 ---
 
+## Deploying with Coolify
+
+Coolify provides its own reverse proxy + TLS, so use `docker/docker-compose.coolify.yml`
+instead (no Caddy, no host ports on `web`) — point Coolify's "Docker Compose" resource at
+that file.
+
+1. In Coolify, set the app's domain (e.g. `ucapinstudio.visilogi.com`) and confirm its DNS
+   `A`/`CNAME` record points at the server.
+2. Fill in the same env vars as the table below in Coolify's environment editor — at minimum
+   `APP_URL=https://ucapinstudio.visilogi.com`, `NEXT_PUBLIC_APP_URL` (same value),
+   `BETTER_AUTH_SECRET`, `GUEST_PHONE_HASH_SALT`, `ENCRYPTION_KEY`, `POSTGRES_PASSWORD`,
+   `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD`.
+3. `STORAGE_PUBLIC_URL` needs a domain that actually reaches the `minio` service — expose
+   MinIO as a second Coolify service/domain (e.g. `storage.ucapinstudio.visilogi.com` →
+   container port `9000`) and set `STORAGE_PUBLIC_URL` to that URL + `/${STORAGE_BUCKET}`.
+   Without this, uploaded media links will point nowhere.
+4. Deploy. The compose file's `migrate` and `createbucket` one-shot services run
+   automatically before `web` starts (migrations + RLS policies, then MinIO bucket
+   creation) — no manual `setup.sh` step needed on Coolify.
+
+---
+
 ## Upgrading
 
 ```bash
@@ -173,6 +195,8 @@ Tested on [Hetzner CX21](https://www.hetzner.com/cloud) (€3.79/mo) for hobby u
 | `APP_URL` | ✅ | — | Full URL of your app (`https://...`) |
 | `APP_DOMAIN` | ✅ | — | Domain only, used by Caddy for TLS |
 | `BETTER_AUTH_SECRET` | ✅ | — | 32-byte random secret for JWT signing |
+| `GUEST_PHONE_HASH_SALT` | ✅ | — | ≥16-char secret for guest phone dedup hashing (`openssl rand -base64 32`) |
+| `ENCRYPTION_KEY` | ✅ | — | 64-char hex (32 bytes) for encrypting stored messaging credentials (`openssl rand -hex 32`) |
 | `POSTGRES_USER` | — | `invyte` | Database username |
 | `POSTGRES_PASSWORD` | ✅ | — | Database password |
 | `POSTGRES_DB` | — | `invyte` | Database name |
