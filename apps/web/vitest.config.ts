@@ -11,7 +11,7 @@ export default defineConfig({
     environment: "node",
     coverage: {
       reporter: ["text"],
-      include: ["lib/permissions.ts", "app/api/v1/admin/orders/[id]/create-invitation/route.ts"],
+      include: ["lib/permissions.ts", "lib/orders.ts"],
     },
   },
 });

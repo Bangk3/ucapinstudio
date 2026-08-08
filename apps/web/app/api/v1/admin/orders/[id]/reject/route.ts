@@ -1,6 +1,8 @@
 import { requireAdminSession } from "@/lib/require-admin";
-import { db, orders } from "@invyte/db";
-import { eq } from "drizzle-orm";
+import { db, media, orders } from "@invyte/db";
+import { deleteUploadResult } from "@invyte/storage";
+import type { UploadResult } from "@invyte/storage";
+import { and, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -20,11 +22,32 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
   try {
-    const updated = await db.transaction(async (tx) => {
+    const { row: updated, orphanedProof } = await db.transaction(async (tx) => {
       const [order] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
 
       if (!order || order.paymentStatus !== "pending") {
         throw new AlreadyProcessedError();
+      }
+
+      // Find the media row backing the proof image (no direct FK — orders
+      // and media are linked by tenant + the URL the upload returned) so its
+      // storage object can be cleaned up, and soft-delete the row itself:
+      // once proofImageUrl is nulled below, nothing else references it.
+      let orphanedProof: { key: string; variants: UploadResult["variants"] } | null = null;
+      if (order.proofImageUrl) {
+        const [proofMedia] = await tx
+          .select()
+          .from(media)
+          .where(and(eq(media.tenantId, order.tenantId), eq(media.publicUrl, order.proofImageUrl)))
+          .limit(1);
+
+        if (proofMedia) {
+          orphanedProof = {
+            key: proofMedia.storageKey,
+            variants: proofMedia.variants as UploadResult["variants"],
+          };
+          await tx.update(media).set({ deletedAt: new Date() }).where(eq(media.id, proofMedia.id));
+        }
       }
 
       const [row] = await tx
@@ -43,8 +66,22 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         .where(eq(orders.id, id))
         .returning();
 
-      return row;
+      return { row, orphanedProof };
     });
+
+    // External I/O, not transactional with Postgres — run after the DB
+    // transaction commits, same ordering as the submit route's own cleanup
+    // path. deleteUploadResult swallows per-object failures itself (logs and
+    // moves on), so a storage hiccup here never blocks the rejection.
+    if (orphanedProof) {
+      await deleteUploadResult({
+        key: orphanedProof.key,
+        variants: orphanedProof.variants,
+        url: "",
+        sizeBytes: 0,
+        mimeType: "",
+      });
+    }
 
     return NextResponse.json({ order: updated });
   } catch (err) {

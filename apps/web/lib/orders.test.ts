@@ -2,14 +2,14 @@ import { randomUUID } from "node:crypto";
 import { db, invitations, orders, tenants, user } from "@invyte/db";
 import { eq } from "drizzle-orm";
 import { afterEach, describe, expect, it } from "vitest";
-import { createInvitationFromOrder } from "./route";
+import { createInvitationFromOrder } from "./orders";
 
 // Regression test for the create-invitation-from-order race found and fixed
 // during this plan (row-locked with `for("update")` + an `invitationId`
 // already-set check inside one transaction). Mirrors credit.test.ts's
 // Promise.allSettled concurrency pattern, against a real Postgres instance.
 
-async function makeFixture() {
+async function makeFixture(cleanup: { userIds: string[]; tenantIds: string[] }) {
   const userId = randomUUID();
   const tenantId = randomUUID();
   const orderId = randomUUID();
@@ -19,6 +19,10 @@ async function makeFixture() {
     name: "Test Staff",
     email: `test-${userId.slice(0, 8)}@example.com`,
   });
+  // Registered immediately after the insert it belongs to (not batched at
+  // the end of setup) so a later insert throwing still leaves this row
+  // registered for cleanup instead of leaking in the test DB.
+  cleanup.userIds.push(userId);
 
   await db.insert(tenants).values({
     id: tenantId,
@@ -29,6 +33,7 @@ async function makeFixture() {
     settings: {},
     limits: {},
   });
+  cleanup.tenantIds.push(tenantId);
 
   await db.insert(orders).values({
     id: orderId,
@@ -60,9 +65,10 @@ describe("createInvitationFromOrder concurrency", () => {
   });
 
   it("creates exactly one invitation when fired twice concurrently for the same order", async () => {
-    const { userId, tenantId, orderId } = await makeFixture();
-    createdTenantIds.push(tenantId);
-    createdUserIds.push(userId);
+    const { tenantId, orderId } = await makeFixture({
+      userIds: createdUserIds,
+      tenantIds: createdTenantIds,
+    });
 
     const results = await Promise.allSettled([
       createInvitationFromOrder(orderId),

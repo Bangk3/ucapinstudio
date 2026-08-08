@@ -171,10 +171,16 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     .set({
       submittedData,
       proofImageUrl: proofResult.url,
-      // A resubmission after a rejection must re-enter the admin review
-      // queue — the queue only shows approve/reject for "pending" orders.
-      // No-op for a first-time submission (already "pending").
-      paymentStatus: "pending",
+      ...(order.paymentStatus === "rejected"
+        ? // A resubmission after a rejection must re-enter the admin review
+          // queue — the queue only shows approve/reject for "pending" orders.
+          // Also clear the stale rejection reason so a later approval doesn't
+          // leave old rejection text on an order that's now paid.
+          { paymentStatus: "pending" as const, rejectionReason: null }
+        : // Already "pending": no-op. Already "paid": never downgrade — this
+          // route only requires submittedData === null to reach here, so a
+          // paid order with no submission must stay paid.
+          {}),
     })
     .where(eq(orders.id, order.id));
 
