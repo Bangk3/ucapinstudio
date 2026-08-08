@@ -167,6 +167,16 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       primaryLanguage: "id",
     });
 
+    // Debit credit BEFORE marking the row "done": if this throws (e.g. a
+    // concurrent request drained the balance between our pre-check and this
+    // row-locked debit), the catch below writes an honest "failed" status —
+    // the tenant was never charged and the variants are correctly discarded.
+    await debitCredit(tenantId, AI_GENERATION_COST_RUPIAH, "debit_ai_generation", {
+      referenceType: "ai_generation",
+      referenceId: generationId,
+      description: `AI generation (${result.model})`,
+    });
+
     const ts = new Date();
     await db
       .update(aiGenerations)
@@ -180,12 +190,6 @@ export async function POST(req: NextRequest, ctx: Ctx) {
         updatedAt: ts,
       })
       .where(eq(aiGenerations.id, generationId));
-
-    await debitCredit(tenantId, AI_GENERATION_COST_RUPIAH, "debit_ai_generation", {
-      referenceType: "ai_generation",
-      referenceId: generationId,
-      description: `AI generation (${result.model})`,
-    });
 
     return NextResponse.json({ generationId, variants: result.variants });
   } catch (err) {
