@@ -1087,10 +1087,12 @@ git commit -m "feat: add template unlock route and server-side premium template 
 - Create: `apps/web/app/api/v1/admin/topup-requests/route.ts`
 - Create: `apps/web/app/api/v1/admin/topup-requests/[id]/approve/route.ts`
 - Create: `apps/web/app/api/v1/admin/topup-requests/[id]/reject/route.ts`
+- Modify: `packages/db/src/credit.ts` (add `creditTopupInTx`, same pattern as the
+  existing `debitCreditInTx` from the template-unlock task's atomicity fix)
 
 **Interfaces:**
-- Consumes: `requireAdminSession` from `@/lib/require-admin`; `withAdminDb`, `topupRequests`, `creditTopup` from `@invyte/db`; `TOPUP_PACKAGES_RUPIAH` from `@/lib/pricing`
-- Produces: `POST /api/v1/tenant/topup-requests`, `GET/POST /api/v1/admin/topup-requests`, `POST .../[id]/approve`, `POST .../[id]/reject`
+- Consumes: `requireAdminSession` from `@/lib/require-admin`; `withAdminDb`, `withTenantRls`, `topupRequests`, `creditTopupInTx` from `@invyte/db`; `TOPUP_PACKAGES_RUPIAH` from `@/lib/pricing`
+- Produces: `POST /api/v1/tenant/topup-requests`, `GET/POST /api/v1/admin/topup-requests`, `POST .../[id]/approve`, `POST .../[id]/reject`, `creditTopupInTx(tx, tenantId, amount, referenceId, description?)` from `@invyte/db`
 
 - [ ] **Step 1: Tenant-facing submit route**
 
@@ -1216,15 +1218,71 @@ export async function GET(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 3: Approve route**
+- [ ] **Step 3: Add `creditTopupInTx` to the credit ledger (packages/db)**
 
-Create `apps/web/app/api/v1/admin/topup-requests/[id]/approve/route.ts`:
+An earlier task (template unlock) hit and fixed the exact same race this
+route is exposed to: reading a status, doing a credit mutation in its own
+transaction, then writing the status update in a *second* transaction lets
+two concurrent requests (double-click, retry) both pass the "still pending"
+check and both credit the tenant. That fix added `debitCreditInTx` — a
+transaction-aware primitive that assumes it's already running inside an
+open transaction rather than opening its own. This route needs the same
+thing for the credit side, but adding.
+
+Edit `packages/db/src/credit.ts` — add a `creditTopupInTx` next to the
+existing `debitCreditInTx` (both call the same private `writeLedgerEntryInTx`
+that already exists from the earlier fix):
+
+```ts
+/**
+ * Same as `creditTopup`, but assumes `tx` is already an open `withTenantRls`
+ * transaction — for callers (the top-up approval route) that need the
+ * credit atomic with the request's status update, so two concurrent
+ * approve/reject calls on the same request can't both credit the tenant.
+ */
+export async function creditTopupInTx(
+  tx: Database,
+  tenantId: string,
+  amount: number,
+  referenceId: string,
+  description?: string,
+): Promise<{ balanceAfter: number }> {
+  if (amount <= 0) throw new Error("creditTopup amount must be positive");
+  return writeLedgerEntryInTx(tx, tenantId, amount, "topup", {
+    referenceType: "topup_request",
+    referenceId,
+    ...(description !== undefined ? { description } : {}),
+  });
+}
+```
+
+Export it from `packages/db/src/index.ts` alongside the existing `credit.ts`
+exports (already a wildcard `export * from "./credit"` — no change needed
+there, `creditTopupInTx` is picked up automatically).
+
+- [ ] **Step 4: Approve route**
+
+Create `apps/web/app/api/v1/admin/topup-requests/[id]/approve/route.ts`.
+The lookup-by-id is necessarily cross-tenant (the route doesn't know which
+tenant owns this request until it reads it), so that first read uses
+`withAdminDb`. Once the tenant is known, the whole approval — re-reading
+the request with a row lock, verifying it's still pending, crediting the
+tenant, and marking it approved — happens inside **one** `withTenantRls`
+transaction scoped to that specific tenant (ordinary tenant RLS already
+covers both `topup_requests` and `credit_transactions` once `app.tenant_id`
+is set to the request's own tenant — no admin bypass needed for this part).
+The row lock (`.for("update")`) on the `topup_requests` row is what closes
+the race: a second concurrent approve/reject on the same request blocks on
+that lock, then sees `status !== "pending"` once it's granted, and gets a
+clean 409 instead of racing the first request's credit:
 
 ```ts
 import { requireAdminSession } from "@/lib/require-admin";
-import { creditTopup, topupRequests, withAdminDb } from "@invyte/db";
+import { creditTopupInTx, topupRequests, withAdminDb, withTenantRls } from "@invyte/db";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+
+class AlreadyProcessedError extends Error {}
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -1234,33 +1292,62 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const { id } = await ctx.params;
 
-  const [request] = await withAdminDb((tx) =>
-    tx.select().from(topupRequests).where(eq(topupRequests.id, id)).limit(1),
+  const [found] = await withAdminDb((tx) =>
+    tx.select({ tenantId: topupRequests.tenantId }).from(topupRequests).where(eq(topupRequests.id, id)).limit(1),
   );
-  if (!request) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (request.status !== "pending") {
-    return NextResponse.json({ error: "Request sudah diproses" }, { status: 409 });
+  if (!found) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  try {
+    const updated = await withTenantRls(found.tenantId, async (tx) => {
+      const [request] = await tx
+        .select()
+        .from(topupRequests)
+        .where(eq(topupRequests.id, id))
+        .for("update");
+
+      if (!request || request.status !== "pending") {
+        throw new AlreadyProcessedError();
+      }
+
+      await creditTopupInTx(
+        tx,
+        request.tenantId,
+        request.packageAmount,
+        request.id,
+        "Top-up disetujui admin",
+      );
+
+      const [row] = await tx
+        .update(topupRequests)
+        .set({ status: "approved", reviewedBy: auth.session.user.id, reviewedAt: new Date() })
+        .where(eq(topupRequests.id, id))
+        .returning();
+
+      return row;
+    });
+
+    return NextResponse.json({ topupRequest: updated });
+  } catch (err) {
+    if (err instanceof AlreadyProcessedError) {
+      return NextResponse.json({ error: "Request sudah diproses" }, { status: 409 });
+    }
+    throw err;
   }
-
-  // creditTopup uses withTenantRls internally, scoped to the request's own
-  // tenant — no cross-tenant write needed for the ledger/balance side.
-  await creditTopup(request.tenantId, request.packageAmount, request.id, "Top-up disetujui admin");
-
-  const [updated] = await withAdminDb((tx) =>
-    tx
-      .update(topupRequests)
-      .set({ status: "approved", reviewedBy: auth.session.user.id, reviewedAt: new Date() })
-      .where(eq(topupRequests.id, id))
-      .returning(),
-  );
-
-  return NextResponse.json({ topupRequest: updated });
 }
 ```
 
-- [ ] **Step 4: Reject route**
+- [ ] **Step 5: Reject route**
 
-Create `apps/web/app/api/v1/admin/topup-requests/[id]/reject/route.ts`:
+Create `apps/web/app/api/v1/admin/topup-requests/[id]/reject/route.ts`.
+Reject doesn't touch the credit ledger, so it doesn't need the tenant-scoped
+transaction the approve route does — but it has the same "check pending,
+then write" race between the read and the write, and it races against
+`approve` too (both mutate the same row's `status`). Fix: one `withAdminDb`
+call that reads-with-lock, checks, and updates together, exactly the same
+"combine what were two separate transactions into one" fix as the approve
+route — `withAdminDb` already opens one transaction per call
+(`packages/db/src/with-tenant.ts`), so the earlier version's bug was
+calling it twice, not `withAdminDb` itself:
 
 ```ts
 import { requireAdminSession } from "@/lib/require-admin";
@@ -1268,6 +1355,8 @@ import { topupRequests, withAdminDb } from "@invyte/db";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+class AlreadyProcessedError extends Error {}
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -1282,41 +1371,57 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
-  const [request] = await withAdminDb((tx) =>
-    tx.select().from(topupRequests).where(eq(topupRequests.id, id)).limit(1),
-  );
-  if (!request) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (request.status !== "pending") {
-    return NextResponse.json({ error: "Request sudah diproses" }, { status: 409 });
+  try {
+    const updated = await withAdminDb(async (tx) => {
+      const [request] = await tx
+        .select()
+        .from(topupRequests)
+        .where(eq(topupRequests.id, id))
+        .for("update");
+
+      if (!request) throw new AlreadyProcessedError();
+      if (request.status !== "pending") throw new AlreadyProcessedError();
+
+      const [row] = await tx
+        .update(topupRequests)
+        .set({
+          status: "rejected",
+          reviewedBy: auth.session.user.id,
+          reviewedAt: new Date(),
+          rejectionReason: parsed.data.reason,
+        })
+        .where(eq(topupRequests.id, id))
+        .returning();
+
+      return row;
+    });
+
+    return NextResponse.json({ topupRequest: updated });
+  } catch (err) {
+    if (err instanceof AlreadyProcessedError) {
+      // Covers both "not found" and "already processed" — collapsing them
+      // is deliberate here (unlike approve/[id], a 404-vs-409 distinction
+      // isn't worth two error branches for a reject action) but if this
+      // bothers a future reviewer, split it back out with a dedicated
+      // NotFoundError.
+      return NextResponse.json({ error: "Request tidak ditemukan atau sudah diproses" }, { status: 409 });
+    }
+    throw err;
   }
-
-  const [updated] = await withAdminDb((tx) =>
-    tx
-      .update(topupRequests)
-      .set({
-        status: "rejected",
-        reviewedBy: auth.session.user.id,
-        reviewedAt: new Date(),
-        rejectionReason: parsed.data.reason,
-      })
-      .where(eq(topupRequests.id, id))
-      .returning(),
-  );
-
-  return NextResponse.json({ topupRequest: updated });
 }
 ```
 
-- [ ] **Step 5: Manual verification**
+- [ ] **Step 6: Manual verification**
 
 As a regular tenant user: submit a top-up request (via curl or the UI built in Task 9) → row appears with `status: pending`. As a non-admin logged-in user: `GET /api/v1/admin/topup-requests` → expect 403. Promote a test user to `role: admin` directly in the DB, retry the same GET → expect 200 with the list (read works for `admin`). Try `POST .../approve` as that `admin` user → expect 403 (write requires `superadmin`). Promote to `role: superadmin`, retry approve → expect 200, and confirm `tenants.credit_balance` increased by `packageAmount` and a `credit_transactions` row of type `topup` was created.
 
-- [ ] **Step 6: Typecheck and commit**
+- [ ] **Step 7: Typecheck and commit**
 
-Run: `pnpm --filter @invyte/web typecheck`
+Run: `pnpm --filter @invyte/web typecheck && pnpm --filter @invyte/db typecheck`
 
 ```bash
-git add apps/web/app/api/v1/tenant/topup-requests apps/web/app/api/v1/admin/topup-requests
+git add apps/web/app/api/v1/tenant/topup-requests apps/web/app/api/v1/admin/topup-requests \
+  packages/db/src/credit.ts
 git commit -m "feat: add topup request submission and admin approve/reject routes"
 ```
 
