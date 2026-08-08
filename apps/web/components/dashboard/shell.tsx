@@ -10,9 +10,10 @@ interface Props {
   user: DbUser;
   tenantSlug: string;
   tenantName: string;
+  creditBalance: number;
 }
 
-export function DashboardShell({ children, user, tenantSlug, tenantName }: Props) {
+export function DashboardShell({ children, user, tenantSlug, tenantName, creditBalance }: Props) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
@@ -27,6 +28,7 @@ export function DashboardShell({ children, user, tenantSlug, tenantName }: Props
           user={user}
           tenantSlug={tenantSlug}
           tenantName={tenantName}
+          creditBalance={creditBalance}
           onMobileMenuToggle={() => setMobileSidebarOpen((v) => !v)}
         />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>

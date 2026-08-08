@@ -2,7 +2,8 @@
 
 import { signOut } from "@/lib/auth-client";
 import type { User as DbUser } from "@invyte/db";
-import { ChevronDown, LogOut, Menu, User } from "lucide-react";
+import { ChevronDown, LogOut, Menu, User, Wallet } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -10,10 +11,17 @@ interface DashboardHeaderProps {
   user: DbUser;
   tenantSlug: string;
   tenantName: string;
+  creditBalance: number;
   onMobileMenuToggle?: () => void;
 }
 
-export function DashboardHeader({ user, tenantName, onMobileMenuToggle }: DashboardHeaderProps) {
+export function DashboardHeader({
+  user,
+  tenantSlug,
+  tenantName,
+  creditBalance,
+  onMobileMenuToggle,
+}: DashboardHeaderProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -43,6 +51,13 @@ export function DashboardHeader({ user, tenantName, onMobileMenuToggle }: Dashbo
         <span className="md:hidden font-serif text-base font-bold tracking-tight">
           UcapinStudio
         </span>
+        <Link
+          href={`/${tenantSlug}/dashboard/billing`}
+          className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/60 hover:text-foreground transition-colors"
+        >
+          <Wallet className="h-3.5 w-3.5" />
+          Rp {creditBalance.toLocaleString("id-ID")}
+        </Link>
       </div>
 
       <div className="relative">

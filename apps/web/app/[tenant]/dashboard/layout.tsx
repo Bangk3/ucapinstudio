@@ -23,7 +23,12 @@ export default async function DashboardLayout({ children, params }: Props) {
   await assertTenantMember(session.user.id, tenantRecord.id);
 
   return (
-    <DashboardShell user={session.user} tenantSlug={tenant} tenantName={tenantRecord.name}>
+    <DashboardShell
+      user={session.user}
+      tenantSlug={tenant}
+      tenantName={tenantRecord.name}
+      creditBalance={tenantRecord.creditBalance}
+    >
       {children}
     </DashboardShell>
   );
