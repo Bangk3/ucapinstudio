@@ -1,5 +1,6 @@
 "use client";
 
+import { TEMPLATE_UNLOCK_COST_RUPIAH } from "@/lib/pricing";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TEMPLATES } from "@invyte/templates";
 import { useRouter } from "next/navigation";
@@ -35,12 +36,18 @@ const KIND_LABELS: Record<string, string> = {
 
 interface Props {
   tenantSlug: string;
+  tenantId: string;
+  creditBalance: number;
+  unlockedTemplateIds: string[];
 }
 
-export function NewInvitationForm({ tenantSlug }: Props) {
+export function NewInvitationForm({ tenantSlug, creditBalance, unlockedTemplateIds }: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState<Set<string>>(new Set(unlockedTemplateIds));
+  const [unlocking, setUnlocking] = useState<string | null>(null);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
   const {
     register,
@@ -54,6 +61,28 @@ export function NewInvitationForm({ tenantSlug }: Props) {
   });
 
   const selectedTemplate = watch("templateId");
+
+  async function handleUnlock(templateId: string) {
+    setUnlockError(null);
+    setUnlocking(templateId);
+    try {
+      const res = await fetch(`/api/v1/tenant/templates/${templateId}/unlock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantSlug }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? "Gagal unlock template");
+      }
+      setUnlocked((prev) => new Set(prev).add(templateId));
+      setValue("templateId", templateId, { shouldValidate: true });
+    } catch (e) {
+      setUnlockError(e instanceof Error ? e.message : "Terjadi kesalahan");
+    } finally {
+      setUnlocking(null);
+    }
+  }
 
   async function onSubmit(data: FormData) {
     setSubmitting(true);
@@ -117,35 +146,59 @@ export function NewInvitationForm({ tenantSlug }: Props) {
           <p className="text-xs text-destructive">{errors.templateId.message}</p>
         )}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setValue("templateId", t.id, { shouldValidate: true })}
-              className={`rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${
-                selectedTemplate === t.id
-                  ? "border-primary shadow-md ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/40"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className="h-5 w-5 rounded-full shrink-0"
-                  style={{ backgroundColor: t.primaryColor }}
-                />
-                <span className="font-medium text-sm">{t.name}</span>
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {t.tags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </button>
-          ))}
+          {TEMPLATES.map((t) => {
+            const isLocked = t.isPremium && !unlocked.has(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => {
+                  if (isLocked) {
+                    void handleUnlock(t.id);
+                  } else {
+                    setValue("templateId", t.id, { shouldValidate: true });
+                  }
+                }}
+                disabled={unlocking === t.id}
+                className={`rounded-xl border-2 p-4 text-left transition-all hover:shadow-md ${
+                  selectedTemplate === t.id
+                    ? "border-primary shadow-md ring-2 ring-primary/20"
+                    : "border-border hover:border-primary/40"
+                } ${unlocking === t.id ? "opacity-60" : ""}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-5 w-5 rounded-full shrink-0"
+                      style={{ backgroundColor: t.primaryColor }}
+                    />
+                    <span className="font-medium text-sm">{t.name}</span>
+                  </div>
+                  {isLocked && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                      🔒 Rp {TEMPLATE_UNLOCK_COST_RUPIAH.toLocaleString("id-ID")}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {t.tags.map((tag) => (
+                    <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                {isLocked && unlocking === t.id && (
+                  <p className="mt-2 text-xs text-muted-foreground">Membuka template...</p>
+                )}
+              </button>
+            );
+          })}
         </div>
+        <p className="text-xs text-muted-foreground">
+          Saldo Anda: Rp {creditBalance.toLocaleString("id-ID")}
+        </p>
+        {unlockError && <p className="text-xs text-destructive">{unlockError}</p>}
       </div>
 
       {error && (

@@ -48,9 +48,10 @@ type TabId = (typeof TABS)[number]["id"];
 interface Props {
   invitation: Invitation;
   tenantSlug: string;
+  unlockedTemplateIds: string[];
 }
 
-export function InvitationEditor({ invitation, tenantSlug }: Props) {
+export function InvitationEditor({ invitation, tenantSlug, unlockedTemplateIds }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("hosts");
   const [content, setContent] = useState<InvitationContent>(() => {
@@ -271,6 +272,8 @@ export function InvitationEditor({ invitation, tenantSlug }: Props) {
                 onThemeChange={updateTheme}
                 onTemplateChange={updateTemplate}
                 tenantId={invitation.tenantId}
+                tenantSlug={tenantSlug}
+                unlockedTemplateIds={unlockedTemplateIds}
               />
             )}
             {activeTab === "settings" && (

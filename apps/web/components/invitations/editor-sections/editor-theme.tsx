@@ -1,5 +1,6 @@
 "use client";
 
+import { TEMPLATE_UNLOCK_COST_RUPIAH } from "@/lib/pricing";
 import type { ThemeConfig } from "@invyte/templates";
 import { TEMPLATES } from "@invyte/templates";
 import { Upload } from "lucide-react";
@@ -11,6 +12,8 @@ interface Props {
   onThemeChange: (patch: Partial<ThemeConfig>) => void;
   onTemplateChange: (id: string) => void;
   tenantId: string;
+  tenantSlug: string;
+  unlockedTemplateIds: string[];
 }
 
 export function EditorTheme({
@@ -19,10 +22,37 @@ export function EditorTheme({
   onThemeChange,
   onTemplateChange,
   tenantId,
+  tenantSlug,
+  unlockedTemplateIds,
 }: Props) {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverLoading, setCoverLoading] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState<Set<string>>(new Set(unlockedTemplateIds));
+  const [unlocking, setUnlocking] = useState<string | null>(null);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+
+  async function handleUnlock(id: string) {
+    setUnlockError(null);
+    setUnlocking(id);
+    try {
+      const res = await fetch(`/api/v1/tenant/templates/${id}/unlock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantSlug }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? "Gagal unlock template");
+      }
+      setUnlocked((prev) => new Set(prev).add(id));
+      onTemplateChange(id);
+    } catch (e) {
+      setUnlockError(e instanceof Error ? e.message : "Terjadi kesalahan");
+    } finally {
+      setUnlocking(null);
+    }
+  }
 
   async function uploadCover(file: File) {
     setCoverLoading(true);
@@ -62,25 +92,37 @@ export function EditorTheme({
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground">Template</p>
         <div className="grid grid-cols-1 gap-2">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onTemplateChange(t.id)}
-              className={`rounded-lg border px-3 py-2 text-left text-sm flex items-center gap-3 transition-all ${
-                templateId === t.id
-                  ? "border-primary bg-primary/5 font-medium"
-                  : "hover:border-primary/40"
-              }`}
-            >
-              <span
-                className="h-4 w-4 rounded-full shrink-0"
-                style={{ backgroundColor: t.primaryColor }}
-              />
-              {t.name}
-            </button>
-          ))}
+          {TEMPLATES.map((t) => {
+            const isLocked = t.isPremium && !unlocked.has(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => (isLocked ? void handleUnlock(t.id) : onTemplateChange(t.id))}
+                disabled={unlocking === t.id}
+                className={`rounded-lg border px-3 py-2 text-left text-sm flex items-center justify-between gap-3 transition-all ${
+                  templateId === t.id
+                    ? "border-primary bg-primary/5 font-medium"
+                    : "hover:border-primary/40"
+                } ${unlocking === t.id ? "opacity-60" : ""}`}
+              >
+                <span className="flex items-center gap-3">
+                  <span
+                    className="h-4 w-4 rounded-full shrink-0"
+                    style={{ backgroundColor: t.primaryColor }}
+                  />
+                  {t.name}
+                </span>
+                {isLocked && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 shrink-0">
+                    🔒 Rp {TEMPLATE_UNLOCK_COST_RUPIAH.toLocaleString("id-ID")}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
+        {unlockError && <p className="text-xs text-destructive">{unlockError}</p>}
       </div>
 
       <div className="h-px bg-border" />
