@@ -65,6 +65,10 @@ export function OrderIntakeForm({ token, alreadySubmitted, paymentStatus }: Prop
       setError("Bukti transfer wajib diupload");
       return;
     }
+    if (!events.some((e) => e.name.trim())) {
+      setError("Minimal isi 1 acara (nama acara wajib diisi)");
+      return;
+    }
     if (galleryFiles.length > MAX_GALLERY_IMAGES) {
       setError(`Maksimal ${MAX_GALLERY_IMAGES} foto galeri`);
       return;
