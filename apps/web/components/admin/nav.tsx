@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/topup-requests", label: "Top-Up" },
+  { href: "/admin/orders", label: "Orders" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/transactions", label: "Transaksi" },
+  { href: "/admin/settings", label: "Settings" },
 ];
 
 export function AdminNav({ role }: { role: string }) {
