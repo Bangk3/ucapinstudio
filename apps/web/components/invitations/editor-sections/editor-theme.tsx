@@ -1,6 +1,5 @@
 "use client";
 
-import { TEMPLATE_UNLOCK_COST_RUPIAH } from "@/lib/pricing";
 import type { ThemeConfig } from "@invyte/templates";
 import { TEMPLATES } from "@invyte/templates";
 import { Upload } from "lucide-react";
@@ -14,6 +13,7 @@ interface Props {
   tenantId: string;
   tenantSlug: string;
   unlockedTemplateIds: string[];
+  templateUnlockCost: number;
 }
 
 export function EditorTheme({
@@ -24,6 +24,7 @@ export function EditorTheme({
   tenantId,
   tenantSlug,
   unlockedTemplateIds,
+  templateUnlockCost,
 }: Props) {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverLoading, setCoverLoading] = useState(false);
@@ -115,7 +116,7 @@ export function EditorTheme({
                 </span>
                 {isLocked && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800 shrink-0">
-                    🔒 Rp {TEMPLATE_UNLOCK_COST_RUPIAH.toLocaleString("id-ID")}
+                    🔒 Rp {templateUnlockCost.toLocaleString("id-ID")}
                   </span>
                 )}
               </button>

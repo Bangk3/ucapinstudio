@@ -1,5 +1,6 @@
 import { NewInvitationForm } from "@/components/invitations/new-invitation-form";
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { getUnlockedTemplateIds } from "@/lib/template-access";
 import { getTenantBySlug } from "@/lib/tenant";
 import Link from "next/link";
@@ -18,6 +19,7 @@ export default async function NewInvitationPage({ params }: Props) {
   if (!tenantRecord) redirect("/");
 
   const unlockedTemplateIds = await getUnlockedTemplateIds(tenantRecord.id);
+  const { templateUnlockCost } = await getPricingSettings();
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -40,6 +42,7 @@ export default async function NewInvitationPage({ params }: Props) {
           tenantId={tenantRecord.id}
           creditBalance={tenantRecord.creditBalance}
           unlockedTemplateIds={unlockedTemplateIds}
+          templateUnlockCost={templateUnlockCost}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { InvitationEditor } from "@/components/invitations/invitation-editor";
 import { getInvitation } from "@/lib/invitations";
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { getUnlockedTemplateIds } from "@/lib/template-access";
 import { getTenantBySlug } from "@/lib/tenant";
 import { notFound, redirect } from "next/navigation";
@@ -21,12 +22,14 @@ export default async function InvitationEditorPage({ params }: Props) {
   if (!invitation) notFound();
 
   const unlockedTemplateIds = await getUnlockedTemplateIds(tenantRecord.id);
+  const { templateUnlockCost } = await getPricingSettings();
 
   return (
     <InvitationEditor
       invitation={invitation}
       tenantSlug={tenant}
       unlockedTemplateIds={unlockedTemplateIds}
+      templateUnlockCost={templateUnlockCost}
     />
   );
 }

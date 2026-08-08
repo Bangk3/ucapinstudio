@@ -1,5 +1,6 @@
 import { TopupForm } from "@/components/billing/topup-form";
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { getTenantBySlug } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 
@@ -15,6 +16,8 @@ export default async function BillingPage({ params }: Props) {
   const tenantRecord = await getTenantBySlug(tenant);
   if (!tenantRecord) redirect("/");
 
+  const { topupPackages } = await getPricingSettings();
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -28,7 +31,7 @@ export default async function BillingPage({ params }: Props) {
       </div>
 
       <div className="rounded-xl border bg-card p-6">
-        <TopupForm tenantSlug={tenant} tenantId={tenantRecord.id} />
+        <TopupForm tenantSlug={tenant} tenantId={tenantRecord.id} topupPackages={topupPackages} />
       </div>
     </div>
   );

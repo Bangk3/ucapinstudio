@@ -1,15 +1,15 @@
 "use client";
 
-import { TOPUP_PACKAGES_RUPIAH } from "@/lib/pricing";
 import { useRef, useState } from "react";
 
 interface Props {
   tenantSlug: string;
   tenantId: string;
+  topupPackages: [number, number, number];
 }
 
-export function TopupForm({ tenantSlug, tenantId }: Props) {
-  const [selectedPackage, setSelectedPackage] = useState<number>(TOPUP_PACKAGES_RUPIAH[0]);
+export function TopupForm({ tenantSlug, tenantId, topupPackages }: Props) {
+  const [selectedPackage, setSelectedPackage] = useState<number>(topupPackages[0]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export function TopupForm({ tenantSlug, tenantId }: Props) {
       <div className="space-y-2">
         <p className="text-sm font-medium">Pilih Paket</p>
         <div className="grid grid-cols-3 gap-2">
-          {TOPUP_PACKAGES_RUPIAH.map((amount) => (
+          {topupPackages.map((amount) => (
             <button
               key={amount}
               type="button"

@@ -1,5 +1,5 @@
-import { TOPUP_PACKAGES_RUPIAH } from "@/lib/pricing";
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import { db, memberships, tenants, topupRequests, withTenantRls } from "@invyte/db";
 import { and, desc, eq, isNull } from "drizzle-orm";
@@ -8,12 +8,7 @@ import { z } from "zod";
 
 const bodySchema = z.object({
   tenantSlug: z.string().min(1),
-  packageAmount: z
-    .number()
-    .int()
-    .refine((v) => (TOPUP_PACKAGES_RUPIAH as readonly number[]).includes(v), {
-      message: "packageAmount harus salah satu paket yang tersedia",
-    }),
+  packageAmount: z.number().int().positive(),
   proofImageUrl: z.string().url(),
 });
 
@@ -57,6 +52,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
+
+  const { topupPackages } = await getPricingSettings();
+  if (!topupPackages.includes(parsed.data.packageAmount)) {
+    return NextResponse.json(
+      { error: "packageAmount harus salah satu paket yang tersedia" },
+      { status: 422 },
+    );
+  }
 
   const { tenantSlug, packageAmount, proofImageUrl } = parsed.data;
   const tenantId = await resolveTenantId(tenantSlug, session.user.id);

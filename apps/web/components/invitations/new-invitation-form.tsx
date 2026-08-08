@@ -1,6 +1,5 @@
 "use client";
 
-import { TEMPLATE_UNLOCK_COST_RUPIAH } from "@/lib/pricing";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TEMPLATES } from "@invyte/templates";
 import { useRouter } from "next/navigation";
@@ -39,9 +38,15 @@ interface Props {
   tenantId: string;
   creditBalance: number;
   unlockedTemplateIds: string[];
+  templateUnlockCost: number;
 }
 
-export function NewInvitationForm({ tenantSlug, creditBalance, unlockedTemplateIds }: Props) {
+export function NewInvitationForm({
+  tenantSlug,
+  creditBalance,
+  unlockedTemplateIds,
+  templateUnlockCost,
+}: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +181,7 @@ export function NewInvitationForm({ tenantSlug, creditBalance, unlockedTemplateI
                   </div>
                   {isLocked && (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-                      🔒 Rp {TEMPLATE_UNLOCK_COST_RUPIAH.toLocaleString("id-ID")}
+                      🔒 Rp {templateUnlockCost.toLocaleString("id-ID")}
                     </span>
                   )}
                 </div>

@@ -49,9 +49,15 @@ interface Props {
   invitation: Invitation;
   tenantSlug: string;
   unlockedTemplateIds: string[];
+  templateUnlockCost: number;
 }
 
-export function InvitationEditor({ invitation, tenantSlug, unlockedTemplateIds }: Props) {
+export function InvitationEditor({
+  invitation,
+  tenantSlug,
+  unlockedTemplateIds,
+  templateUnlockCost,
+}: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("hosts");
   const [content, setContent] = useState<InvitationContent>(() => {
@@ -274,6 +280,7 @@ export function InvitationEditor({ invitation, tenantSlug, unlockedTemplateIds }
                 tenantId={invitation.tenantId}
                 tenantSlug={tenantSlug}
                 unlockedTemplateIds={unlockedTemplateIds}
+                templateUnlockCost={templateUnlockCost}
               />
             )}
             {activeTab === "settings" && (

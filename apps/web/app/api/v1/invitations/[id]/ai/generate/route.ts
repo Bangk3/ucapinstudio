@@ -1,4 +1,3 @@
-import { AI_GENERATION_COST_RUPIAH } from "@/lib/pricing";
 /**
  * POST /api/v1/invitations/[id]/ai/generate
  *
@@ -16,6 +15,7 @@ import { AI_GENERATION_COST_RUPIAH } from "@/lib/pricing";
  * Returns: { generationId, variants }
  */
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import { AnthropicProvider, GeminiProvider, NvidiaNimProvider, generateVariants } from "@invyte/ai";
 import { aiGenerations, db, debitCredit, invitations, memberships, tenants } from "@invyte/db";
@@ -115,16 +115,17 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   // Credit balance check — AI generation costs credits, checked before we
   // even create the pending row.
+  const { aiGenerationCost } = await getPricingSettings();
   const [tenantRow] = await db
     .select({ creditBalance: tenants.creditBalance })
     .from(tenants)
     .where(eq(tenants.id, tenantId))
     .limit(1);
 
-  if (!tenantRow || tenantRow.creditBalance < AI_GENERATION_COST_RUPIAH) {
+  if (!tenantRow || tenantRow.creditBalance < aiGenerationCost) {
     return NextResponse.json(
       {
-        error: `Saldo tidak cukup. Butuh Rp ${AI_GENERATION_COST_RUPIAH.toLocaleString("id-ID")}, tersedia Rp ${(tenantRow?.creditBalance ?? 0).toLocaleString("id-ID")}.`,
+        error: `Saldo tidak cukup. Butuh Rp ${aiGenerationCost.toLocaleString("id-ID")}, tersedia Rp ${(tenantRow?.creditBalance ?? 0).toLocaleString("id-ID")}.`,
       },
       { status: 402 },
     );
@@ -171,7 +172,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     // concurrent request drained the balance between our pre-check and this
     // row-locked debit), the catch below writes an honest "failed" status —
     // the tenant was never charged and the variants are correctly discarded.
-    await debitCredit(tenantId, AI_GENERATION_COST_RUPIAH, "debit_ai_generation", {
+    await debitCredit(tenantId, aiGenerationCost, "debit_ai_generation", {
       referenceType: "ai_generation",
       referenceId: generationId,
       description: `AI generation (${result.model})`,

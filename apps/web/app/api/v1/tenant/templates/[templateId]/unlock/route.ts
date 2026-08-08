@@ -1,5 +1,5 @@
-import { TEMPLATE_UNLOCK_COST_RUPIAH } from "@/lib/pricing";
 import { getServerSession } from "@/lib/session";
+import { getPricingSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import {
   InsufficientCreditError,
@@ -59,6 +59,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   }
 
   try {
+    const { templateUnlockCost } = await getPricingSettings();
+
     // Debit + unlock-record in one transaction: either both commit or
     // neither does. The row lock debitCreditInTx takes on `tenants` also
     // serializes a concurrent duplicate request behind this one, and if it
@@ -79,7 +81,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       const { balanceAfter } = await debitCreditInTx(
         tx,
         tenantId,
-        TEMPLATE_UNLOCK_COST_RUPIAH,
+        templateUnlockCost,
         "debit_template_unlock",
         {
           referenceType: "template_unlock",
