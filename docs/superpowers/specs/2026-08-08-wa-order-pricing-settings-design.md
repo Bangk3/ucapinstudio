@@ -345,17 +345,71 @@ finished invitation link over WA.
 
 ### Delivery — no new UI needed
 
-Once staff publishes the invitation in the existing editor, the editor
-already displays the invitation's public link (`/${tenantSlug}/u/${slug}`)
-for staff to copy — this UI already exists for every self-serve invitation
-today. Staff pastes that link into the same WA thread. Nothing in this spec
-adds a "send" feature; it's the existing copy-link affordance, used the same
-way it already is.
+Two different "delivery" steps, both reusing existing capability with zero
+new code:
+
+1. **Confirmation link back to the customer** — once staff publishes the
+   invitation, the existing editor already displays its public link
+   (`/${tenantSlug}/u/${slug}`) for staff to copy and paste into the WA
+   thread.
+2. **Broadcast to the couple's own guest list** (can be hundreds of guests
+   — not sent one by one) — staff, already a member of the order's tenant,
+   uses the **existing** guest CSV bulk-import feature
+   (`invitations/[id]/guests/import`) to load the guest list, then the
+   **existing** broadcast route (`invitations/[id]/broadcast`) to send every
+   guest their personalized link in one action. Both already exist and
+   need no changes for this flow.
+
+Broadcast requires a WhatsApp provider credential configured on the
+tenant (`messagingCredentials`) — see Operational Notes below for the
+decision on whose credential that is.
 
 ### Admin nav
 
 `apps/web/components/admin/nav.tsx` gets two new entries: "Settings" and
 "Orders", alongside the existing Overview/Top-Up/Users/Transactions.
+
+## Operational Notes (for a future SOP)
+
+Captured here because this decision affects how staff actually run the
+process day to day, not just the code — meant to be readable on its own if
+Kelvin or an admin needs to re-check "how does this work again" without
+digging through the technical sections above.
+
+**WhatsApp guest broadcast — whose credential?** Default: staff broadcasts
+using **one shared UcapinStudio-owned** provider account (Fonnte / WA Cloud
+API — whichever this deployment already has configured), the same account
+for every WA-order tenant. Guests receive a message from UcapinStudio's
+business number, but the message content is still fully personalized (guest
+name, their own link) — this is standard practice for a broadcast service
+and is not a privacy problem on its own. Rationale for defaulting this way:
+the whole point of the "dibuatkan" order path is that the customer avoids
+technical setup; requiring them to configure their own WA provider would
+undermine that.
+
+**Upgrade path, if a specific customer wants their own number:** give that
+customer an account (existing `POST /api/v1/tenant/members` flow, already
+covered above — no new work), and they configure their own WhatsApp
+provider credential themselves via the tenant's existing settings page
+(also already exists, no new work). This is a per-customer decision staff
+can make case by case — nothing in the system forces one or the other
+globally.
+
+**Rough end-to-end staff runbook** (for the eventual SOP document, not
+prescriptive code — just the sequence a human follows):
+1. Customer messages the UcapinStudio WA number wanting an invitation made.
+2. Staff opens `/admin/orders`, creates the order with the customer's name
+   and contact, copies the generated link, sends it in the same WA thread.
+3. Customer opens the link, fills in their wedding details and photos,
+   uploads transfer proof.
+4. Superadmin reviews and approves the payment in `/admin/orders`.
+5. Staff clicks "Buat Undangan" on the now-paid order, picks a template,
+   polishes the pre-filled content in the normal editor, publishes.
+6. Staff copies the public invitation link, sends it back over WA.
+7. If the customer has (or later sends) a guest list: staff imports it via
+   the existing CSV import, then broadcasts via the existing broadcast
+   feature — using the shared UcapinStudio WA credential unless this
+   specific customer was given their own account and set up their own.
 
 ## Testing
 
@@ -381,3 +435,13 @@ way it already is.
 - Exact tenant `slug`/`limits` defaults for staff-created tenants (must
   match whatever the existing `POST /api/v1/tenant` route already uses —
   read that route during planning, don't invent new defaults)
+- **How the shared UcapinStudio WA credential actually gets attached to
+  each new order-tenant.** `messagingCredentials` (existing table) is
+  strictly per-tenant — there's no platform-level credential concept today.
+  Simplest option to evaluate during planning: when order creation
+  provisions the new tenant, also insert a `messagingCredentials` row for
+  it, copying UcapinStudio's own provider config (sourced from an env var
+  or a designated "template" row) — no schema change needed, just an extra
+  insert in the same transaction as tenant creation. Confirm this is
+  workable (and where the platform's own credential value actually lives)
+  before committing to it in the plan.
