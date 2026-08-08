@@ -21,6 +21,7 @@ export function OrderQueue({
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -35,8 +36,15 @@ export function OrderQueue({
   }, [refreshKey]);
 
   async function approve(id: string) {
+    setError(null);
     setActioningId(id);
-    await fetch(`/api/v1/admin/orders/${id}/approve`, { method: "POST" });
+    const res = await fetch(`/api/v1/admin/orders/${id}/approve`, { method: "POST" });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(typeof body.error === "string" ? body.error : "Gagal memproses");
+      setActioningId(null);
+      return;
+    }
     await load();
     setActioningId(null);
   }
@@ -44,17 +52,25 @@ export function OrderQueue({
   async function reject(id: string) {
     const reason = window.prompt("Alasan penolakan:");
     if (!reason) return;
+    setError(null);
     setActioningId(id);
-    await fetch(`/api/v1/admin/orders/${id}/reject`, {
+    const res = await fetch(`/api/v1/admin/orders/${id}/reject`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason }),
     });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(typeof body.error === "string" ? body.error : "Gagal memproses");
+      setActioningId(null);
+      return;
+    }
     await load();
     setActioningId(null);
   }
 
   async function createInvitation(id: string, tenantSlug: string) {
+    setError(null);
     setActioningId(id);
     const res = await fetch(`/api/v1/admin/orders/${id}/create-invitation`, { method: "POST" });
     if (res.ok) {
@@ -62,6 +78,8 @@ export function OrderQueue({
       window.location.href = `/${tenantSlug}/dashboard/invitations/${data.invitation.id}`;
       return;
     }
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    setError(typeof body.error === "string" ? body.error : "Gagal memproses");
     await load();
     setActioningId(null);
   }
@@ -71,6 +89,7 @@ export function OrderQueue({
 
   return (
     <div className="space-y-3">
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {rows.map(({ order, tenantSlug }) => (
         <div key={order.id} className="rounded-xl border bg-card p-4 flex items-center gap-4">
           <div className="flex-1 min-w-0">

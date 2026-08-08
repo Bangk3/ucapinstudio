@@ -19,6 +19,7 @@ export function TopupQueue({ canApprove }: { canApprove: boolean }) {
   const [rows, setRows] = useState<TopupRequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -33,8 +34,15 @@ export function TopupQueue({ canApprove }: { canApprove: boolean }) {
   }, []);
 
   async function approve(id: string) {
+    setError(null);
     setActioningId(id);
-    await fetch(`/api/v1/admin/topup-requests/${id}/approve`, { method: "POST" });
+    const res = await fetch(`/api/v1/admin/topup-requests/${id}/approve`, { method: "POST" });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(typeof body.error === "string" ? body.error : "Gagal memproses");
+      setActioningId(null);
+      return;
+    }
     await load();
     setActioningId(null);
   }
@@ -42,12 +50,19 @@ export function TopupQueue({ canApprove }: { canApprove: boolean }) {
   async function reject(id: string) {
     const reason = window.prompt("Alasan penolakan:");
     if (!reason) return;
+    setError(null);
     setActioningId(id);
-    await fetch(`/api/v1/admin/topup-requests/${id}/reject`, {
+    const res = await fetch(`/api/v1/admin/topup-requests/${id}/reject`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason }),
     });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(typeof body.error === "string" ? body.error : "Gagal memproses");
+      setActioningId(null);
+      return;
+    }
     await load();
     setActioningId(null);
   }
@@ -58,6 +73,7 @@ export function TopupQueue({ canApprove }: { canApprove: boolean }) {
 
   return (
     <div className="space-y-3">
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {rows.map(({ request, tenantName, tenantSlug, userEmail }) => (
         <div key={request.id} className="rounded-xl border bg-card p-4 flex items-start gap-4">
           <img
