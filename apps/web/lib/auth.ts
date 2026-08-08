@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 import { nanoid } from "nanoid";
+import { ac, admin as adminRole, superadmin as superadminRole } from "./permissions";
 
 // better-auth's inferred return type embeds a pnpm-store-relative zod path that
 // TS can't portably name once the admin plugin's schemas are in the mix — same
@@ -103,6 +104,11 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   plugins: [
     admin({
       defaultRole: "user",
+      ac,
+      roles: {
+        admin: adminRole,
+        superadmin: superadminRole,
+      },
       adminRoles: ["superadmin", "admin"],
     }),
     nextCookies(),
