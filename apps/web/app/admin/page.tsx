@@ -1,4 +1,11 @@
-import { aiGenerations, creditTransactions, tenants, topupRequests, withAdminDb } from "@invyte/db";
+import {
+  aiGenerations,
+  creditTransactions,
+  orders,
+  tenants,
+  topupRequests,
+  withAdminDb,
+} from "@invyte/db";
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
 
 async function fetchOverview() {
@@ -13,6 +20,12 @@ async function fetchOverview() {
       .where(
         and(eq(creditTransactions.type, "topup"), gte(creditTransactions.createdAt, startOfMonth)),
       ),
+  );
+  const [orderRevenueRow] = await withAdminDb((tx) =>
+    tx
+      .select({ total: sql<string>`COALESCE(SUM(price), 0)` })
+      .from(orders)
+      .where(and(eq(orders.paymentStatus, "paid"), gte(orders.reviewedAt, startOfMonth))),
   );
   const [activeTenantsRow] = await withAdminDb((tx) =>
     tx.select({ count: sql<string>`COUNT(*)` }).from(tenants).where(isNull(tenants.deletedAt)),
@@ -31,7 +44,7 @@ async function fetchOverview() {
   );
 
   return {
-    revenueThisMonth: Number(revenueRow?.total ?? 0),
+    revenueThisMonth: Number(revenueRow?.total ?? 0) + Number(orderRevenueRow?.total ?? 0),
     activeTenants: Number(activeTenantsRow?.count ?? 0),
     pendingTopupRequests: Number(pendingTopupsRow?.count ?? 0),
     aiGenerationsThisMonth: Number(aiGenerationsRow?.count ?? 0),
