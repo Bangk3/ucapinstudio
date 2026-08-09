@@ -18,6 +18,9 @@ async function seed() {
       emailVerified: true,
       locale: "id",
       timezone: "Asia/Jakarta",
+      // Platform-level role (better-auth admin plugin) — without this the
+      // seeded account defaults to "user" and can't reach /admin at all.
+      role: "superadmin",
     })
     .onConflictDoNothing();
 
