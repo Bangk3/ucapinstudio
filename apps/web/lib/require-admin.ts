@@ -4,7 +4,7 @@ import type { AuthSession } from "./session";
 
 export type AdminAuthResult = { ok: true; session: AuthSession } | { ok: false; status: 401 | 403 };
 
-const ADMIN_ROLES = new Set(["superadmin", "admin"]);
+export const ADMIN_ROLES = new Set(["superadmin", "admin"]);
 
 /**
  * Gate for every /api/v1/admin/* route. Read access (write: false, the

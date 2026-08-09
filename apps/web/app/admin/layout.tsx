@@ -1,8 +1,7 @@
 import { AdminNav } from "@/components/admin/nav";
+import { ADMIN_ROLES } from "@/lib/require-admin";
 import { getServerSession } from "@/lib/session";
 import { redirect } from "next/navigation";
-
-const ADMIN_ROLES = new Set(["superadmin", "admin"]);
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession();

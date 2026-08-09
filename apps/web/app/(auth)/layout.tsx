@@ -1,3 +1,4 @@
+import { ADMIN_ROLES } from "@/lib/require-admin";
 import { getServerSession } from "@/lib/session";
 import { getUserTenants } from "@/lib/tenant";
 import { redirect } from "next/navigation";
@@ -5,6 +6,9 @@ import { redirect } from "next/navigation";
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession();
   if (session) {
+    const role = (session.user as { role?: string }).role;
+    if (role && ADMIN_ROLES.has(role)) redirect("/admin");
+
     const tenants = await getUserTenants(session.user.id);
     const first = tenants[0];
     redirect(first ? `/${first.tenant.slug}/dashboard` : "/");
