@@ -137,6 +137,8 @@ services:
       MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_URL:-}
     volumes:
       - minio_data:/data
+    expose:
+      - "9000"
     networks:
       - invyte
     healthcheck:
