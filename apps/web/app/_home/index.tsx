@@ -1940,7 +1940,23 @@ function FinalCTASection({ adminWhatsappLink }: { adminWhatsappLink: string | nu
 
 // ── Footer ─────────────────────────────────────────────────────────────────────
 
-function Footer() {
+interface FooterContactSettings {
+  supportEmail: string | null;
+  instagram: string | null;
+  twitter: string | null;
+}
+
+function Footer({ contactSettings }: { contactSettings: FooterContactSettings }) {
+  const socialLinks = [
+    // AGPLv3 §13: prominent link to this instance's corresponding source.
+    { label: "Source Code", href: "https://github.com/Bangk3/ucapinstudio" },
+    ...(contactSettings.twitter ? [{ label: "Twitter", href: contactSettings.twitter }] : []),
+    ...(contactSettings.instagram ? [{ label: "Instagram", href: contactSettings.instagram }] : []),
+    ...(contactSettings.supportEmail
+      ? [{ label: "Email Support", href: `mailto:${contactSettings.supportEmail}` }]
+      : []),
+  ];
+
   return (
     <footer
       className="py-12 px-6 border-t"
@@ -1957,12 +1973,7 @@ function Footer() {
               Platform undangan pernikahan digital untuk Indonesia. Aman dan privat.
             </p>
             <div className="flex gap-3 mt-4">
-              {[
-                // AGPLv3 §13: prominent link to this instance's corresponding source.
-                { label: "Source Code", href: "https://github.com/Bangk3/ucapinstudio" },
-                { label: "Twitter", href: "/" },
-                { label: "Instagram", href: "/" },
-              ].map((s) => (
+              {socialLinks.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
@@ -2051,7 +2062,13 @@ function Footer() {
 
 // ── Main Export ─────────────────────────────────────────────────────────────────
 
-export function HomepageClient({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
+export function HomepageClient({
+  adminWhatsappLink,
+  contactSettings,
+}: {
+  adminWhatsappLink: string | null;
+  contactSettings: FooterContactSettings;
+}) {
   return (
     <>
       <LenisProvider />
@@ -2068,7 +2085,7 @@ export function HomepageClient({ adminWhatsappLink }: { adminWhatsappLink: strin
       <PricingSection adminWhatsappLink={adminWhatsappLink} />
       <FAQSection />
       <FinalCTASection adminWhatsappLink={adminWhatsappLink} />
-      <Footer />
+      <Footer contactSettings={contactSettings} />
     </>
   );
 }

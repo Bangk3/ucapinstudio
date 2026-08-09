@@ -19,6 +19,7 @@
  */
 import { resolveAiApiKey } from "@/lib/ai-credentials";
 import { getServerSession } from "@/lib/session";
+import { getFeatureFlags } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import {
   AnthropicProvider,
@@ -47,6 +48,11 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getServerSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { aiEnabled } = await getFeatureFlags();
+  if (!aiEnabled) {
+    return NextResponse.json({ error: "AI generation is currently disabled" }, { status: 503 });
+  }
 
   const { id: invitationId } = await ctx.params;
 

@@ -1,6 +1,6 @@
 import { ADMIN_ROLES } from "@/lib/require-admin";
 import { getServerSession } from "@/lib/session";
-import { getAdminWhatsappLink } from "@/lib/settings";
+import { getAdminWhatsappLink, getContactSettings } from "@/lib/settings";
 import { getUserTenants } from "@/lib/tenant";
 import { redirect } from "next/navigation";
 import { HomepageClient } from "./_home";
@@ -17,6 +17,9 @@ export default async function HomePage() {
     if (first) redirect(`/${first.tenant.slug}/dashboard`);
   }
 
-  const adminWhatsappLink = await getAdminWhatsappLink();
-  return <HomepageClient adminWhatsappLink={adminWhatsappLink} />;
+  const [adminWhatsappLink, contactSettings] = await Promise.all([
+    getAdminWhatsappLink(),
+    getContactSettings(),
+  ]);
+  return <HomepageClient adminWhatsappLink={adminWhatsappLink} contactSettings={contactSettings} />;
 }

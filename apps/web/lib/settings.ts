@@ -1,5 +1,5 @@
 import { db, platformSettings } from "@invyte/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 export interface PricingSettings {
   aiGenerationCost: number;
@@ -37,6 +37,45 @@ export async function getPricingSettings(): Promise<PricingSettings> {
     templateUnlockCost: get("template_unlock_cost"),
     orderPackagePrice: get("order_package_price"),
     topupPackages: [get("topup_package_1"), get("topup_package_2"), get("topup_package_3")],
+  };
+}
+
+export interface ContactSettings {
+  supportEmail: string | null;
+  instagram: string | null;
+  twitter: string | null;
+}
+
+/** Public contact/social links shown in the homepage footer. */
+export async function getContactSettings(): Promise<ContactSettings> {
+  const rows = await db
+    .select({ key: platformSettings.key, valueText: platformSettings.valueText })
+    .from(platformSettings)
+    .where(inArray(platformSettings.key, ["support_email", "social_instagram", "social_twitter"]));
+  const byKey = new Map(rows.map((r) => [r.key, r.valueText]));
+  return {
+    supportEmail: byKey.get("support_email") ?? null,
+    instagram: byKey.get("social_instagram") ?? null,
+    twitter: byKey.get("social_twitter") ?? null,
+  };
+}
+
+export interface FeatureFlags {
+  aiEnabled: boolean;
+  messagingEnabled: boolean;
+}
+
+/** Superadmin kill switches. Missing row defaults to enabled (fresh DB). */
+export async function getFeatureFlags(): Promise<FeatureFlags> {
+  const rows = await db
+    .select({ key: platformSettings.key, value: platformSettings.value })
+    .from(platformSettings)
+    .where(inArray(platformSettings.key, ["feature_ai_enabled", "feature_messaging_enabled"]));
+  const byKey = new Map<string, number | null>(rows.map((r) => [r.key, r.value]));
+  const isEnabled = (key: string) => byKey.get(key) !== 0;
+  return {
+    aiEnabled: isEnabled("feature_ai_enabled"),
+    messagingEnabled: isEnabled("feature_messaging_enabled"),
   };
 }
 
