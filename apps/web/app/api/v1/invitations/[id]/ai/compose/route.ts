@@ -17,6 +17,7 @@
  *
  * Returns: { generationId, recipe }
  */
+import { resolveAiApiKey } from "@/lib/ai-credentials";
 import { getServerSession } from "@/lib/session";
 import { uuidv7 } from "@/lib/uuid";
 import {
@@ -58,7 +59,9 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const { tenantSlug, groomName, brideName, style, mood, hasTimeline, hasGallery, aiProvider } =
     parsed.data;
 
-  // Validate API key for selected provider
+  // Validate API key for selected provider. Anthropic key may come from the
+  // DB (superadmin-set via /admin/ai-config) or the env var — DB wins.
+  const anthropicApiKey = await resolveAiApiKey("anthropic", process.env.ANTHROPIC_API_KEY);
   if (aiProvider === "gemini") {
     if (!process.env.GOOGLE_API_KEY) {
       return NextResponse.json(
@@ -74,7 +77,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       );
     }
   } else {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!anthropicApiKey) {
       return NextResponse.json(
         { error: "Claude AI belum dikonfigurasi (ANTHROPIC_API_KEY)" },
         { status: 503 },
@@ -150,7 +153,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
               apiKey: process.env.NVIDIA_NIM_API_KEY!,
               model: process.env.NVIDIA_NIM_MODEL ?? "z-ai/glm4.7",
             })
-          : new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY! });
+          : new AnthropicProvider({ apiKey: anthropicApiKey! });
 
     const result = await generateComposerRecipe(provider, {
       groomName,
