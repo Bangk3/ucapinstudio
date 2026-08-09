@@ -151,5 +151,13 @@ export async function POST(req: NextRequest) {
     return row;
   });
 
-  return NextResponse.json({ wish, pending: status === "pending" }, { status: 201 });
+  // Only hand the row back for immediate optimistic display when it's
+  // actually publicly visible. Spam and pending-moderation wishes must not
+  // echo the submitted content back — the client falls back to a generic
+  // "submitted" message either way, so a spammer gets no signal they were
+  // specifically flagged (vs. just queued for review).
+  return NextResponse.json(
+    { wish: status === "approved" ? wish : undefined, pending: status !== "approved" },
+    { status: 201 },
+  );
 }

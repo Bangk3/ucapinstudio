@@ -56,3 +56,6 @@ graphify-out/
 
 # Local working notes, not for the repo
 rebranding.md
+
+# Playwright MCP tool output (local testing artifacts)
+.playwright-mcp/
