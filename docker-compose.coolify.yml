@@ -1,13 +1,20 @@
 # Invyte — Coolify Deploy
-# Same as docker-compose.yml but without Caddy (Coolify provides its own
-# reverse proxy + TLS) and with a one-shot `migrate` service instead of
+# Same as docker/docker-compose.yml but without Caddy (Coolify provides its
+# own reverse proxy + TLS) and with a one-shot `migrate` service instead of
 # running migrations manually.
-# Usage: docker compose --env-file .env -f docker/docker-compose.coolify.yml up -d --build
+#
+# Lives at repo root (not docker/) on purpose: Coolify's build-context
+# resolver mishandles `context: ..` when the compose file sits in a
+# subdirectory (context path gets computed without the checkout's UUID
+# segment and 404s). Keeping this file at root with `context: .` sidesteps
+# that entirely — see MIGRATION_NOTES.md / DEPLOYMENT.md for the story.
+#
+# Usage: docker compose --env-file .env -f docker-compose.coolify.yml up -d --build
 
 services:
   migrate:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     container_name: invyte_migrate
     restart: "no"
@@ -42,7 +49,7 @@ services:
 
   web:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     container_name: invyte_web
     restart: unless-stopped
@@ -101,7 +108,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-invyte}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d:ro
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
     networks:
       - invyte
     healthcheck:

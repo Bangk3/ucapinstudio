@@ -99,9 +99,10 @@ Open `https://your-domain.com` — Caddy auto-obtains a TLS certificate on first
 
 ## Deploying with Coolify
 
-Coolify provides its own reverse proxy + TLS, so use `docker/docker-compose.coolify.yml`
-instead (no Caddy, no host ports on `web`) — point Coolify's "Docker Compose" resource at
-that file.
+Coolify provides its own reverse proxy + TLS, so use `docker-compose.coolify.yml` (repo
+root — not `docker/docker-compose.yml`) instead: no Caddy, no host ports on `web`. Point
+Coolify's "Docker Compose Location" at `/docker-compose.coolify.yml`, with "Base Directory"
+at `/` (repo root).
 
 1. In Coolify, set the app's domain (e.g. `ucapinstudio.visilogi.com`) and confirm its DNS
    `A`/`CNAME` record points at the server.
