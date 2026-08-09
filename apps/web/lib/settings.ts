@@ -92,6 +92,24 @@ export async function getAdminWhatsappLink(): Promise<string | null> {
   )}`;
 }
 
+export interface PaymentInstructions {
+  bankInfo: string | null;
+  qrisInfo: string | null;
+}
+
+/** Manual transfer instructions shown on top-up and order-payment forms. */
+export async function getPaymentInstructions(): Promise<PaymentInstructions> {
+  const rows = await db
+    .select({ key: platformSettings.key, valueText: platformSettings.valueText })
+    .from(platformSettings)
+    .where(inArray(platformSettings.key, ["payment_bank_info", "payment_qris_info"]));
+  const byKey = new Map(rows.map((r) => [r.key, r.valueText]));
+  return {
+    bankInfo: byKey.get("payment_bank_info") ?? null,
+    qrisInfo: byKey.get("payment_qris_info") ?? null,
+  };
+}
+
 export interface ModerationSettings {
   spamThreshold: number;
   bannedWords: string[];

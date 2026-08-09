@@ -19,6 +19,8 @@ const TEXT_KEYS = [
   "support_email",
   "social_instagram",
   "social_twitter",
+  "payment_bank_info",
+  "payment_qris_info",
 ] as const;
 
 const bodySchema = z.object({
@@ -41,6 +43,8 @@ const bodySchema = z.object({
   support_email: z.string().email("Email tidak valid").optional(),
   social_instagram: z.string().min(1).optional(),
   social_twitter: z.string().min(1).optional(),
+  payment_bank_info: z.string().min(1).max(1000).optional(),
+  payment_qris_info: z.string().min(1).max(1000).optional(),
 });
 
 export async function GET(req: NextRequest) {

@@ -24,6 +24,12 @@ export const platformSettingKeyEnum = pgEnum("platform_setting_key", [
   "wish_spam_threshold",
   // Text-valued — comma-separated substrings; any match auto-flags a wish.
   "wish_banned_words",
+  // Text-valued — manual bank-transfer / QRIS instructions shown on the
+  // credit top-up and "dibuatkan admin" order-payment forms. Previously
+  // hardcoded "[ISI ... DI SINI]" placeholder strings shown verbatim to
+  // real users — found during end-to-end testing.
+  "payment_bank_info",
+  "payment_qris_info",
 ]);
 
 export const platformSettings = pgTable("platform_settings", {

@@ -29,6 +29,8 @@ interface Props {
   alreadySubmitted: boolean;
   paymentStatus: "pending" | "paid" | "rejected";
   rejectionReason?: string | null;
+  bankInfo: string | null;
+  qrisInfo: string | null;
 }
 
 export function OrderIntakeForm({
@@ -36,6 +38,8 @@ export function OrderIntakeForm({
   alreadySubmitted,
   paymentStatus,
   rejectionReason,
+  bankInfo,
+  qrisInfo,
 }: Props) {
   const [groomName, setGroomName] = useState("");
   const [brideName, setBrideName] = useState("");
@@ -238,8 +242,16 @@ export function OrderIntakeForm({
 
       <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-1">
         <p className="font-medium">Transfer ke:</p>
-        <p className="text-muted-foreground">[ISI NOMOR REKENING DI SINI]</p>
-        <p className="text-muted-foreground">[ISI QRIS/INFO PEMBAYARAN LAIN DI SINI]</p>
+        {bankInfo || qrisInfo ? (
+          <>
+            {bankInfo && <p className="text-muted-foreground whitespace-pre-line">{bankInfo}</p>}
+            {qrisInfo && <p className="text-muted-foreground whitespace-pre-line">{qrisInfo}</p>}
+          </>
+        ) : (
+          <p className="text-muted-foreground">
+            Info pembayaran belum diatur admin. Hubungi kami sebelum transfer.
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">

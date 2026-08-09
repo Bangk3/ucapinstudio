@@ -1,4 +1,5 @@
 import { OrderIntakeForm } from "@/components/orders/order-intake-form";
+import { getPaymentInstructions } from "@/lib/settings";
 import { db, orders } from "@invyte/db";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
@@ -12,6 +13,8 @@ export default async function PublicOrderPage({ params }: Props) {
 
   const [order] = await db.select().from(orders).where(eq(orders.accessToken, token)).limit(1);
   if (!order) notFound();
+
+  const { bankInfo, qrisInfo } = await getPaymentInstructions();
 
   return (
     <main className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-stone-50 to-amber-50/40 px-6 py-16">
@@ -30,6 +33,8 @@ export default async function PublicOrderPage({ params }: Props) {
             alreadySubmitted={order.submittedData !== null && order.paymentStatus !== "rejected"}
             paymentStatus={order.paymentStatus}
             rejectionReason={order.paymentStatus === "rejected" ? order.rejectionReason : null}
+            bankInfo={bankInfo}
+            qrisInfo={qrisInfo}
           />
         </div>
       </div>

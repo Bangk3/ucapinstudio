@@ -20,7 +20,14 @@ export default async function DashboardLayout({ children, params }: Props) {
     redirect("/");
   }
 
-  await assertTenantMember(session.user.id, tenantRecord.id);
+  // Not a member of this tenant (e.g. guessed/stale URL, or a URL that
+  // belonged to a different account) — bounce to "/" instead of crashing;
+  // it re-resolves to wherever this session actually belongs.
+  try {
+    await assertTenantMember(session.user.id, tenantRecord.id);
+  } catch {
+    redirect("/");
+  }
 
   return (
     <DashboardShell

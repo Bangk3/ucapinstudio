@@ -34,6 +34,7 @@ const TEXT_FIELDS: {
   label: string;
   placeholder?: string;
   validate?: (v: string) => string | null;
+  multiline?: boolean;
 }[] = [
   {
     key: "support_email",
@@ -50,6 +51,18 @@ const TEXT_FIELDS: {
     key: "social_twitter",
     label: "Link Twitter/X (footer)",
     placeholder: "https://twitter.com/...",
+  },
+  {
+    key: "payment_bank_info",
+    label: "Info Rekening Bank (form top-up & order)",
+    placeholder: "BCA 1234567890 a.n. UcapinStudio",
+    multiline: true,
+  },
+  {
+    key: "payment_qris_info",
+    label: "Info QRIS / Pembayaran Lain",
+    placeholder: "Scan QRIS di aplikasi e-wallet apapun",
+    multiline: true,
   },
 ];
 
@@ -171,15 +184,27 @@ export function SettingsForm({
           <label htmlFor={`setting-${field.key}`} className="text-sm font-medium">
             {field.label}
           </label>
-          <input
-            id={`setting-${field.key}`}
-            type="text"
-            placeholder={field.placeholder}
-            value={values[field.key] ?? ""}
-            onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-            disabled={!canEdit}
-            className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
-          />
+          {field.multiline ? (
+            <textarea
+              id={`setting-${field.key}`}
+              rows={2}
+              placeholder={field.placeholder}
+              value={values[field.key] ?? ""}
+              onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+              disabled={!canEdit}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
+            />
+          ) : (
+            <input
+              id={`setting-${field.key}`}
+              type="text"
+              placeholder={field.placeholder}
+              value={values[field.key] ?? ""}
+              onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+              disabled={!canEdit}
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
+            />
+          )}
         </div>
       ))}
 

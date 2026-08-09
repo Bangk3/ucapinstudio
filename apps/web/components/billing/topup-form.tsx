@@ -6,9 +6,11 @@ interface Props {
   tenantSlug: string;
   tenantId: string;
   topupPackages: [number, number, number];
+  bankInfo: string | null;
+  qrisInfo: string | null;
 }
 
-export function TopupForm({ tenantSlug, tenantId, topupPackages }: Props) {
+export function TopupForm({ tenantSlug, tenantId, topupPackages, bankInfo, qrisInfo }: Props) {
   const [selectedPackage, setSelectedPackage] = useState<number>(topupPackages[0]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -95,8 +97,16 @@ export function TopupForm({ tenantSlug, tenantId, topupPackages }: Props) {
 
       <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-1">
         <p className="font-medium">Transfer ke:</p>
-        <p className="text-muted-foreground">[ISI NOMOR REKENING DI SINI]</p>
-        <p className="text-muted-foreground">[ISI QRIS/INFO PEMBAYARAN LAIN DI SINI]</p>
+        {bankInfo || qrisInfo ? (
+          <>
+            {bankInfo && <p className="text-muted-foreground whitespace-pre-line">{bankInfo}</p>}
+            {qrisInfo && <p className="text-muted-foreground whitespace-pre-line">{qrisInfo}</p>}
+          </>
+        ) : (
+          <p className="text-muted-foreground">
+            Info pembayaran belum diatur admin. Hubungi kami sebelum transfer.
+          </p>
+        )}
       </div>
 
       <div className="space-y-1.5">
