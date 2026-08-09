@@ -29,18 +29,56 @@ const ORDER = [
 const TEXT_KEY = "admin_whatsapp_number";
 const TEXT_LABEL = 'Nomor WA Admin — CTA "Dibuatin Admin aja" (628xxxxxxxxxx)';
 
+const TEXT_FIELDS: {
+  key: string;
+  label: string;
+  placeholder?: string;
+  validate?: (v: string) => string | null;
+}[] = [
+  {
+    key: "support_email",
+    label: "Email Support (footer)",
+    placeholder: "support@ucapinstudio.com",
+    validate: (v) => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Email tidak valid"),
+  },
+  {
+    key: "social_instagram",
+    label: "Link Instagram (footer)",
+    placeholder: "https://instagram.com/...",
+  },
+  {
+    key: "social_twitter",
+    label: "Link Twitter/X (footer)",
+    placeholder: "https://twitter.com/...",
+  },
+];
+
+const FLAG_FIELDS: { key: string; label: string }[] = [
+  { key: "feature_ai_enabled", label: "AI Generation aktif" },
+  { key: "feature_messaging_enabled", label: "Messaging (WA/Email) aktif" },
+];
+
 export function SettingsForm({
   initialSettings,
   canEdit,
 }: { initialSettings: SettingRow[]; canEdit: boolean }) {
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
+  const allTextKeys = new Set<string>([TEXT_KEY, ...TEXT_FIELDS.map((f) => f.key)]);
+  const flagKeys = new Set<string>(FLAG_FIELDS.map((f) => f.key));
+
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const fromRows = Object.fromEntries(
       initialSettings.map((s) => [
         s.key,
-        s.key === TEXT_KEY ? (s.valueText ?? "") : String(s.value),
+        allTextKeys.has(s.key) ? (s.valueText ?? "") : String(s.value ?? ""),
       ]),
-    ),
-  );
+    );
+    // Feature flags default to "enabled" when the row doesn't exist yet
+    // (fresh DB) — matches getFeatureFlags()'s default-true behavior.
+    for (const key of flagKeys) {
+      if (!(key in fromRows)) fromRows[key] = "1";
+    }
+    return fromRows;
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -64,6 +102,16 @@ export function SettingsForm({
           throw new Error(`${TEXT_LABEL} harus angka saja, 8-15 digit`);
         }
         body[TEXT_KEY] = waNumber;
+      }
+      for (const field of TEXT_FIELDS) {
+        const v = (values[field.key] ?? "").trim();
+        if (!v) continue;
+        const err = field.validate?.(v);
+        if (err) throw new Error(`${field.label}: ${err}`);
+        body[field.key] = v;
+      }
+      for (const field of FLAG_FIELDS) {
+        body[field.key] = values[field.key] === "1" ? 1 : 0;
       }
 
       const res = await fetch("/api/v1/admin/settings", {
@@ -116,6 +164,46 @@ export function SettingsForm({
           disabled={!canEdit}
           className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
         />
+      </div>
+
+      {TEXT_FIELDS.map((field) => (
+        <div key={field.key} className="space-y-1.5">
+          <label htmlFor={`setting-${field.key}`} className="text-sm font-medium">
+            {field.label}
+          </label>
+          <input
+            id={`setting-${field.key}`}
+            type="text"
+            placeholder={field.placeholder}
+            value={values[field.key] ?? ""}
+            onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+            disabled={!canEdit}
+            className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
+          />
+        </div>
+      ))}
+
+      <div className="space-y-2 pt-2">
+        <p className="text-sm font-medium">Feature Kill Switches</p>
+        {FLAG_FIELDS.map((field) => (
+          <label
+            key={field.key}
+            htmlFor={`setting-${field.key}`}
+            className="flex items-center gap-2 text-sm"
+          >
+            <input
+              id={`setting-${field.key}`}
+              type="checkbox"
+              checked={values[field.key] === "1"}
+              onChange={(e) =>
+                setValues((prev) => ({ ...prev, [field.key]: e.target.checked ? "1" : "0" }))
+              }
+              disabled={!canEdit}
+              className="h-4 w-4 disabled:opacity-60"
+            />
+            {field.label}
+          </label>
+        ))}
       </div>
 
       {error && (

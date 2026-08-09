@@ -15,6 +15,7 @@
  */
 import { decrypt } from "@/lib/encrypt";
 import { getServerSession } from "@/lib/session";
+import { getFeatureFlags } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import {
   db,
@@ -82,6 +83,11 @@ function renderMessage(
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getServerSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { messagingEnabled } = await getFeatureFlags();
+  if (!messagingEnabled) {
+    return NextResponse.json({ error: "Messaging is currently disabled" }, { status: 503 });
+  }
 
   const { id: invitationId } = await ctx.params;
 

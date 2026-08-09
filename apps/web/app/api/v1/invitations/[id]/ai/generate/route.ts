@@ -15,7 +15,7 @@
  * Returns: { generationId, variants }
  */
 import { getServerSession } from "@/lib/session";
-import { getPricingSettings } from "@/lib/settings";
+import { getFeatureFlags, getPricingSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import { AnthropicProvider, GeminiProvider, NvidiaNimProvider, generateVariants } from "@invyte/ai";
 import { aiGenerations, db, debitCredit, invitations, memberships, tenants } from "@invyte/db";
@@ -37,6 +37,11 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function POST(req: NextRequest, ctx: Ctx) {
   const session = await getServerSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { aiEnabled } = await getFeatureFlags();
+  if (!aiEnabled) {
+    return NextResponse.json({ error: "AI generation is currently disabled" }, { status: 503 });
+  }
 
   const { id: invitationId } = await ctx.params;
 
