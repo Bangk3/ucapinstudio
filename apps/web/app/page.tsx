@@ -9,7 +9,7 @@ export default async function HomePage() {
 
   if (session) {
     const role = (session.user as { role?: string }).role;
-    if (role && ADMIN_ROLES.has(role)) redirect("/admin");
+    if (role && ADMIN_ROLES.has(role)) redirect("/admin/dashboard");
 
     const tenants = await getUserTenants(session.user.id);
     const first = tenants[0];
