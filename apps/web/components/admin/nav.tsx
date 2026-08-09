@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeftRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,7 +16,10 @@ const LINKS = [
   { href: "/admin/moderation", label: "Moderasi" },
 ];
 
-export function AdminNav({ role }: { role: string }) {
+export function AdminNav({
+  role,
+  dashboardSlug,
+}: { role: string; dashboardSlug?: string | undefined }) {
   const pathname = usePathname();
 
   return (
@@ -24,6 +28,15 @@ export function AdminNav({ role }: { role: string }) {
         <p className="font-serif text-lg font-bold">Admin Panel</p>
         <p className="text-xs text-muted-foreground capitalize">{role}</p>
       </div>
+      {dashboardSlug && (
+        <Link
+          href={`/${dashboardSlug}/dashboard`}
+          className="mb-2 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <ArrowLeftRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          Dashboard Saya
+        </Link>
+      )}
       {LINKS.map((link) => (
         <Link
           key={link.href}

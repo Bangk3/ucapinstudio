@@ -1,7 +1,16 @@
 "use client";
 
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { BarChart2, LayoutDashboard, Loader2, Plus, ScrollText, Settings, X } from "lucide-react";
+import {
+  BarChart2,
+  LayoutDashboard,
+  Loader2,
+  Plus,
+  ScrollText,
+  Settings,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -19,6 +28,7 @@ const NAV_ITEMS = [
 
 interface DashboardSidebarProps {
   tenantSlug: string;
+  role?: string | undefined;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
 }
@@ -192,11 +202,13 @@ function CreateWorkspaceDialog({ onClose }: { onClose: () => void }) {
 
 export function DashboardSidebar({
   tenantSlug,
+  role,
   mobileOpen = false,
   onMobileClose,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [showDialog, setShowDialog] = useState(false);
+  const isAdmin = role === "admin" || role === "superadmin";
 
   function SidebarContent({ onNavClick }: { onNavClick?: () => void }) {
     return (
@@ -237,6 +249,20 @@ export function DashboardSidebar({
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              href="/admin/dashboard"
+              {...(onNavClick ? { onClick: onNavClick } : {})}
+              className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                pathname.startsWith("/admin")
+                  ? "bg-brand-50 text-brand-700"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Admin Panel
+            </Link>
+          )}
         </nav>
 
         <div className="border-t p-3 space-y-1">

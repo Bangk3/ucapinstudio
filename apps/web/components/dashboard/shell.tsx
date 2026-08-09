@@ -20,6 +20,7 @@ export function DashboardShell({ children, user, tenantSlug, tenantName, creditB
     <div className="flex h-screen overflow-hidden bg-background">
       <DashboardSidebar
         tenantSlug={tenantSlug}
+        role={(user as { role?: string }).role}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />

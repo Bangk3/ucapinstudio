@@ -9,12 +9,17 @@ export default async function HomePage() {
   const session = await getServerSession();
 
   if (session) {
-    const role = (session.user as { role?: string }).role;
-    if (role && ADMIN_ROLES.has(role)) redirect("/admin/dashboard");
-
+    // Admin/superadmin land on their own tenant dashboard just like any
+    // user — full invitation-management features, not a stripped-down
+    // admin-only page. The admin console is reachable from there via the
+    // "Admin Panel" sidebar link (components/dashboard/sidebar.tsx), not
+    // by hijacking the post-login landing page.
     const tenants = await getUserTenants(session.user.id);
     const first = tenants[0];
     if (first) redirect(`/${first.tenant.slug}/dashboard`);
+
+    const role = (session.user as { role?: string }).role;
+    if (role && ADMIN_ROLES.has(role)) redirect("/admin/dashboard");
   }
 
   const [adminWhatsappLink, contactSettings] = await Promise.all([

@@ -6,12 +6,14 @@ import { redirect } from "next/navigation";
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession();
   if (session) {
-    const role = (session.user as { role?: string }).role;
-    if (role && ADMIN_ROLES.has(role)) redirect("/admin/dashboard");
-
+    // See app/page.tsx — admin/superadmin land on their own tenant
+    // dashboard too, not a separate admin-only page.
     const tenants = await getUserTenants(session.user.id);
     const first = tenants[0];
-    redirect(first ? `/${first.tenant.slug}/dashboard` : "/");
+    if (first) redirect(`/${first.tenant.slug}/dashboard`);
+
+    const role = (session.user as { role?: string }).role;
+    redirect(role && ADMIN_ROLES.has(role) ? "/admin/dashboard" : "/");
   }
 
   return (
