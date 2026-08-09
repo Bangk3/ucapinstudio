@@ -20,10 +20,13 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod=false
 
 # ─── builder ────────────────────────────────────────────────
+# Copies the whole /app from deps (root + every workspace package's
+# node_modules, not just web's) — needed so `pnpm --filter @invyte/db
+# db:migrate` can resolve drizzle-kit when this stage is reused directly
+# as the `migrate` service's build target (see docker-compose.coolify.yml).
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app ./
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production

@@ -16,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+      target: builder
     container_name: invyte_migrate
     restart: "no"
     depends_on:
