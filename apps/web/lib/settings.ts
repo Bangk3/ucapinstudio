@@ -1,4 +1,5 @@
 import { db, platformSettings } from "@invyte/db";
+import { eq } from "drizzle-orm";
 
 export interface PricingSettings {
   aiGenerationCost: number;
@@ -28,7 +29,7 @@ const DEFAULTS: Record<string, number> = {
  */
 export async function getPricingSettings(): Promise<PricingSettings> {
   const rows = await db.select().from(platformSettings);
-  const byKey = new Map<string, number>(rows.map((r) => [r.key, r.value]));
+  const byKey = new Map<string, number>(rows.map((r) => [r.key, r.value ?? 0]));
   const get = (key: string) => byKey.get(key) ?? DEFAULTS[key]!;
 
   return {
@@ -37,4 +38,17 @@ export async function getPricingSettings(): Promise<PricingSettings> {
     orderPackagePrice: get("order_package_price"),
     topupPackages: [get("topup_package_1"), get("topup_package_2"), get("topup_package_3")],
   };
+}
+
+/** wa.me deep link for the homepage's "Dibuatin Admin aja" CTA, or null if unset. */
+export async function getAdminWhatsappLink(): Promise<string | null> {
+  const [row] = await db
+    .select({ valueText: platformSettings.valueText })
+    .from(platformSettings)
+    .where(eq(platformSettings.key, "admin_whatsapp_number"));
+  const number = row?.valueText?.replace(/[^0-9]/g, "");
+  if (!number) return null;
+  return `https://wa.me/${number}?text=${encodeURIComponent(
+    "Halo, saya mau minta dibuatkan undangan digital di UcapinStudio.",
+  )}`;
 }

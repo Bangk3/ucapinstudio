@@ -12,12 +12,18 @@ const KEYS = [
   "topup_package_3",
 ] as const;
 
-const bodySchema = z.object(
-  Object.fromEntries(KEYS.map((k) => [k, z.number().int().positive().optional()])) as Record<
+const bodySchema = z.object({
+  ...(Object.fromEntries(KEYS.map((k) => [k, z.number().int().positive().optional()])) as Record<
     (typeof KEYS)[number],
     z.ZodOptional<z.ZodNumber>
-  >,
-);
+  >),
+  // Digits only (country code + number, no "+" or spaces) — fed straight into
+  // a wa.me link on the homepage.
+  admin_whatsapp_number: z
+    .string()
+    .regex(/^[0-9]{8,15}$/, "Nomor WA harus angka saja, 8-15 digit")
+    .optional(),
+});
 
 export async function GET(req: NextRequest) {
   const auth = await requireAdminSession(req);
@@ -45,6 +51,21 @@ export async function PATCH(req: NextRequest) {
       .onConflictDoUpdate({
         target: platformSettings.key,
         set: { value, updatedBy: auth.session.user.id, updatedAt: now },
+      });
+  }
+  const waNumber = parsed.data.admin_whatsapp_number;
+  if (waNumber !== undefined) {
+    await db
+      .insert(platformSettings)
+      .values({
+        key: "admin_whatsapp_number",
+        valueText: waNumber,
+        updatedBy: auth.session.user.id,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: platformSettings.key,
+        set: { valueText: waNumber, updatedBy: auth.session.user.id, updatedAt: now },
       });
   }
 

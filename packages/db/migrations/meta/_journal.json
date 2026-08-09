@@ -29,6 +29,13 @@
       "when": 1786191652128,
       "tag": "0003_youthful_patch",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786278006863,
+      "tag": "0004_platform_settings_whatsapp",
+      "breakpoints": true
     }
   ]
 }

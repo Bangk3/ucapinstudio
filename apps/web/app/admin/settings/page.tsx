@@ -12,7 +12,7 @@ export default async function AdminSettingsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
       <SettingsForm
-        initialSettings={rows.map((r) => ({ key: r.key, value: r.value }))}
+        initialSettings={rows.map((r) => ({ key: r.key, value: r.value, valueText: r.valueText }))}
         canEdit={role === "superadmin"}
       />
     </div>

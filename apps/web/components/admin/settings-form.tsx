@@ -4,7 +4,8 @@ import { useState } from "react";
 
 interface SettingRow {
   key: string;
-  value: number;
+  value: number | null;
+  valueText?: string | null;
 }
 
 const LABELS: Record<string, string> = {
@@ -25,12 +26,20 @@ const ORDER = [
   "topup_package_3",
 ];
 
+const TEXT_KEY = "admin_whatsapp_number";
+const TEXT_LABEL = 'Nomor WA Admin — CTA "Dibuatin Admin aja" (628xxxxxxxxxx)';
+
 export function SettingsForm({
   initialSettings,
   canEdit,
 }: { initialSettings: SettingRow[]; canEdit: boolean }) {
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(initialSettings.map((s) => [s.key, String(s.value)])),
+    Object.fromEntries(
+      initialSettings.map((s) => [
+        s.key,
+        s.key === TEXT_KEY ? (s.valueText ?? "") : String(s.value),
+      ]),
+    ),
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,13 +50,20 @@ export function SettingsForm({
     setSaved(false);
     setSaving(true);
     try {
-      const body: Record<string, number> = {};
+      const body: Record<string, number | string> = {};
       for (const key of ORDER) {
         const n = Number(values[key]);
         if (!Number.isInteger(n) || n <= 0) {
           throw new Error(`${LABELS[key]} harus berupa angka positif`);
         }
         body[key] = n;
+      }
+      const waNumber = (values[TEXT_KEY] ?? "").trim();
+      if (waNumber) {
+        if (!/^[0-9]{8,15}$/.test(waNumber)) {
+          throw new Error(`${TEXT_LABEL} harus angka saja, 8-15 digit`);
+        }
+        body[TEXT_KEY] = waNumber;
       }
 
       const res = await fetch("/api/v1/admin/settings", {
@@ -85,6 +101,22 @@ export function SettingsForm({
           />
         </div>
       ))}
+
+      <div className="space-y-1.5">
+        <label htmlFor={`setting-${TEXT_KEY}`} className="text-sm font-medium">
+          {TEXT_LABEL}
+        </label>
+        <input
+          id={`setting-${TEXT_KEY}`}
+          type="text"
+          inputMode="numeric"
+          placeholder="6281234567890"
+          value={values[TEXT_KEY] ?? ""}
+          onChange={(e) => setValues((prev) => ({ ...prev, [TEXT_KEY]: e.target.value }))}
+          disabled={!canEdit}
+          className="w-full rounded-lg border bg-background px-3 py-2 text-sm disabled:opacity-60"
+        />
+      </div>
 
       {error && (
         <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>

@@ -1119,7 +1119,7 @@ function AIGenerateSection() {
           className="mt-10 text-center"
         >
           <a
-            href="/register"
+            href="/auth/register"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm text-white transition-all hover:scale-105 hover:shadow-xl"
             style={{
               background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
@@ -1616,7 +1616,7 @@ function TestimonialCard({ name, loc, text }: { name: string; loc: string; text:
 
 // ── Pricing ────────────────────────────────────────────────────────────────────
 
-function PricingSection() {
+function PricingSection({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -1627,6 +1627,7 @@ function PricingSection() {
       desc: "Untuk pasangan yang ingin mencoba",
       features: ["3 Undangan", "Semua 7 Template", "RSVP & Buku Tamu", "WhatsApp Broadcast"],
       cta: "Mulai Sekarang",
+      href: "/auth/register",
       highlight: false,
     },
     {
@@ -1643,8 +1644,22 @@ function PricingSection() {
         "Analytics Dashboard",
       ],
       cta: "Daftar Sekarang",
+      href: "/auth/register",
       highlight: true,
     },
+    ...(adminWhatsappLink
+      ? [
+          {
+            name: "Dibuatin Admin",
+            price: "Hubungi Kami",
+            desc: "Kirim data via WhatsApp, tim kami yang bikinkan",
+            features: ["Desain dibuatkan tim", "Revisi via WhatsApp", "Semua 7 Template"],
+            cta: "Di Buatin Admin aja",
+            href: adminWhatsappLink,
+            highlight: false,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -1654,7 +1669,7 @@ function PricingSection() {
       ref={ref}
       style={{ background: "linear-gradient(180deg, #fff 0%, var(--hp-blush) 100%)" }}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className={plans.length === 3 ? "max-w-6xl mx-auto" : "max-w-4xl mx-auto"}>
         <motion.div
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
@@ -1690,7 +1705,7 @@ function PricingSection() {
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
           variants={stagger}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          className={`grid grid-cols-1 gap-6 ${plans.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}
         >
           {plans.map((plan, i) => (
             <motion.div
@@ -1753,8 +1768,10 @@ function PricingSection() {
                 ))}
               </ul>
 
-              <Link
-                href="/auth/register"
+              <a
+                href={plan.href}
+                target={plan.href.startsWith("http") ? "_blank" : undefined}
+                rel={plan.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 className="block w-full text-center py-3 rounded-full text-sm font-semibold transition-all hover:scale-[1.02] active:scale-95"
                 style={
                   plan.highlight
@@ -1770,7 +1787,7 @@ function PricingSection() {
                 }
               >
                 {plan.cta}
-              </Link>
+              </a>
             </motion.div>
           ))}
         </motion.div>
@@ -1867,7 +1884,7 @@ function FAQSection() {
 
 // ── Final CTA ──────────────────────────────────────────────────────────────────
 
-function FinalCTASection() {
+function FinalCTASection({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -1913,7 +1930,7 @@ function FinalCTASection() {
             <MagneticButton href="/auth/register" primary>
               Mulai Sekarang
             </MagneticButton>
-            <MagneticButton href="#pricing">💬 Hubungi Kami</MagneticButton>
+            <MagneticButton href={adminWhatsappLink ?? "#pricing"}>💬 Hubungi Kami</MagneticButton>
           </motion.div>
         </motion.div>
       </div>
@@ -2034,7 +2051,7 @@ function Footer() {
 
 // ── Main Export ─────────────────────────────────────────────────────────────────
 
-export function HomepageClient() {
+export function HomepageClient({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
   return (
     <>
       <LenisProvider />
@@ -2048,9 +2065,9 @@ export function HomepageClient() {
       <CulturalSection />
       <StatsSection />
       <TestimonialsSection />
-      <PricingSection />
+      <PricingSection adminWhatsappLink={adminWhatsappLink} />
       <FAQSection />
-      <FinalCTASection />
+      <FinalCTASection adminWhatsappLink={adminWhatsappLink} />
       <Footer />
     </>
   );
