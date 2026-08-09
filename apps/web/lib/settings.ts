@@ -91,3 +91,33 @@ export async function getAdminWhatsappLink(): Promise<string | null> {
     "Halo, saya mau minta dibuatkan undangan digital di UcapinStudio.",
   )}`;
 }
+
+export interface ModerationSettings {
+  spamThreshold: number;
+  bannedWords: string[];
+}
+
+/** Wish guestbook spam moderation config — threshold (0-100) and banned substrings. */
+export async function getModerationSettings(): Promise<ModerationSettings> {
+  const rows = await db
+    .select({
+      key: platformSettings.key,
+      value: platformSettings.value,
+      valueText: platformSettings.valueText,
+    })
+    .from(platformSettings)
+    .where(inArray(platformSettings.key, ["wish_spam_threshold", "wish_banned_words"]));
+
+  const threshold = rows.find((r) => r.key === "wish_spam_threshold")?.value;
+  const bannedWordsText = rows.find((r) => r.key === "wish_banned_words")?.valueText;
+
+  return {
+    spamThreshold: threshold ?? 70,
+    bannedWords: bannedWordsText
+      ? bannedWordsText
+          .split(",")
+          .map((w) => w.trim())
+          .filter(Boolean)
+      : [],
+  };
+}

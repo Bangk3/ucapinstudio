@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/messaging", label: "Messaging" },
   { href: "/admin/ai-config", label: "AI" },
+  { href: "/admin/moderation", label: "Moderasi" },
 ];
 
 export function AdminNav({ role }: { role: string }) {

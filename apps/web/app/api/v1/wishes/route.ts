@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { rateLimitIp } from "@/lib/rate-limit";
+import { getModerationSettings } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
 import { db, invitations, wishes, withTenantRls } from "@invyte/db";
 import { and, count, desc, eq, isNull } from "drizzle-orm";
@@ -10,10 +11,17 @@ function hashIp(ip: string): string {
   return createHash("sha256").update(ip).digest("hex");
 }
 
-function calcSpamScore(message: string): number {
-  if (message.length < 5) return 1.0;
-  if (message.includes("http")) return 0.8;
-  if (message.length > 1000) return 0.5;
+// 0-100 scale, matching platform_settings.wish_spam_threshold. Banned-word
+// match wins outright (100); otherwise fall back to the pre-existing simple
+// heuristics, scaled up from their old 0-1 range.
+function calcSpamScore(senderName: string, message: string, bannedWords: string[]): number {
+  if (bannedWords.length > 0) {
+    const haystack = `${senderName} ${message}`.toLowerCase();
+    if (bannedWords.some((w) => haystack.includes(w.toLowerCase()))) return 100;
+  }
+  if (message.length < 5) return 100;
+  if (message.includes("http")) return 80;
+  if (message.length > 1000) return 50;
   return 0;
 }
 
@@ -116,9 +124,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const spamScore = calcSpamScore(message);
-  const status: "pending" | "approved" =
-    inv.wishesModerated || spamScore >= 0.8 ? "pending" : "approved";
+  const { spamThreshold, bannedWords } = await getModerationSettings();
+  const spamScore = calcSpamScore(senderName, message, bannedWords);
+  const status: "pending" | "approved" | "spam" =
+    spamScore >= spamThreshold ? "spam" : inv.wishesModerated ? "pending" : "approved";
 
   const id = uuidv7();
 
