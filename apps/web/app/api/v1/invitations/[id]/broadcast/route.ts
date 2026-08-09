@@ -23,6 +23,7 @@ import {
   memberships,
   messages,
   messagingCredentials,
+  platformCredentials,
   tenants,
 } from "@invyte/db";
 import type { MessagingProviderType } from "@invyte/messaging";
@@ -32,6 +33,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const messagingProviderTypeValues = ["whatsapp_cloud", "fonnte", "wablas", "smtp"] as const;
+
+// Providers with a superadmin-configurable platform-wide default credential
+// (packages/db/src/schema/settings.ts platformCredentials). Only these two
+// have adapters wired up — see packages/messaging.
+const PLATFORM_FALLBACK_PROVIDERS = new Set(["whatsapp_cloud", "fonnte"]);
 
 const broadcastSchema = z.object({
   tenantSlug: z.string().min(1),
@@ -98,9 +104,11 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
   const { tenantId, invitationSlug } = resolved;
 
-  // Load the active credentials for the requested provider
+  // Load the active credentials for the requested provider — the tenant's
+  // own row first, falling back to the platform-wide default (superadmin-set
+  // in /admin/messaging) for providers that support one.
   const [cred] = await db
-    .select()
+    .select({ encryptedConfig: messagingCredentials.encryptedConfig })
     .from(messagingCredentials)
     .where(
       and(
@@ -111,7 +119,17 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     )
     .limit(1);
 
-  if (!cred) {
+  let encryptedConfig = cred?.encryptedConfig;
+  if (!encryptedConfig && PLATFORM_FALLBACK_PROVIDERS.has(provider)) {
+    const [platformCred] = await db
+      .select({ encryptedConfig: platformCredentials.encryptedConfig })
+      .from(platformCredentials)
+      .where(eq(platformCredentials.provider, provider as "whatsapp_cloud" | "fonnte"))
+      .limit(1);
+    encryptedConfig = platformCred?.encryptedConfig;
+  }
+
+  if (!encryptedConfig) {
     return NextResponse.json(
       { error: `No active ${provider} credentials configured` },
       { status: 400 },
@@ -172,7 +190,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   void (async () => {
     let providerInstance: ReturnType<typeof createProvider>;
     try {
-      const config = JSON.parse(decrypt(cred.encryptedConfig)) as unknown;
+      const config = JSON.parse(decrypt(encryptedConfig)) as unknown;
       providerInstance = createProvider(provider, config);
     } catch {
       // Cannot decrypt / bad config — mark all as failed
