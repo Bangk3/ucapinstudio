@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/transactions", label: "Transaksi" },
   { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/messaging", label: "Messaging" },
   { href: "/admin/ai-config", label: "AI" },
 ];
 
