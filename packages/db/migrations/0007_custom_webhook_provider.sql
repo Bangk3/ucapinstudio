@@ -1,0 +1,2 @@
+ALTER TYPE "public"."messaging_provider_type" ADD VALUE 'custom_webhook' BEFORE 'smtp';--> statement-breakpoint
+ALTER TYPE "public"."platform_credential_provider" ADD VALUE 'custom_webhook' BEFORE 'anthropic';

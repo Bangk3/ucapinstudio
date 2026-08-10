@@ -17,6 +17,10 @@ export const messagingProviderTypeEnum = pgEnum("messaging_provider_type", [
   "whatsapp_cloud",
   "fonnte",
   "wablas",
+  // Generic HTTP gateway (Fonnte-style: Authorization header + {target,
+  // message} body) with a configurable base URL — for self-hosted WA
+  // gateways (e.g. a Baileys-backed service) that aren't a named provider.
+  "custom_webhook",
   "smtp",
 ]);
 

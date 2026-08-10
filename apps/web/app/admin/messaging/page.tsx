@@ -3,7 +3,7 @@ import { getServerSession } from "@/lib/session";
 import { db, platformCredentials } from "@invyte/db";
 import { inArray } from "drizzle-orm";
 
-const PROVIDERS = ["whatsapp_cloud", "fonnte"] as const;
+const PROVIDERS = ["whatsapp_cloud", "fonnte", "custom_webhook"] as const;
 
 export default async function AdminMessagingPage() {
   const session = await getServerSession();

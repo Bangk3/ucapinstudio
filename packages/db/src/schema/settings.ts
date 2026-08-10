@@ -59,6 +59,9 @@ export const platformCredentialProviderEnum = pgEnum("platform_credential_provid
   "whatsapp_cloud",
   "fonnte",
   "wablas",
+  // Generic HTTP gateway (self-hosted WA gateway, e.g. Baileys-backed) —
+  // see messaging_provider_type's matching value for the shared adapter.
+  "custom_webhook",
   "anthropic",
   "fal",
 ]);

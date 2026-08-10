@@ -47,7 +47,9 @@ export function BroadcastWizard({ invitationId, invitationSlug, tenantSlug, gues
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [channelFilter, setChannelFilter] = useState<"phone" | "email" | "all">("phone");
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE);
-  const [provider, setProvider] = useState<"whatsapp_cloud" | "fonnte" | "smtp">("fonnte");
+  const [provider, setProvider] = useState<"whatsapp_cloud" | "fonnte" | "custom_webhook" | "smtp">(
+    "fonnte",
+  );
   const [result, setResult] = useState<BroadcastResult | null>(null);
   const [previewGuest, setPreviewGuest] = useState<Guest | null>(null);
 
@@ -177,6 +179,7 @@ export function BroadcastWizard({ invitationId, invitationSlug, tenantSlug, gues
             >
               <option value="fonnte">Fonnte (WA)</option>
               <option value="whatsapp_cloud">WhatsApp Cloud API</option>
+              <option value="custom_webhook">Gateway Kustom (WA)</option>
               <option value="smtp">Email (SMTP)</option>
             </select>
           </div>
@@ -392,7 +395,9 @@ export function BroadcastWizard({ invitationId, invitationSlug, tenantSlug, gues
               ? "Fonnte (WhatsApp)"
               : provider === "whatsapp_cloud"
                 ? "WhatsApp Cloud API"
-                : "Email SMTP"}
+                : provider === "custom_webhook"
+                  ? "Gateway Kustom (WhatsApp)"
+                  : "Email SMTP"}
           </p>
         </div>
 

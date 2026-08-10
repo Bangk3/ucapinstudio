@@ -50,6 +50,13 @@
       "when": 1786283167415,
       "tag": "0006_payment_instructions",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786377788197,
+      "tag": "0007_custom_webhook_provider",
+      "breakpoints": true
     }
   ]
 }

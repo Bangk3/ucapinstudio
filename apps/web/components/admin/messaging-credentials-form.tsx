@@ -3,14 +3,14 @@
 import { useState } from "react";
 
 interface ProviderStatus {
-  provider: "whatsapp_cloud" | "fonnte";
+  provider: "whatsapp_cloud" | "fonnte" | "custom_webhook";
   configured: boolean;
   updatedAt: string | null;
 }
 
 const FIELDS: Record<
   ProviderStatus["provider"],
-  { key: string; label: string; required: boolean }[]
+  { key: string; label: string; required: boolean; type?: "text" | "password" }[]
 > = {
   whatsapp_cloud: [
     { key: "phoneNumberId", label: "Phone Number ID", required: true },
@@ -21,11 +21,22 @@ const FIELDS: Record<
     { key: "apiKey", label: "Token Fonnte", required: true },
     { key: "deviceToken", label: "Device Token (opsional)", required: false },
   ],
+  custom_webhook: [
+    {
+      key: "baseUrl",
+      label: "URL Endpoint (mis. https://waservice.visilogi.com/send)",
+      required: true,
+      type: "text",
+    },
+    { key: "apiKey", label: "API Key / Token", required: true },
+    { key: "device", label: "Device (opsional)", required: false },
+  ],
 };
 
 const TITLES: Record<ProviderStatus["provider"], string> = {
   whatsapp_cloud: "WhatsApp Cloud API",
   fonnte: "Fonnte",
+  custom_webhook: "Gateway Kustom (mis. Baileys)",
 };
 
 function ProviderCard({
@@ -111,7 +122,7 @@ function ProviderCard({
           </label>
           <input
             id={`${status.provider}-${f.key}`}
-            type="password"
+            type={f.type ?? "password"}
             autoComplete="off"
             placeholder={configured ? "●●●●●●●●" : ""}
             value={values[f.key] ?? ""}

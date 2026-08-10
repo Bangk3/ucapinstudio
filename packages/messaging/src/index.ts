@@ -1,7 +1,9 @@
+import { CustomWebhookAdapter } from "./adapters/custom-webhook";
 import { FonnteAdapter } from "./adapters/fonnte";
 import { SmtpAdapter } from "./adapters/smtp";
 import { WhatsAppCloudAdapter } from "./adapters/whatsapp-cloud";
 import type {
+  CustomWebhookConfig,
   FonnteConfig,
   MessagingProvider,
   MessagingProviderType,
@@ -10,7 +12,7 @@ import type {
 } from "./types";
 
 export * from "./types";
-export { FonnteAdapter, SmtpAdapter, WhatsAppCloudAdapter };
+export { CustomWebhookAdapter, FonnteAdapter, SmtpAdapter, WhatsAppCloudAdapter };
 
 export function createProvider(type: MessagingProviderType, config: unknown): MessagingProvider {
   switch (type) {
@@ -20,6 +22,8 @@ export function createProvider(type: MessagingProviderType, config: unknown): Me
       return new FonnteAdapter(config as FonnteConfig);
     case "wablas":
       throw new Error("Wablas adapter not yet implemented");
+    case "custom_webhook":
+      return new CustomWebhookAdapter(config as CustomWebhookConfig);
     case "smtp":
       return new SmtpAdapter(config as SmtpConfig);
     default: {

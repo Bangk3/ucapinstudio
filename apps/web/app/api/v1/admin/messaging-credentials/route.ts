@@ -17,9 +17,9 @@ import { eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-// Only these two have adapters wired up (packages/messaging) — wablas has no
-// adapter yet, anthropic/fal are AI providers, not messaging.
-const PROVIDERS = ["whatsapp_cloud", "fonnte"] as const;
+// These have adapters wired up (packages/messaging) — wablas has no adapter
+// yet, anthropic/fal are AI providers, not messaging.
+const PROVIDERS = ["whatsapp_cloud", "fonnte", "custom_webhook"] as const;
 type Provider = (typeof PROVIDERS)[number];
 
 const whatsappCloudConfigSchema = z.object({
@@ -31,6 +31,12 @@ const whatsappCloudConfigSchema = z.object({
 const fonnteConfigSchema = z.object({
   apiKey: z.string().min(1, "Token Fonnte wajib diisi"),
   deviceToken: z.string().optional().default(""),
+});
+
+const customWebhookConfigSchema = z.object({
+  baseUrl: z.string().url("URL tidak valid"),
+  apiKey: z.string().min(1, "API Key wajib diisi"),
+  device: z.string().optional().default(""),
 });
 
 const putSchema = z.object({
@@ -72,6 +78,7 @@ export async function PUT(req: NextRequest) {
   const configCheck: Record<Provider, z.ZodTypeAny> = {
     whatsapp_cloud: whatsappCloudConfigSchema,
     fonnte: fonnteConfigSchema,
+    custom_webhook: customWebhookConfigSchema,
   };
   const validConfig = configCheck[provider].safeParse(config);
   if (!validConfig.success) {

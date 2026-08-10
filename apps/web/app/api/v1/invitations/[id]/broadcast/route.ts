@@ -33,12 +33,18 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const messagingProviderTypeValues = ["whatsapp_cloud", "fonnte", "wablas", "smtp"] as const;
+const messagingProviderTypeValues = [
+  "whatsapp_cloud",
+  "fonnte",
+  "wablas",
+  "custom_webhook",
+  "smtp",
+] as const;
 
 // Providers with a superadmin-configurable platform-wide default credential
-// (packages/db/src/schema/settings.ts platformCredentials). Only these two
-// have adapters wired up — see packages/messaging.
-const PLATFORM_FALLBACK_PROVIDERS = new Set(["whatsapp_cloud", "fonnte"]);
+// (packages/db/src/schema/settings.ts platformCredentials). Only these have
+// adapters wired up — see packages/messaging.
+const PLATFORM_FALLBACK_PROVIDERS = new Set(["whatsapp_cloud", "fonnte", "custom_webhook"]);
 
 const broadcastSchema = z.object({
   tenantSlug: z.string().min(1),
@@ -130,7 +136,12 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     const [platformCred] = await db
       .select({ encryptedConfig: platformCredentials.encryptedConfig })
       .from(platformCredentials)
-      .where(eq(platformCredentials.provider, provider as "whatsapp_cloud" | "fonnte"))
+      .where(
+        eq(
+          platformCredentials.provider,
+          provider as "whatsapp_cloud" | "fonnte" | "custom_webhook",
+        ),
+      )
       .limit(1);
     encryptedConfig = platformCred?.encryptedConfig;
   }

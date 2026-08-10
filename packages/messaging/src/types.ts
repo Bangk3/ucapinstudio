@@ -1,6 +1,11 @@
 export type MessageStatus = "pending" | "sent" | "delivered" | "read" | "failed";
 export type MessageChannel = "whatsapp" | "sms" | "email";
-export type MessagingProviderType = "whatsapp_cloud" | "fonnte" | "wablas" | "smtp";
+export type MessagingProviderType =
+  | "whatsapp_cloud"
+  | "fonnte"
+  | "wablas"
+  | "custom_webhook"
+  | "smtp";
 
 export interface SendMessageParams {
   to: string; // phone (E.164) or email
@@ -35,6 +40,18 @@ export interface WhatsAppCloudConfig {
 export interface FonnteConfig {
   apiKey: string;
   deviceToken: string;
+}
+
+/**
+ * Generic self-hosted WA gateway (e.g. a Baileys-backed service you run
+ * yourself) — same request shape as Fonnte (Authorization header, form body
+ * {target, message}) but against a configurable base URL instead of a fixed
+ * provider domain.
+ */
+export interface CustomWebhookConfig {
+  baseUrl: string; // full endpoint to POST to, e.g. https://waservice.example.com/send
+  apiKey: string;
+  device?: string;
 }
 
 export interface SmtpConfig {
