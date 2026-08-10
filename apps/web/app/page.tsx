@@ -11,8 +11,8 @@ export default async function HomePage() {
   if (session) {
     // Admin/superadmin land on their own tenant dashboard just like any
     // user — full invitation-management features, not a stripped-down
-    // admin-only page. The admin console is reachable from there via the
-    // "Admin Panel" sidebar link (components/dashboard/sidebar.tsx), not
+    // admin-only page. The admin console is reachable from the same
+    // sidebar (components/dashboard/sidebar.tsx's ADMIN_NAV_ITEMS), not
     // by hijacking the post-login landing page.
     const tenants = await getUserTenants(session.user.id);
     const first = tenants[0];

@@ -1,4 +1,4 @@
-import { AdminNav } from "@/components/admin/nav";
+import { DashboardShell } from "@/components/dashboard/shell";
 import { ADMIN_ROLES } from "@/lib/require-admin";
 import { getServerSession } from "@/lib/session";
 import { getUserTenants } from "@/lib/tenant";
@@ -11,16 +11,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const role = (session.user as { role?: string }).role;
   if (!role || !ADMIN_ROLES.has(role)) redirect("/");
 
-  // Admin/superadmin also have their own tenant dashboard (see
-  // components/dashboard/sidebar.tsx's "Admin Panel" link back the other
-  // way) — surface a way back to it if they have one.
+  // Same DashboardShell/sidebar as the tenant dashboard — admin/superadmin
+  // get one merged nav (see components/dashboard/sidebar.tsx's
+  // ADMIN_NAV_ITEMS) instead of a separate admin-only shell. Every
+  // registered account gets a personal tenant on signup, so tenants[0]
+  // should always exist for an admin/superadmin here in practice.
   const tenants = await getUserTenants(session.user.id);
-  const dashboardSlug = tenants[0]?.tenant.slug;
+  const tenantRecord = tenants[0]?.tenant;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AdminNav role={role} dashboardSlug={dashboardSlug} />
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
-    </div>
+    <DashboardShell
+      user={session.user}
+      tenantSlug={tenantRecord?.slug ?? ""}
+      tenantName={tenantRecord?.name ?? "Admin"}
+      creditBalance={tenantRecord?.creditBalance ?? 0}
+    >
+      {children}
+    </DashboardShell>
   );
 }

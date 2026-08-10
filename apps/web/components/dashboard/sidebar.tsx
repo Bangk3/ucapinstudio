@@ -3,12 +3,18 @@
 import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   BarChart2,
+  CreditCard,
   LayoutDashboard,
   Loader2,
+  MessageCircle,
   Plus,
+  Receipt,
   ScrollText,
   Settings,
-  ShieldCheck,
+  ShieldAlert,
+  ShoppingBag,
+  Sparkles,
+  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +30,20 @@ const NAV_ITEMS = [
   { label: "Undangan", href: "dashboard/invitations", icon: ScrollText },
   { label: "Analitik", href: "dashboard/analytics", icon: BarChart2 },
   { label: "Pengaturan", href: "dashboard/settings", icon: Settings },
+];
+
+// Absolute (not tenant-prefixed) — shown appended to the same sidebar for
+// admin/superadmin, so there's one nav instead of a separate admin shell.
+const ADMIN_NAV_ITEMS = [
+  { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+  { label: "Top-Up", href: "/admin/topup-requests", icon: CreditCard },
+  { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Transaksi", href: "/admin/transactions", icon: Receipt },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Messaging", href: "/admin/messaging", icon: MessageCircle },
+  { label: "AI", href: "/admin/ai-config", icon: Sparkles },
+  { label: "Moderasi", href: "/admin/moderation", icon: ShieldAlert },
 ];
 
 interface DashboardSidebarProps {
@@ -250,18 +270,29 @@ export function DashboardSidebar({
             );
           })}
           {isAdmin && (
-            <Link
-              href="/admin/dashboard"
-              {...(onNavClick ? { onClick: onNavClick } : {})}
-              className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                pathname.startsWith("/admin")
-                  ? "bg-brand-50 text-brand-700"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Admin Panel
-            </Link>
+            <>
+              <p className="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Admin
+              </p>
+              {ADMIN_NAV_ITEMS.map((item) => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    {...(onNavClick ? { onClick: onNavClick } : {})}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-brand-50 text-brand-700"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </>
           )}
         </nav>
 
