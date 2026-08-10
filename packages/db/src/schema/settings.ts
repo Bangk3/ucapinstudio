@@ -63,6 +63,8 @@ export const platformCredentialProviderEnum = pgEnum("platform_credential_provid
   // see messaging_provider_type's matching value for the shared adapter.
   "custom_webhook",
   "anthropic",
+  "gemini",
+  "nvidia-nim",
   "fal",
 ]);
 

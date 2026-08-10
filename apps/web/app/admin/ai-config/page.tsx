@@ -2,7 +2,7 @@ import { AiCredentialsForm } from "@/components/admin/ai-credentials-form";
 import { getServerSession } from "@/lib/session";
 import { db, platformCredentials } from "@invyte/db";
 
-const PROVIDERS = ["anthropic", "fal"] as const;
+const PROVIDERS = ["anthropic", "gemini", "nvidia-nim", "fal"] as const;
 
 export default async function AdminAiConfigPage() {
   const session = await getServerSession();
@@ -18,8 +18,9 @@ export default async function AdminAiConfigPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">AI Config</h1>
         <p className="text-sm text-muted-foreground">
-          Kelola API key provider AI platform (Anthropic, fal.ai). Key di sini menggantikan env var
-          tanpa perlu redeploy.
+          Kelola API key provider AI platform (Anthropic, Gemini, NVIDIA NIM, fal.ai). Key di sini
+          menggantikan env var tanpa perlu redeploy. Isi lebih dari satu buat mode "Otomatis"
+          (round-robin + fallback) di generator undangan.
         </p>
       </div>
       <AiCredentialsForm

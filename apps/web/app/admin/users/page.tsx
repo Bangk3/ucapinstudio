@@ -8,7 +8,7 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Users</h1>
-      <UserTable canModerate={role === "superadmin"} />
+      <UserTable canModerate={role === "superadmin"} currentUserId={session?.user.id ?? ""} />
     </div>
   );
 }

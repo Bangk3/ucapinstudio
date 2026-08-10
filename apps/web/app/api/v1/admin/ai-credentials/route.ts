@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const PROVIDERS = ["anthropic", "fal"] as const;
+const PROVIDERS = ["anthropic", "gemini", "nvidia-nim", "fal"] as const;
 
 const bodySchema = z.object({
   provider: z.enum(PROVIDERS),

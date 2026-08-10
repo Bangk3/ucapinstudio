@@ -3,13 +3,15 @@
 import { useState } from "react";
 
 interface CredentialRow {
-  provider: "anthropic" | "fal";
+  provider: "anthropic" | "gemini" | "nvidia-nim" | "fal";
   configured: boolean;
   updatedAt: string | null;
 }
 
 const LABELS: Record<CredentialRow["provider"], string> = {
   anthropic: "Anthropic API Key (Claude)",
+  gemini: "Google API Key (Gemini)",
+  "nvidia-nim": "NVIDIA NIM API Key (Llama)",
   fal: "fal.ai API Key (Flux Schnell)",
 };
 

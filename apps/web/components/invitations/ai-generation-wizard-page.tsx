@@ -29,7 +29,7 @@ interface GenerationVariant {
   timeline?: TimelineEntry[];
 }
 
-type AiProvider = "claude" | "gemini" | "nvidia-nim";
+type AiProvider = "auto" | "claude" | "gemini" | "nvidia-nim";
 type GenState = "idle" | "loading" | "done";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -52,6 +52,7 @@ const MOOD_OPTIONS = [
 ] as const;
 
 const PROVIDER_OPTIONS: { value: AiProvider; label: string; sublabel: string; color: string }[] = [
+  { value: "auto", label: "Otomatis", sublabel: "Round-robin + fallback", color: "#9333ea" },
   { value: "claude", label: "Claude", sublabel: "Anthropic · Haiku 4.5", color: "#d97706" },
   { value: "gemini", label: "Gemini", sublabel: "Google · 3 Flash Preview", color: "#2563eb" },
   { value: "nvidia-nim", label: "NVIDIA", sublabel: "NIM · Llama 3.1 8B", color: "#76b900" },
@@ -328,7 +329,7 @@ export function AiGenerationWizardPage({ invitationId, tenantSlug, groomName, br
   const [bride, setBride] = useState(brideName);
   const [style, setStyle] = useState<string>("modern");
   const [mood, setMood] = useState<string>("elegant");
-  const [aiProvider, setAiProvider] = useState<AiProvider>("claude");
+  const [aiProvider, setAiProvider] = useState<AiProvider>("auto");
 
   // ── Generation ────────────────────────────────────────────────────────────
   const [genState, setGenState] = useState<GenState>("idle");
@@ -560,7 +561,7 @@ export function AiGenerationWizardPage({ invitationId, tenantSlug, groomName, br
         {/* AI Provider */}
         <div>
           <span className="block text-xs font-medium text-muted-foreground mb-1.5">Model AI</span>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-4 gap-1.5">
             {PROVIDER_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -669,11 +670,13 @@ export function AiGenerationWizardPage({ invitationId, tenantSlug, groomName, br
               </span>
             </motion.button>
             <p className="text-[10px] text-muted-foreground text-center">
-              {aiProvider === "gemini"
-                ? "Menggunakan Gemini 3 Flash Preview · Estimasi 5–15 detik"
-                : aiProvider === "nvidia-nim"
-                  ? "Menggunakan NVIDIA NIM Llama 3.1 8B · Gratis · Estimasi 3–10 detik"
-                  : "Menggunakan Claude Haiku · Estimasi 6–18 detik"}
+              {aiProvider === "auto"
+                ? "Coba semua provider terkonfigurasi bergiliran, otomatis pindah kalau salah satu gagal"
+                : aiProvider === "gemini"
+                  ? "Menggunakan Gemini 3 Flash Preview · Estimasi 5–15 detik"
+                  : aiProvider === "nvidia-nim"
+                    ? "Menggunakan NVIDIA NIM Llama 3.1 8B · Gratis · Estimasi 3–10 detik"
+                    : "Menggunakan Claude Haiku · Estimasi 6–18 detik"}
             </p>
           </motion.div>
         )}

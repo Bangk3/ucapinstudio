@@ -17,16 +17,11 @@
  *
  * Returns: { generationId, recipe }
  */
-import { resolveAiApiKey } from "@/lib/ai-credentials";
+import { resolveAiProviderChain } from "@/lib/ai-credentials";
 import { getServerSession } from "@/lib/session";
 import { getFeatureFlags } from "@/lib/settings";
 import { uuidv7 } from "@/lib/uuid";
-import {
-  AnthropicProvider,
-  GeminiProvider,
-  NvidiaNimProvider,
-  generateComposerRecipe,
-} from "@invyte/ai";
+import { generateComposerRecipe } from "@invyte/ai";
 import { aiGenerations, db, invitations, memberships, tenants } from "@invyte/db";
 import { and, eq, gte, isNull, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
@@ -40,7 +35,9 @@ const composeSchema = z.object({
   mood: z.string().optional(),
   hasTimeline: z.boolean().optional().default(false),
   hasGallery: z.boolean().optional().default(false),
-  aiProvider: z.enum(["claude", "gemini", "nvidia-nim"]).optional().default("claude"),
+  // "auto" tries every provider with a configured key, round-robin start
+  // point + fallback to the next on failure (see resolveAiProviderChain).
+  aiProvider: z.enum(["claude", "gemini", "nvidia-nim", "auto"]).optional().default("auto"),
 });
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -65,30 +62,16 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   const { tenantSlug, groomName, brideName, style, mood, hasTimeline, hasGallery, aiProvider } =
     parsed.data;
 
-  // Validate API key for selected provider. Anthropic key may come from the
-  // DB (superadmin-set via /admin/ai-config) or the env var — DB wins.
-  const anthropicApiKey = await resolveAiApiKey("anthropic", process.env.ANTHROPIC_API_KEY);
-  if (aiProvider === "gemini") {
-    if (!process.env.GOOGLE_API_KEY) {
-      return NextResponse.json(
-        { error: "Gemini AI belum dikonfigurasi (GOOGLE_API_KEY)" },
-        { status: 503 },
-      );
-    }
-  } else if (aiProvider === "nvidia-nim") {
-    if (!process.env.NVIDIA_NIM_API_KEY) {
-      return NextResponse.json(
-        { error: "NVIDIA NIM belum dikonfigurasi (NVIDIA_NIM_API_KEY)" },
-        { status: 503 },
-      );
-    }
-  } else {
-    if (!anthropicApiKey) {
-      return NextResponse.json(
-        { error: "Claude AI belum dikonfigurasi (ANTHROPIC_API_KEY)" },
-        { status: 503 },
-      );
-    }
+  // Resolve the provider(s) to try. DB-configured keys (superadmin-set via
+  // /admin/ai-config) override env vars. "auto" = every configured
+  // provider, round-robin start + fallback to the next on failure.
+  const credKind = aiProvider === "claude" ? "anthropic" : aiProvider;
+  const providerChain = await resolveAiProviderChain(credKind);
+  if (providerChain.length === 0) {
+    return NextResponse.json(
+      { error: "Tidak ada provider AI yang terkonfigurasi. Atur di /admin/ai-config." },
+      { status: 503 },
+    );
   }
 
   // Verify user has access to this invitation via tenant membership
@@ -151,25 +134,28 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       .set({ status: "running", updatedAt: new Date() })
       .where(eq(aiGenerations.id, generationId));
 
-    const provider =
-      aiProvider === "gemini"
-        ? new GeminiProvider({ apiKey: process.env.GOOGLE_API_KEY! })
-        : aiProvider === "nvidia-nim"
-          ? new NvidiaNimProvider({
-              apiKey: process.env.NVIDIA_NIM_API_KEY!,
-              model: process.env.NVIDIA_NIM_MODEL ?? "z-ai/glm4.7",
-            })
-          : new AnthropicProvider({ apiKey: anthropicApiKey! });
-
-    const result = await generateComposerRecipe(provider, {
-      groomName,
-      brideName,
-      ...(style !== undefined ? { style } : {}),
-      ...(mood !== undefined ? { mood } : {}),
-      hasTimeline,
-      hasGallery,
-      primaryLanguage: "id",
-    });
+    // Try each provider in the chain in order — a single entry for an
+    // explicit choice, or every configured provider (round-robin start) for
+    // "auto", falling back to the next on failure.
+    let result: Awaited<ReturnType<typeof generateComposerRecipe>> | undefined;
+    let lastError: unknown;
+    for (const { provider } of providerChain) {
+      try {
+        result = await generateComposerRecipe(provider, {
+          groomName,
+          brideName,
+          ...(style !== undefined ? { style } : {}),
+          ...(mood !== undefined ? { mood } : {}),
+          hasTimeline,
+          hasGallery,
+          primaryLanguage: "id",
+        });
+        break;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (!result) throw lastError ?? new Error("AI composer generation failed");
 
     const ts = new Date();
     await db
