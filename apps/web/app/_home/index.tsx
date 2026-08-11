@@ -156,6 +156,15 @@ const TEMPLATES = [
     tags: ["minimalis", "line-art", "modern"],
   },
   {
+    id: "sundanese-elegant",
+    name: "Sundanese Elegant",
+    filosifi: "Mega mendung menaungi, cinta menaungi selamanya.",
+    desc: "Motif mega mendung khas Sunda dengan nuansa earth tone lembut.",
+    palette: ["#f3ede2", "#6b5b3e", "#a8916a"],
+    emoji: "☁️",
+    tags: ["sunda", "adat", "mega-mendung"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

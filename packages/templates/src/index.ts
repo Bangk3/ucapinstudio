@@ -17,6 +17,7 @@ export { RusticKraft } from "./templates/rustic-kraft";
 export { GeometricModern } from "./templates/geometric-modern";
 export { PhotoEditorial } from "./templates/photo-editorial";
 export { MinimalLineArt } from "./templates/minimal-line-art";
+export { SundaneseElegant } from "./templates/sundanese-elegant";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -183,6 +184,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: false,
   },
   {
+    id: "sundanese-elegant",
+    name: "Sundanese Elegant",
+    description: "Motif mega mendung khas Sunda dengan nuansa earth tone lembut.",
+    primaryColor: "#6b5b3e",
+    accentColor: "#a8916a",
+    tags: ["sunda", "adat", "mega-mendung"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -209,6 +219,7 @@ import { PhotoEditorial } from "./templates/photo-editorial";
 import { RoyalJava } from "./templates/royal-java";
 import { RusticKraft } from "./templates/rustic-kraft";
 import { SereneGarden } from "./templates/serene-garden";
+import { SundaneseElegant } from "./templates/sundanese-elegant";
 import { TropicalBali } from "./templates/tropical-bali";
 import { VintageClassic } from "./templates/vintage-classic";
 import { WatercolorBotanical } from "./templates/watercolor-botanical";
@@ -230,6 +241,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "geometric-modern": GeometricModern,
   "photo-editorial": PhotoEditorial,
   "minimal-line-art": MinimalLineArt,
+  "sundanese-elegant": SundaneseElegant,
   "ai-composer": _ComposerDynamic,
 };
 
