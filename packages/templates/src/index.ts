@@ -15,6 +15,7 @@ export { DarkLuxury } from "./templates/dark-luxury";
 export { PastelDreamy } from "./templates/pastel-dreamy";
 export { RusticKraft } from "./templates/rustic-kraft";
 export { GeometricModern } from "./templates/geometric-modern";
+export { PhotoEditorial } from "./templates/photo-editorial";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -163,6 +164,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "photo-editorial",
+    name: "Photo Editorial",
+    description: "Foto hero besar dengan layout tipografi ala majalah mode.",
+    primaryColor: "#b02a30",
+    accentColor: "#111111",
+    tags: ["foto", "editorial", "majalah"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -184,6 +194,7 @@ import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
 import { PastelDreamy } from "./templates/pastel-dreamy";
+import { PhotoEditorial } from "./templates/photo-editorial";
 import { RoyalJava } from "./templates/royal-java";
 import { RusticKraft } from "./templates/rustic-kraft";
 import { SereneGarden } from "./templates/serene-garden";
@@ -206,6 +217,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "pastel-dreamy": PastelDreamy,
   "rustic-kraft": RusticKraft,
   "geometric-modern": GeometricModern,
+  "photo-editorial": PhotoEditorial,
   "ai-composer": _ComposerDynamic,
 };
 

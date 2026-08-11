@@ -138,6 +138,15 @@ const TEMPLATES = [
     tags: ["geometric", "editorial", "modern"],
   },
   {
+    id: "photo-editorial",
+    name: "Photo Editorial",
+    filosifi: "Setiap bingkai menyimpan cerita cinta kita.",
+    desc: "Foto hero besar dengan layout tipografi ala majalah mode.",
+    palette: ["#ffffff", "#b02a30", "#111111"],
+    emoji: "📸",
+    tags: ["foto", "editorial", "majalah"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
