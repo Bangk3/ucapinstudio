@@ -227,14 +227,23 @@ const TEMPLATE_COUNT = TEMPLATES.filter((t) => t.id !== "ai-composer").length;
 
 // Shared sample content for the homepage template preview modal — one realistic
 // invitation reused across every template, only theme colors change per card.
+// Free-to-use Unsplash/Pexels photos (verified individually) so the homepage
+// preview shows real couple/venue imagery instead of blank space — this is
+// demo content only, not the actual couple.
+const PREVIEW_COVER_PHOTO =
+  "https://images.unsplash.com/photo-1769812343890-4e406a33cfbe?q=80&w=1600&auto=format&fit=crop";
+
 const PREVIEW_CONTENT: InvitationContent = {
   hosts: {
     groomName: "Bagas",
     groomFull: "Bagas Pratama",
     groomParents: "Putra dari Bpk. Slamet & Ibu Wulan",
+    groomPhotoUrl:
+      "https://images.unsplash.com/photo-1567023286549-0e3953fa05a8?q=80&w=600&auto=format&fit=crop",
     brideName: "Cinta",
     brideFull: "Cinta Amelia",
     brideParents: "Putri dari Bpk. Hendra & Ibu Sari",
+    bridePhotoUrl: "https://images.pexels.com/photos/10166749/pexels-photo-10166749.jpeg?w=600",
   },
   events: [
     {
@@ -259,9 +268,9 @@ const PREVIEW_CONTENT: InvitationContent = {
   quote: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup.",
   quoteAuthor: "QS. Ar-Rum: 21",
   galleryUrls: [
-    "https://picsum.photos/seed/ucapin-preview-1/600/800",
-    "https://picsum.photos/seed/ucapin-preview-2/600/800",
-    "https://picsum.photos/seed/ucapin-preview-3/600/800",
+    "https://images.unsplash.com/photo-1758810410416-0d4dd2a7a6cc?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1769038936715-738ab99f1362?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1686125616977-34f6d5979eb1?q=80&w=800&auto=format&fit=crop",
   ],
   timeline: [
     { year: "2019", title: "Pertama Bertemu", emoji: "💫" },
@@ -1700,6 +1709,7 @@ function TemplatePreviewModal({
             theme={{
               primaryColor: tpl?.palette[1] ?? "#6b8f6e",
               accentColor: tpl?.palette[2] ?? "#4a6b4d",
+              coverPhotoUrl: PREVIEW_COVER_PHOTO,
             }}
             slug="preview"
             tenantSlug="preview"
