@@ -19,7 +19,7 @@
     "@invyte/storage": "workspace:*",
     "@invyte/templates": "workspace:*",
     "@invyte/ui": "workspace:*",
-    "better-auth": "^1.2.7",
+    "better-auth": "^1.6.26",
     "drizzle-orm": "^0.41.0",
     "fflate": "^0.8.2",
     "framer-motion": "^12.9.4",
