@@ -14,6 +14,7 @@ export { WatercolorBotanical } from "./templates/watercolor-botanical";
 export { DarkLuxury } from "./templates/dark-luxury";
 export { PastelDreamy } from "./templates/pastel-dreamy";
 export { RusticKraft } from "./templates/rustic-kraft";
+export { GeometricModern } from "./templates/geometric-modern";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -153,6 +154,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "geometric-modern",
+    name: "Geometric Modern",
+    description: "Bentuk geometris tegas, motif line-art bersih, layout editorial grid.",
+    primaryColor: "#2f4f4f",
+    accentColor: "#c87941",
+    tags: ["geometric", "editorial", "modern"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -169,6 +179,7 @@ import type { ComponentType } from "react";
 import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynamic";
 import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
+import { GeometricModern } from "./templates/geometric-modern";
 import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
@@ -194,6 +205,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "dark-luxury": DarkLuxury,
   "pastel-dreamy": PastelDreamy,
   "rustic-kraft": RusticKraft,
+  "geometric-modern": GeometricModern,
   "ai-composer": _ComposerDynamic,
 };
 

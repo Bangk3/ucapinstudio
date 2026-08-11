@@ -129,6 +129,15 @@ const TEMPLATES = [
     tags: ["rustic", "kraft", "handmade"],
   },
   {
+    id: "geometric-modern",
+    name: "Geometric Modern",
+    filosifi: "Garis yang tegas, janji yang pasti.",
+    desc: "Bentuk geometris tegas, motif line-art bersih, layout editorial grid.",
+    palette: ["#fafafa", "#2f4f4f", "#c87941"],
+    emoji: "📐",
+    tags: ["geometric", "editorial", "modern"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
