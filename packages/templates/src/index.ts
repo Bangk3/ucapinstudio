@@ -13,6 +13,7 @@ export { VintageClassic } from "./templates/vintage-classic";
 export { WatercolorBotanical } from "./templates/watercolor-botanical";
 export { DarkLuxury } from "./templates/dark-luxury";
 export { PastelDreamy } from "./templates/pastel-dreamy";
+export { RusticKraft } from "./templates/rustic-kraft";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -143,6 +144,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "rustic-kraft",
+    name: "Rustic Kraft",
+    description: "Tekstur kertas kraft dengan huruf hand-lettered dan aksen kayu/tali.",
+    primaryColor: "#8d6e4a",
+    accentColor: "#b98a5e",
+    tags: ["rustic", "kraft", "handmade"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -164,6 +174,7 @@ import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
 import { PastelDreamy } from "./templates/pastel-dreamy";
 import { RoyalJava } from "./templates/royal-java";
+import { RusticKraft } from "./templates/rustic-kraft";
 import { SereneGarden } from "./templates/serene-garden";
 import { TropicalBali } from "./templates/tropical-bali";
 import { VintageClassic } from "./templates/vintage-classic";
@@ -182,6 +193,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "watercolor-botanical": WatercolorBotanical,
   "dark-luxury": DarkLuxury,
   "pastel-dreamy": PastelDreamy,
+  "rustic-kraft": RusticKraft,
   "ai-composer": _ComposerDynamic,
 };
 

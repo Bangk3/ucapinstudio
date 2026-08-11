@@ -120,6 +120,15 @@ const TEMPLATES = [
     tags: ["pastel", "dreamy", "whimsical"],
   },
   {
+    id: "rustic-kraft",
+    name: "Rustic Kraft",
+    filosifi: "Sederhana dari tangan, tulus dari hati.",
+    desc: "Tekstur kertas kraft dengan huruf hand-lettered dan aksen kayu/tali.",
+    palette: ["#efe6d3", "#8d6e4a", "#b98a5e"],
+    emoji: "🪵",
+    tags: ["rustic", "kraft", "handmade"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
