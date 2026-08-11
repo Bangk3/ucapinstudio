@@ -1,5 +1,7 @@
 "use client";
 
+import { InvitationPreview } from "@/components/invitations/invitation-preview";
+import type { InvitationContent } from "@invyte/templates";
 import {
   AnimatePresence,
   type Variants,
@@ -220,10 +222,58 @@ const TEMPLATES = [
   },
 ];
 
+// "Siap Pakai" excludes AI Composer — that one's build-your-own, not a fixed design.
+const TEMPLATE_COUNT = TEMPLATES.filter((t) => t.id !== "ai-composer").length;
+
+// Shared sample content for the homepage template preview modal — one realistic
+// invitation reused across every template, only theme colors change per card.
+const PREVIEW_CONTENT: InvitationContent = {
+  hosts: {
+    groomName: "Bagas",
+    groomFull: "Bagas Pratama",
+    groomParents: "Putra dari Bpk. Slamet & Ibu Wulan",
+    brideName: "Cinta",
+    brideFull: "Cinta Amelia",
+    brideParents: "Putri dari Bpk. Hendra & Ibu Sari",
+  },
+  events: [
+    {
+      id: "akad",
+      name: "Akad Nikah",
+      date: "2026-11-14",
+      time: "08:00",
+      venueName: "Kediaman Mempelai Wanita",
+      venueAddress: "Jl. Melati No. 12, Bandung",
+    },
+    {
+      id: "resepsi",
+      name: "Resepsi",
+      date: "2026-11-14",
+      time: "11:00",
+      venueName: "Gedung Serbaguna Kartika",
+      venueAddress: "Jl. Kartika No. 5, Bandung",
+    },
+  ],
+  story:
+    "Kami bertemu di bangku kuliah, tumbuh bersama selama enam tahun, dan kini melangkah ke babak baru dalam hidup — bersama, selamanya.",
+  quote: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup.",
+  quoteAuthor: "QS. Ar-Rum: 21",
+  galleryUrls: [
+    "https://picsum.photos/seed/ucapin-preview-1/600/800",
+    "https://picsum.photos/seed/ucapin-preview-2/600/800",
+    "https://picsum.photos/seed/ucapin-preview-3/600/800",
+  ],
+  timeline: [
+    { year: "2019", title: "Pertama Bertemu", emoji: "💫" },
+    { year: "2023", title: "Melamar", emoji: "💍" },
+    { year: "2026", title: "Menikah", emoji: "💒" },
+  ],
+};
+
 const FEATURES = [
   {
-    title: "7 Template Siap Pakai",
-    desc: "Minimalist Modern, Floral Classic, Islamic Elegant, Tropical Bali, Royal Java, Serene Garden, AI Composer.",
+    title: `${TEMPLATE_COUNT} Template Siap Pakai`,
+    desc: `Dari minimalis modern sampai adat Jawa, Sunda, Batak, Minang, dan lainnya — plus AI Composer untuk bikin gaya sendiri.`,
     icon: "✦",
     size: "tall",
     color: "from-brand-50 to-brand-100",
@@ -1124,7 +1174,7 @@ function AdminCtaModal({ onClose }: { onClose: () => void }) {
 
 function TrustBar() {
   const items = [
-    "🌸 7 Template Siap Pakai",
+    `🌸 ${TEMPLATE_COUNT} Template Siap Pakai`,
     "💬 WhatsApp Broadcast",
     "✨ AI Text Generator",
     "📊 RSVP Real-Time",
@@ -1607,9 +1657,65 @@ function AIGenerateSection() {
 
 // ── Template Showcase ──────────────────────────────────────────────────────────
 
+function TemplatePreviewModal({
+  templateId,
+  templateName,
+  onClose,
+}: {
+  templateId: string;
+  templateName: string;
+  onClose: () => void;
+}) {
+  const tpl = TEMPLATES.find((t) => t.id === templateId);
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[100] bg-black/60"
+        onClick={onClose}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        aria-hidden="true"
+      />
+      <dialog
+        open
+        aria-label={`Preview ${templateName}`}
+        className="fixed inset-x-0 top-[3vh] z-[100] mx-auto flex max-h-[94vh] w-[390px] max-w-[92vw] flex-col overflow-hidden rounded-[2rem] bg-white p-0 shadow-2xl"
+      >
+        <div className="flex flex-none items-center justify-between border-b px-4 py-3">
+          <span className="text-sm font-semibold" style={{ color: "var(--hp-dark)" }}>
+            {templateName}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup preview"
+            className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <InvitationPreview
+            templateId={templateId}
+            content={PREVIEW_CONTENT}
+            theme={{
+              primaryColor: tpl?.palette[1] ?? "#6b8f6e",
+              accentColor: tpl?.palette[2] ?? "#4a6b4d",
+            }}
+            slug="preview"
+            tenantSlug="preview"
+            guestName="Tamu Undangan"
+          />
+        </div>
+      </dialog>
+    </>
+  );
+}
+
 function TemplatesSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const previewTemplate = TEMPLATES.find((t) => t.id === previewId);
 
   return (
     <section
@@ -1630,7 +1736,7 @@ function TemplatesSection() {
             className="text-sm font-semibold tracking-widest uppercase mb-3"
             style={{ color: "var(--hp-gold)" }}
           >
-            7 Template Siap Pakai
+            {TEMPLATE_COUNT} Template Siap Pakai
           </motion.p>
           <motion.h2
             variants={fadeUp}
@@ -1659,9 +1765,9 @@ function TemplatesSection() {
           className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory no-scrollbar"
           style={{ scrollbarWidth: "none" }}
         >
-          {TEMPLATES.map((tpl, i) => (
+          {TEMPLATES.map((tpl) => (
             <motion.div
-              key={i}
+              key={tpl.id}
               whileHover={{ y: -8, scale: 1.02 }}
               transition={{ duration: 0.3 }}
               className="flex-none w-72 rounded-2xl shadow-lg overflow-hidden snap-start cursor-pointer flex flex-col"
@@ -1717,29 +1823,50 @@ function TemplatesSection() {
                   ))}
                 </div>
 
-                {/* Color swatches + badge */}
-                <div className="mt-auto flex items-center justify-between">
-                  <div className="flex gap-1.5">
-                    {tpl.palette.map((c, j) => (
-                      <div
-                        key={j}
-                        className="w-4 h-4 rounded-full border-2 shadow-sm"
-                        style={{ background: c, borderColor: tpl.dark ? "#ffffff22" : "#00000011" }}
-                      />
-                    ))}
-                  </div>
-                  <div
-                    className="text-[11px] font-bold px-3 py-1 rounded-full border"
+                {/* Color swatches */}
+                <div className="flex gap-1.5 mb-4">
+                  {tpl.palette.map((c, j) => (
+                    <div
+                      key={j}
+                      className="w-4 h-4 rounded-full border-2 shadow-sm"
+                      style={{ background: c, borderColor: tpl.dark ? "#ffffff22" : "#00000011" }}
+                    />
+                  ))}
+                </div>
+
+                {/* Actions */}
+                <div className="mt-auto flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewId(tpl.id)}
+                    className="flex-1 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-colors hover:bg-slate-50"
                     style={{ borderColor: tpl.palette[1], color: tpl.palette[1] }}
                   >
+                    👁 Preview
+                  </button>
+                  <Link
+                    href={`/auth/register?template=${tpl.id}`}
+                    className="flex-1 text-center text-[11px] font-bold px-3 py-1.5 rounded-full text-white transition-transform hover:scale-105"
+                    style={{
+                      background: `linear-gradient(135deg, ${tpl.palette[1]}, ${tpl.palette[2]})`,
+                    }}
+                  >
                     Siap Pakai
-                  </div>
+                  </Link>
                 </div>
               </div>
             </motion.div>
           ))}
         </motion.div>
       </div>
+
+      {previewTemplate && (
+        <TemplatePreviewModal
+          templateId={previewTemplate.id}
+          templateName={previewTemplate.name}
+          onClose={() => setPreviewId(null)}
+        />
+      )}
     </section>
   );
 }
@@ -1855,7 +1982,7 @@ function StatsSection() {
   const stats = [
     { val: 500, suffix: "+", label: "Pasangan Bahagia" },
     { val: 50000, suffix: "+", label: "Tamu Diundang" },
-    { val: 7, suffix: " Template", label: "Desain Siap Pakai" },
+    { val: TEMPLATE_COUNT, suffix: " Template", label: "Desain Siap Pakai" },
     { val: 99, suffix: "%", label: "Tingkat Pengiriman WA" },
   ];
 
@@ -2078,7 +2205,12 @@ function PricingSection({ showAdminCta }: { showAdminCta: boolean }) {
       name: "Personal",
       price: "Hubungi Kami",
       desc: "Untuk pasangan yang ingin mencoba",
-      features: ["3 Undangan", "Semua 7 Template", "RSVP & Buku Tamu", "WhatsApp Broadcast"],
+      features: [
+        "3 Undangan",
+        `Semua ${TEMPLATE_COUNT} Template`,
+        "RSVP & Buku Tamu",
+        "WhatsApp Broadcast",
+      ],
       cta: "Mulai Sekarang",
       href: "/auth/register",
       highlight: false,
@@ -2089,7 +2221,7 @@ function PricingSection({ showAdminCta }: { showAdminCta: boolean }) {
       desc: "Untuk wedding organizer & bisnis",
       features: [
         "Unlimited Undangan",
-        "Semua 7 Template",
+        `Semua ${TEMPLATE_COUNT} Template`,
         "RSVP & Buku Tamu",
         "WhatsApp Broadcast",
         "AI Generator",
@@ -2106,7 +2238,11 @@ function PricingSection({ showAdminCta }: { showAdminCta: boolean }) {
             name: "Dibuatin Admin",
             price: "Hubungi Kami",
             desc: "Isi data, tim kami yang bikinkan",
-            features: ["Desain dibuatkan tim", "Revisi via WhatsApp", "Semua 7 Template"],
+            features: [
+              "Desain dibuatkan tim",
+              "Revisi via WhatsApp",
+              `Semua ${TEMPLATE_COUNT} Template`,
+            ],
             cta: "Di Buatin Admin aja",
             href: null,
             highlight: false,
