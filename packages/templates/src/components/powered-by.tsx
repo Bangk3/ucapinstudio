@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * PoweredByDevLab — small static attribution line for all Invyte invitation
+ * PoweredByDevLab — small static attribution line for all invitation
  * templates. Renders in normal document flow (footer position), not a
  * floating pill — doesn't obscure content while scrolling.
  */
@@ -15,10 +15,8 @@ export function PoweredByDevLab() {
       }}
     >
       <a
-        href="https://instagram.com/devlab.tgk/"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Dibuat oleh DevLab.tgk — kunjungi Instagram kami"
+        href="/"
+        aria-label="Dibuat dengan UcapinStudio — kunjungi platform kami"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -26,7 +24,7 @@ export function PoweredByDevLab() {
           textDecoration: "none",
         }}
       >
-        {/* DevLab DL icon — blue gradient rounded square */}
+        {/* UcapinStudio "US" icon — green gradient rounded square */}
         <span
           aria-hidden="true"
           style={{
@@ -36,7 +34,7 @@ export function PoweredByDevLab() {
             width: 18,
             height: 18,
             borderRadius: 5,
-            background: "linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)",
+            background: "linear-gradient(135deg, #6b8f6e 0%, #4a6b4d 100%)",
             flexShrink: 0,
             fontSize: 7,
             fontWeight: 800,
@@ -46,7 +44,7 @@ export function PoweredByDevLab() {
             userSelect: "none",
           }}
         >
-          DL
+          US
         </span>
 
         {/* Label */}
@@ -59,7 +57,7 @@ export function PoweredByDevLab() {
           }}
         >
           <span style={{ color: "rgba(0,0,0,0.45)", fontWeight: 400 }}>by </span>
-          <span style={{ color: "rgba(0,0,0,0.72)", fontWeight: 600 }}>DevLab.tgk</span>
+          <span style={{ color: "rgba(0,0,0,0.72)", fontWeight: 600 }}>UcapinStudio</span>
         </span>
       </a>
     </div>

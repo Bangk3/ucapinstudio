@@ -1718,20 +1718,29 @@ function TemplatesSection() {
   const previewTemplate = TEMPLATES.find((t) => t.id === previewId);
 
   // Auto-shift the card row so all templates surface without manual dragging;
-  // pause while a visitor is actually interacting with it.
+  // pause while a visitor is actually interacting with it. Continuous
+  // rAF crawl (not periodic smooth-scroll jumps) so the motion reads as one
+  // steady glide instead of a start-stop every couple seconds.
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
-  const CARD_STEP = 312; // w-72 (288px) + gap-6 (24px)
+  const CRAWL_SPEED = 40; // px/second
 
   useEffect(() => {
     if (paused) return;
-    const timer = setInterval(() => {
+    let raf: number;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
       const el = scrollerRef.current;
-      if (!el) return;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + CARD_STEP, behavior: "smooth" });
-    }, 2500);
-    return () => clearInterval(timer);
+      if (el) {
+        const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+        el.scrollLeft = atEnd ? 0 : el.scrollLeft + CRAWL_SPEED * dt;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [paused]);
 
   return (
@@ -1783,7 +1792,7 @@ function TemplatesSection() {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onTouchStart={() => setPaused(true)}
-          className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory no-scrollbar"
+          className={`flex gap-6 overflow-x-auto pb-6 no-scrollbar ${paused ? "snap-x snap-mandatory" : ""}`}
           style={{ scrollbarWidth: "none" }}
         >
           {TEMPLATES.map((tpl) => (
@@ -2625,35 +2634,27 @@ function Footer({ contactSettings }: { contactSettings: FooterContactSettings })
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© 2025 UcapinStudio. Modifikasi oleh Kelvin Prasetya. Open source under AGPLv3.</p>
 
-          {/* DevLab.tgk attribution */}
-          <a
-            href="https://instagram.com/devlab.tgk/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 group transition-opacity hover:opacity-75"
-            aria-label="DevLab.tgk — Software House"
-          >
+          {/* UcapinStudio attribution */}
+          <span className="inline-flex items-center gap-2" aria-label="UcapinStudio">
             <span className="text-slate-400">Dikembangkan oleh</span>
-            {/* DL icon */}
+            {/* US icon */}
             <span
               className="inline-flex items-center justify-center rounded-md text-white font-extrabold"
               style={{
                 width: 18,
                 height: 18,
                 borderRadius: 5,
-                background: "linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)",
+                background: "linear-gradient(135deg, #6b8f6e 0%, #4a6b4d 100%)",
                 fontSize: 7,
                 letterSpacing: "-0.5px",
                 flexShrink: 0,
               }}
               aria-hidden="true"
             >
-              DL
+              US
             </span>
-            <span className="font-semibold text-slate-600 group-hover:text-brand-600 transition-colors">
-              DevLab.tgk
-            </span>
-          </a>
+            <span className="font-semibold text-slate-600">UcapinStudio</span>
+          </span>
 
           <p>Dibuat dengan ❤️ untuk pasangan Indonesia</p>
         </div>
