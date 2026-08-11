@@ -101,6 +101,16 @@ const TEMPLATES = [
     tags: ["watercolor", "botanical", "lembut"],
   },
   {
+    id: "dark-luxury",
+    name: "Dark Luxury",
+    filosifi: "Kemewahan tak pernah berteriak, ia hadir dengan tenang.",
+    desc: "Hitam emas dengan kesan foil stamp, serif editorial, estetika old money.",
+    palette: ["#0c0c0e", "#c9a84c", "#f5e3a0"],
+    emoji: "🥂",
+    tags: ["luxury", "gelap", "emas"],
+    dark: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

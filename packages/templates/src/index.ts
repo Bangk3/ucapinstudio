@@ -11,6 +11,7 @@ export { SereneGarden } from "./templates/serene-garden";
 export { ModernBoho } from "./templates/modern-boho";
 export { VintageClassic } from "./templates/vintage-classic";
 export { WatercolorBotanical } from "./templates/watercolor-botanical";
+export { DarkLuxury } from "./templates/dark-luxury";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -123,6 +124,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "dark-luxury",
+    name: "Dark Luxury",
+    description: "Hitam emas dengan kesan foil stamp, serif editorial, estetika old money.",
+    primaryColor: "#c9a84c",
+    accentColor: "#f5e3a0",
+    tags: ["luxury", "gelap", "emas"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -137,6 +147,7 @@ export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
 import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynamic";
+import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
 import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
@@ -158,6 +169,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "modern-boho": ModernBoho,
   "vintage-classic": VintageClassic,
   "watercolor-botanical": WatercolorBotanical,
+  "dark-luxury": DarkLuxury,
   "ai-composer": _ComposerDynamic,
 };
 
