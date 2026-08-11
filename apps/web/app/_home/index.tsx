@@ -74,6 +74,15 @@ const TEMPLATES = [
     tags: ["islami", "romantis", "floral"],
   },
   {
+    id: "modern-boho",
+    name: "Modern Boho",
+    filosifi: "Alam yang hangat, cinta yang apa adanya.",
+    desc: "Nuansa earthy hangat dengan aksen pampas dan huruf kursif hand-lettered.",
+    palette: ["#f7f3ec", "#b08968", "#8a5a3b"],
+    emoji: "🌾",
+    tags: ["boho", "earthy", "romantis"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

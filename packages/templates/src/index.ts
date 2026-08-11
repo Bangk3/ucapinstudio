@@ -8,6 +8,7 @@ export { IslamicElegant } from "./templates/islamic-elegant";
 export { TropicalBali } from "./templates/tropical-bali";
 export { RoyalJava } from "./templates/royal-java";
 export { SereneGarden } from "./templates/serene-garden";
+export { ModernBoho } from "./templates/modern-boho";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -93,6 +94,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "modern-boho",
+    name: "Modern Boho",
+    description: "Nuansa earthy hangat dengan aksen pampas dan huruf kursif hand-lettered.",
+    primaryColor: "#b08968",
+    accentColor: "#8a5a3b",
+    tags: ["boho", "earthy", "romantis"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -110,6 +120,7 @@ import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynami
 import { FloralClassic } from "./templates/floral-classic";
 import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
+import { ModernBoho } from "./templates/modern-boho";
 import { RoyalJava } from "./templates/royal-java";
 import { SereneGarden } from "./templates/serene-garden";
 import { TropicalBali } from "./templates/tropical-bali";
@@ -122,6 +133,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "tropical-bali": TropicalBali,
   "royal-java": RoyalJava,
   "serene-garden": SereneGarden,
+  "modern-boho": ModernBoho,
   "ai-composer": _ComposerDynamic,
 };
 
