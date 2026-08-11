@@ -16,6 +16,7 @@ export { PastelDreamy } from "./templates/pastel-dreamy";
 export { RusticKraft } from "./templates/rustic-kraft";
 export { GeometricModern } from "./templates/geometric-modern";
 export { PhotoEditorial } from "./templates/photo-editorial";
+export { MinimalLineArt } from "./templates/minimal-line-art";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -173,6 +174,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "minimal-line-art",
+    name: "Minimal Line Art",
+    description: "Ilustrasi garis tunggal ultra-minimal dengan banyak ruang putih.",
+    primaryColor: "#3a3a3a",
+    accentColor: "#9a9a9a",
+    tags: ["minimalis", "line-art", "modern"],
+    isPremium: false,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -191,6 +201,7 @@ import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
 import { GeometricModern } from "./templates/geometric-modern";
 import { IslamicElegant } from "./templates/islamic-elegant";
+import { MinimalLineArt } from "./templates/minimal-line-art";
 import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
 import { PastelDreamy } from "./templates/pastel-dreamy";
@@ -218,6 +229,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "rustic-kraft": RusticKraft,
   "geometric-modern": GeometricModern,
   "photo-editorial": PhotoEditorial,
+  "minimal-line-art": MinimalLineArt,
   "ai-composer": _ComposerDynamic,
 };
 

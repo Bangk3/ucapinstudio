@@ -147,6 +147,15 @@ const TEMPLATES = [
     tags: ["foto", "editorial", "majalah"],
   },
   {
+    id: "minimal-line-art",
+    name: "Minimal Line Art",
+    filosifi: "Satu garis, satu kisah tanpa akhir.",
+    desc: "Ilustrasi garis tunggal ultra-minimal dengan banyak ruang putih.",
+    palette: ["#ffffff", "#3a3a3a", "#9a9a9a"],
+    emoji: "✏️",
+    tags: ["minimalis", "line-art", "modern"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
