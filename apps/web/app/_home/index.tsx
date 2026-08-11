@@ -192,6 +192,15 @@ const TEMPLATES = [
     tags: ["betawi", "adat", "modern"],
   },
   {
+    id: "bugis-makassar-elegant",
+    name: "Bugis-Makassar Elegant",
+    filosifi: "Tenun menyambung benang, takdir menyambung dua insan.",
+    desc: "Aksen tenun sarung khas Bugis-Makassar dengan palet jewel tone.",
+    palette: ["#f7f3ec", "#2e5d4f", "#c9a84c"],
+    emoji: "🧶",
+    tags: ["bugis", "makassar", "tenun"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
