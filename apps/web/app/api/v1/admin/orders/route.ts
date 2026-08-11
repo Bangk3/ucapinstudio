@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { encrypt } from "@/lib/encrypt";
 import { requireAdminSession } from "@/lib/require-admin";
 import { getPricingSettings } from "@/lib/settings";
+import { uniqueTenantSlug } from "@/lib/tenant-slug";
 import { uuidv7 } from "@/lib/uuid";
 import { db, memberships, messagingCredentials, orders, tenants } from "@invyte/db";
 import { desc, eq } from "drizzle-orm";
@@ -13,31 +14,6 @@ const bodySchema = z.object({
   customerContact: z.string().min(1).max(255),
   notes: z.string().max(2000).optional(),
 });
-
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
-}
-
-async function uniqueTenantSlug(base: string): Promise<string> {
-  let slug = `${slugify(base)}-${Math.random().toString(36).slice(2, 6)}`;
-  let attempt = 0;
-  // Extremely unlikely to collide given the random suffix, but check anyway
-  // rather than trusting randomness alone for a uniqueness constraint.
-  while (true) {
-    const [existing] = await db
-      .select({ id: tenants.id })
-      .from(tenants)
-      .where(eq(tenants.slug, slug))
-      .limit(1);
-    if (!existing) return slug;
-    attempt++;
-    slug = `${slugify(base)}-${Math.random().toString(36).slice(2, 6)}-${attempt}`;
-  }
-}
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdminSession(req);

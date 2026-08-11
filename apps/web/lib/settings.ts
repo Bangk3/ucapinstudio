@@ -79,17 +79,18 @@ export async function getFeatureFlags(): Promise<FeatureFlags> {
   };
 }
 
-/** wa.me deep link for the homepage's "Dibuatin Admin aja" CTA, or null if unset. */
-export async function getAdminWhatsappLink(): Promise<string | null> {
+/**
+ * Digits-only WA number for the homepage's "Dibuatin Admin aja" CTA, or null
+ * if unset. Returns the raw number (not a prebuilt wa.me link) — the CTA
+ * collects the visitor's name + contact in a form first, so the message
+ * text gets built client-side once that's known.
+ */
+export async function getAdminWhatsappNumber(): Promise<string | null> {
   const [row] = await db
     .select({ valueText: platformSettings.valueText })
     .from(platformSettings)
     .where(eq(platformSettings.key, "admin_whatsapp_number"));
-  const number = row?.valueText?.replace(/[^0-9]/g, "");
-  if (!number) return null;
-  return `https://wa.me/${number}?text=${encodeURIComponent(
-    "Halo, saya mau minta dibuatkan undangan digital di UcapinStudio.",
-  )}`;
+  return row?.valueText?.replace(/[^0-9]/g, "") || null;
 }
 
 export interface PaymentInstructions {

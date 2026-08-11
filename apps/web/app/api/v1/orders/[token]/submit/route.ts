@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { MAX_GALLERY_IMAGES, submittedDataSchema } from "@/lib/order-schema";
 import { rateLimitIp } from "@/lib/rate-limit";
 import { uuidv7 } from "@/lib/uuid";
 import { db, media, orders } from "@invyte/db";
@@ -6,37 +7,12 @@ import { MAX_IMAGE_BYTES, deleteUploadResult, uploadImage } from "@invyte/storag
 import type { UploadResult } from "@invyte/storage";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 function hashIp(ip: string): string {
   return createHash("sha256").update(ip).digest("hex");
 }
 
 type Ctx = { params: Promise<{ token: string }> };
-
-const MAX_GALLERY_IMAGES = 10;
-
-const eventSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1).max(100),
-  date: z.string().optional(),
-  time: z.string().optional(),
-  venueName: z.string().max(255).optional(),
-  venueAddress: z.string().max(500).optional(),
-});
-
-const submittedDataSchema = z.object({
-  hosts: z.object({
-    groomName: z.string().min(1).max(255),
-    brideName: z.string().min(1).max(255),
-    groomFull: z.string().max(255).optional(),
-    brideFull: z.string().max(255).optional(),
-    groomParents: z.string().max(255).optional(),
-    brideParents: z.string().max(255).optional(),
-  }),
-  events: z.array(eventSchema).min(1),
-  story: z.string().max(5000).optional(),
-});
 
 async function uploadOneImage(tenantId: string, file: File): Promise<UploadResult> {
   const buffer = Buffer.from(await file.arrayBuffer());

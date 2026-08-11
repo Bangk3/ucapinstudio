@@ -208,9 +208,10 @@ const stagger: Variants = {
 
 // ── Navbar ─────────────────────────────────────────────────────────────────────
 
-function Navbar() {
+function Navbar({ showAdminCta }: { showAdminCta: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ctaOpen, setCtaOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -270,6 +271,16 @@ function Navbar() {
           >
             Mulai Sekarang
           </Link>
+          {showAdminCta && (
+            <button
+              type="button"
+              onClick={() => setCtaOpen(true)}
+              className="text-sm font-semibold px-4 py-2 rounded-full border transition-colors hover:bg-brand-50"
+              style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
+            >
+              Di Buatin Admin
+            </button>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -318,11 +329,25 @@ function Navbar() {
                 >
                   Mulai Sekarang
                 </Link>
+                {showAdminCta && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setCtaOpen(true);
+                    }}
+                    className="py-2 text-center border rounded-full font-semibold"
+                    style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
+                  >
+                    Di Buatin Admin
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      {ctaOpen && <AdminCtaModal onClose={() => setCtaOpen(false)} />}
     </motion.nav>
   );
 }
@@ -491,7 +516,8 @@ function InvitationCard() {
 
 // ── Hero Section ───────────────────────────────────────────────────────────────
 
-function HeroSection() {
+function HeroSection({ showAdminCta }: { showAdminCta: boolean }) {
+  const [ctaOpen, setCtaOpen] = useState(false);
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden pt-16"
@@ -557,6 +583,19 @@ function HeroSection() {
               <span className="underline-offset-4 group-hover:underline">Lihat Template</span>
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </a>
+            {showAdminCta && (
+              <button
+                type="button"
+                onClick={() => setCtaOpen(true)}
+                className="group flex items-center gap-2 text-sm font-medium transition-colors"
+                style={{ color: "var(--hp-dark)" }}
+              >
+                <span className="underline-offset-4 group-hover:underline">
+                  Di Buatin Admin Aja
+                </span>
+                <span className="transition-transform group-hover:translate-x-1">→</span>
+              </button>
+            )}
           </motion.div>
 
           {/* Social proof */}
@@ -606,6 +645,7 @@ function HeroSection() {
           <ChevronDown size={16} />
         </motion.div>
       </motion.a>
+      {ctaOpen && <AdminCtaModal onClose={() => setCtaOpen(false)} />}
     </section>
   );
 }
@@ -616,7 +656,13 @@ function MagneticButton({
   href,
   children,
   primary,
-}: { href: string; children: React.ReactNode; primary?: boolean }) {
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  primary?: boolean;
+  onClick?: () => void;
+}) {
   const ref = useRef<HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -660,11 +706,287 @@ function MagneticButton({
       style={btnStyle}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={
+        onClick
+          ? (e) => {
+              e.preventDefault();
+              onClick();
+            }
+          : undefined
+      }
       whileTap={{ scale: 0.96 }}
       className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold shadow-lg transition-shadow hover:shadow-xl"
     >
       {children}
     </motion.a>
+  );
+}
+
+// ── "Dibuatin Admin aja" — self-service order form ──────────────────────────────
+// Collects the same wedding details as the token-based intake form
+// (components/orders/order-intake-form.tsx), but standalone since there's no
+// order yet — submitting creates one (see /api/v1/orders/public) instead of
+// filling in an admin-created one.
+
+interface CtaEventRow {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  venueName: string;
+  venueAddress: string;
+}
+
+function newCtaEvent(): CtaEventRow {
+  return { id: crypto.randomUUID(), name: "", date: "", time: "", venueName: "", venueAddress: "" };
+}
+
+function AdminCtaModal({ onClose }: { onClose: () => void }) {
+  const [groomName, setGroomName] = useState("");
+  const [brideName, setBrideName] = useState("");
+  const [contact, setContact] = useState("");
+  const [story, setStory] = useState("");
+  const [events, setEvents] = useState<CtaEventRow[]>([newCtaEvent()]);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+
+  function updateEvent(id: string, patch: Partial<CtaEventRow>) {
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!groomName.trim() || !brideName.trim()) {
+      setError("Nama mempelai wajib diisi");
+      return;
+    }
+    if (!contact.trim()) {
+      setError("Nomor WhatsApp wajib diisi");
+      return;
+    }
+    if (!proofFile) {
+      setError("Bukti transfer wajib diupload");
+      return;
+    }
+    if (!events.some((ev) => ev.name.trim())) {
+      setError("Minimal isi 1 acara (nama acara wajib diisi)");
+      return;
+    }
+    if (galleryFiles.length > 10) {
+      setError("Maksimal 10 foto galeri");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const submittedData = {
+        hosts: { groomName: groomName.trim(), brideName: brideName.trim() },
+        events: events
+          .filter((ev) => ev.name.trim())
+          .map((ev) => ({
+            id: ev.id,
+            name: ev.name.trim(),
+            ...(ev.date ? { date: ev.date } : {}),
+            ...(ev.time ? { time: ev.time } : {}),
+            ...(ev.venueName ? { venueName: ev.venueName } : {}),
+            ...(ev.venueAddress ? { venueAddress: ev.venueAddress } : {}),
+          })),
+        ...(story.trim() ? { story: story.trim() } : {}),
+      };
+
+      const formData = new FormData();
+      formData.append("customerContact", contact.trim());
+      formData.append("submittedData", JSON.stringify(submittedData));
+      formData.append("proofImage", proofFile);
+      for (const file of galleryFiles) formData.append("galleryImages", file);
+
+      const res = await fetch("/api/v1/orders/public", { method: "POST", body: formData });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; publicUrl?: string };
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengirim");
+      setResultUrl(data.publicUrl ?? null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[100] bg-black/50"
+        onClick={onClose}
+        onKeyDown={(e) => e.key === "Escape" && onClose()}
+        aria-hidden="true"
+      />
+      <dialog
+        open
+        aria-label="Form Dibuatin Admin"
+        className="fixed inset-x-0 top-[5vh] z-[100] mx-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+      >
+        {resultUrl ? (
+          <div className="py-6 text-center space-y-3">
+            <p className="text-2xl">🎉</p>
+            <p className="text-lg font-semibold" style={{ color: "var(--hp-dark)" }}>
+              Terkirim!
+            </p>
+            <p className="text-sm text-slate-500">
+              Tim kami akan memproses pembayaran & mulai menyiapkan undangan Anda.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-2 rounded-full px-5 py-2 text-sm font-semibold text-white"
+              style={{
+                background: "linear-gradient(135deg, var(--hp-pink), var(--color-brand-600))",
+              }}
+            >
+              Tutup
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-serif text-xl font-bold" style={{ color: "var(--hp-dark)" }}>
+                Di Buatin Admin Aja
+              </h3>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-md p-1 text-slate-400 hover:text-slate-700"
+                aria-label="Tutup"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            <p className="mb-4 text-sm text-slate-500">
+              Isi data undangan Anda, kami yang bikinkan. Tim kami akan follow-up lewat WhatsApp.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  required
+                  placeholder="Nama Mempelai Pria"
+                  value={groomName}
+                  onChange={(e) => setGroomName(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                />
+                <input
+                  required
+                  placeholder="Nama Mempelai Wanita"
+                  value={brideName}
+                  onChange={(e) => setBrideName(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                />
+              </div>
+              <input
+                required
+                type="tel"
+                placeholder="Nomor WhatsApp Anda (mis. 6281234567890)"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Acara</p>
+                {events.map((event) => (
+                  <div key={event.id} className="space-y-2 rounded-lg border p-3">
+                    <input
+                      placeholder="Nama acara (mis. Akad, Resepsi)"
+                      value={event.name}
+                      onChange={(e) => updateEvent(event.id, { name: e.target.value })}
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="date"
+                        value={event.date}
+                        onChange={(e) => updateEvent(event.id, { date: e.target.value })}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="time"
+                        value={event.time}
+                        onChange={(e) => updateEvent(event.id, { time: e.target.value })}
+                        className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <input
+                      placeholder="Nama lokasi"
+                      value={event.venueName}
+                      onChange={(e) => updateEvent(event.id, { venueName: e.target.value })}
+                      className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setEvents((prev) => [...prev, newCtaEvent()])}
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: "var(--hp-pink)" }}
+                >
+                  + Tambah acara
+                </button>
+              </div>
+
+              <textarea
+                placeholder="Cerita singkat (opsional)"
+                value={story}
+                onChange={(e) => setStory(e.target.value)}
+                rows={2}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+
+              <div className="space-y-1.5">
+                <label htmlFor="cta-gallery" className="text-xs font-medium text-slate-500">
+                  Foto Pasangan (opsional, maks. 10)
+                </label>
+                <input
+                  id="cta-gallery"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setGalleryFiles(Array.from(e.target.files ?? []).slice(0, 10))}
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="cta-proof" className="text-xs font-medium text-slate-500">
+                  Bukti Transfer *
+                </label>
+                <input
+                  id="cta-proof"
+                  required
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                />
+              </div>
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-full py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-50"
+                style={{
+                  background: "linear-gradient(135deg, var(--hp-pink), var(--color-brand-600))",
+                }}
+              >
+                {submitting ? "Mengirim..." : "Kirim"}
+              </button>
+            </form>
+          </>
+        )}
+      </dialog>
+    </>
   );
 }
 
@@ -1616,9 +1938,10 @@ function TestimonialCard({ name, loc, text }: { name: string; loc: string; text:
 
 // ── Pricing ────────────────────────────────────────────────────────────────────
 
-function PricingSection({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
+function PricingSection({ showAdminCta }: { showAdminCta: boolean }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [ctaOpen, setCtaOpen] = useState(false);
 
   const plans = [
     {
@@ -1647,15 +1970,15 @@ function PricingSection({ adminWhatsappLink }: { adminWhatsappLink: string | nul
       href: "/auth/register",
       highlight: true,
     },
-    ...(adminWhatsappLink
+    ...(showAdminCta
       ? [
           {
             name: "Dibuatin Admin",
             price: "Hubungi Kami",
-            desc: "Kirim data via WhatsApp, tim kami yang bikinkan",
+            desc: "Isi data, tim kami yang bikinkan",
             features: ["Desain dibuatkan tim", "Revisi via WhatsApp", "Semua 7 Template"],
             cta: "Di Buatin Admin aja",
-            href: adminWhatsappLink,
+            href: null,
             highlight: false,
           },
         ]
@@ -1768,30 +2091,44 @@ function PricingSection({ adminWhatsappLink }: { adminWhatsappLink: string | nul
                 ))}
               </ul>
 
-              <a
-                href={plan.href}
-                target={plan.href.startsWith("http") ? "_blank" : undefined}
-                rel={plan.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="block w-full text-center py-3 rounded-full text-sm font-semibold transition-all hover:scale-[1.02] active:scale-95"
-                style={
-                  plan.highlight
-                    ? {
-                        background: "linear-gradient(135deg, var(--hp-pink), var(--hp-gold))",
-                        color: "#fff",
-                      }
-                    : {
-                        background: "var(--hp-blush)",
-                        color: "var(--hp-dark)",
-                        border: "1.5px solid var(--hp-gold-light)",
-                      }
-                }
-              >
-                {plan.cta}
-              </a>
+              {plan.href ? (
+                <a
+                  href={plan.href}
+                  className="block w-full text-center py-3 rounded-full text-sm font-semibold transition-all hover:scale-[1.02] active:scale-95"
+                  style={
+                    plan.highlight
+                      ? {
+                          background: "linear-gradient(135deg, var(--hp-pink), var(--hp-gold))",
+                          color: "#fff",
+                        }
+                      : {
+                          background: "var(--hp-blush)",
+                          color: "var(--hp-dark)",
+                          border: "1.5px solid var(--hp-gold-light)",
+                        }
+                  }
+                >
+                  {plan.cta}
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCtaOpen(true)}
+                  className="block w-full text-center py-3 rounded-full text-sm font-semibold transition-all hover:scale-[1.02] active:scale-95"
+                  style={{
+                    background: "var(--hp-blush)",
+                    color: "var(--hp-dark)",
+                    border: "1.5px solid var(--hp-gold-light)",
+                  }}
+                >
+                  {plan.cta}
+                </button>
+              )}
             </motion.div>
           ))}
         </motion.div>
       </div>
+      {ctaOpen && <AdminCtaModal onClose={() => setCtaOpen(false)} />}
     </section>
   );
 }
@@ -1884,9 +2221,10 @@ function FAQSection() {
 
 // ── Final CTA ──────────────────────────────────────────────────────────────────
 
-function FinalCTASection({ adminWhatsappLink }: { adminWhatsappLink: string | null }) {
+function FinalCTASection({ showAdminCta }: { showAdminCta: boolean }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [ctaOpen, setCtaOpen] = useState(false);
 
   return (
     <section
@@ -1930,10 +2268,16 @@ function FinalCTASection({ adminWhatsappLink }: { adminWhatsappLink: string | nu
             <MagneticButton href="/auth/register" primary>
               Mulai Sekarang
             </MagneticButton>
-            <MagneticButton href={adminWhatsappLink ?? "#pricing"}>💬 Hubungi Kami</MagneticButton>
+            <MagneticButton
+              href={showAdminCta ? "#" : "#pricing"}
+              {...(showAdminCta ? { onClick: () => setCtaOpen(true) } : {})}
+            >
+              💬 Hubungi Kami
+            </MagneticButton>
           </motion.div>
         </motion.div>
       </div>
+      {ctaOpen && <AdminCtaModal onClose={() => setCtaOpen(false)} />}
     </section>
   );
 }
@@ -2063,17 +2407,18 @@ function Footer({ contactSettings }: { contactSettings: FooterContactSettings })
 // ── Main Export ─────────────────────────────────────────────────────────────────
 
 export function HomepageClient({
-  adminWhatsappLink,
+  adminWhatsappNumber,
   contactSettings,
 }: {
-  adminWhatsappLink: string | null;
+  adminWhatsappNumber: string | null;
   contactSettings: FooterContactSettings;
 }) {
+  const showAdminCta = adminWhatsappNumber !== null;
   return (
     <>
       <LenisProvider />
-      <Navbar />
-      <HeroSection />
+      <Navbar showAdminCta={showAdminCta} />
+      <HeroSection showAdminCta={showAdminCta} />
       <TrustBar />
       <FeaturesSection />
       <AIGenerateSection />
@@ -2082,9 +2427,9 @@ export function HomepageClient({
       <CulturalSection />
       <StatsSection />
       <TestimonialsSection />
-      <PricingSection adminWhatsappLink={adminWhatsappLink} />
+      <PricingSection showAdminCta={showAdminCta} />
       <FAQSection />
-      <FinalCTASection adminWhatsappLink={adminWhatsappLink} />
+      <FinalCTASection showAdminCta={showAdminCta} />
       <Footer contactSettings={contactSettings} />
     </>
   );
