@@ -83,6 +83,15 @@ const TEMPLATES = [
     tags: ["boho", "earthy", "romantis"],
   },
   {
+    id: "vintage-classic",
+    name: "Vintage Classic",
+    filosifi: "Kenangan indah yang tak lekang oleh waktu.",
+    desc: "Nuansa krem sepia dengan bingkai ornamen dan tipografi serif klasik.",
+    palette: ["#f5ecdc", "#8a6d3b", "#c9a86a"],
+    emoji: "🕰️",
+    tags: ["vintage", "klasik", "sepia"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
