@@ -92,6 +92,15 @@ const TEMPLATES = [
     tags: ["vintage", "klasik", "sepia"],
   },
   {
+    id: "watercolor-botanical",
+    name: "Watercolor Botanical",
+    filosifi: "Cinta mekar lembut seperti sapuan kuas.",
+    desc: "Ilustrasi bunga cat air lembut dengan tekstur kuas yang longgar.",
+    palette: ["#fbf8f4", "#7c9a7e", "#a8c3a0"],
+    emoji: "🎨",
+    tags: ["watercolor", "botanical", "lembut"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

@@ -10,6 +10,7 @@ export { RoyalJava } from "./templates/royal-java";
 export { SereneGarden } from "./templates/serene-garden";
 export { ModernBoho } from "./templates/modern-boho";
 export { VintageClassic } from "./templates/vintage-classic";
+export { WatercolorBotanical } from "./templates/watercolor-botanical";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -113,6 +114,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "watercolor-botanical",
+    name: "Watercolor Botanical",
+    description: "Ilustrasi bunga cat air lembut dengan tekstur kuas yang longgar.",
+    primaryColor: "#7c9a7e",
+    accentColor: "#a8c3a0",
+    tags: ["watercolor", "botanical", "lembut"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -135,6 +145,7 @@ import { RoyalJava } from "./templates/royal-java";
 import { SereneGarden } from "./templates/serene-garden";
 import { TropicalBali } from "./templates/tropical-bali";
 import { VintageClassic } from "./templates/vintage-classic";
+import { WatercolorBotanical } from "./templates/watercolor-botanical";
 import type { TemplateProps } from "./types";
 
 export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> = {
@@ -146,6 +157,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "serene-garden": SereneGarden,
   "modern-boho": ModernBoho,
   "vintage-classic": VintageClassic,
+  "watercolor-botanical": WatercolorBotanical,
   "ai-composer": _ComposerDynamic,
 };
 
