@@ -278,7 +278,7 @@ function Navbar({ showAdminCta }: { showAdminCta: boolean }) {
               className="text-sm font-semibold px-4 py-2 rounded-full border transition-colors hover:bg-brand-50"
               style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
             >
-              Di Buatin Admin
+              Di Buatin Admin?
             </button>
           )}
         </div>
@@ -339,7 +339,7 @@ function Navbar({ showAdminCta }: { showAdminCta: boolean }) {
                     className="py-2 text-center border rounded-full font-semibold"
                     style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
                   >
-                    Di Buatin Admin
+                    Di Buatin Admin?
                   </button>
                 )}
               </div>
@@ -571,31 +571,25 @@ function HeroSection({ showAdminCta }: { showAdminCta: boolean }) {
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-4 items-center">
-            <MagneticButton href="/auth/register" primary>
-              Mulai Sekarang
-            </MagneticButton>
+          <motion.div variants={fadeUp} className="flex flex-col gap-3">
+            <div className="flex flex-wrap gap-4 items-center">
+              <MagneticButton href="/auth/register" primary>
+                Mulai Sekarang
+              </MagneticButton>
+              {showAdminCta && (
+                <MagneticButton href="#" onClick={() => setCtaOpen(true)}>
+                  Di Buatin Admin aja?
+                </MagneticButton>
+              )}
+            </div>
             <a
               href="#templates"
-              className="group flex items-center gap-2 text-sm font-medium transition-colors"
+              className="group flex items-center gap-2 text-sm font-medium transition-colors w-fit"
               style={{ color: "var(--hp-dark)" }}
             >
               <span className="underline-offset-4 group-hover:underline">Lihat Template</span>
               <span className="transition-transform group-hover:translate-x-1">→</span>
             </a>
-            {showAdminCta && (
-              <button
-                type="button"
-                onClick={() => setCtaOpen(true)}
-                className="group flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ color: "var(--hp-dark)" }}
-              >
-                <span className="underline-offset-4 group-hover:underline">
-                  Di Buatin Admin Aja
-                </span>
-                <span className="transition-transform group-hover:translate-x-1">→</span>
-              </button>
-            )}
           </motion.div>
 
           {/* Social proof */}
