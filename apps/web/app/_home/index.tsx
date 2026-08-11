@@ -165,6 +165,15 @@ const TEMPLATES = [
     tags: ["sunda", "adat", "mega-mendung"],
   },
   {
+    id: "minang-heritage",
+    name: "Minang Heritage",
+    filosifi: "Songket menyimpan benang emas, cinta menyimpan janji.",
+    desc: "Aksen songket emas khas Minang dengan palet merah marun dan emas.",
+    palette: ["#fbf7f0", "#8c2f39", "#c9a84c"],
+    emoji: "🧵",
+    tags: ["minang", "adat", "songket"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

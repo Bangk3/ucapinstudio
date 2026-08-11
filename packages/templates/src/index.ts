@@ -18,6 +18,7 @@ export { GeometricModern } from "./templates/geometric-modern";
 export { PhotoEditorial } from "./templates/photo-editorial";
 export { MinimalLineArt } from "./templates/minimal-line-art";
 export { SundaneseElegant } from "./templates/sundanese-elegant";
+export { MinangHeritage } from "./templates/minang-heritage";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -193,6 +194,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "minang-heritage",
+    name: "Minang Heritage",
+    description: "Aksen songket emas khas Minang dengan palet merah marun dan emas.",
+    primaryColor: "#8c2f39",
+    accentColor: "#c9a84c",
+    tags: ["minang", "adat", "songket"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -211,6 +221,7 @@ import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
 import { GeometricModern } from "./templates/geometric-modern";
 import { IslamicElegant } from "./templates/islamic-elegant";
+import { MinangHeritage } from "./templates/minang-heritage";
 import { MinimalLineArt } from "./templates/minimal-line-art";
 import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
@@ -242,6 +253,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "photo-editorial": PhotoEditorial,
   "minimal-line-art": MinimalLineArt,
   "sundanese-elegant": SundaneseElegant,
+  "minang-heritage": MinangHeritage,
   "ai-composer": _ComposerDynamic,
 };
 
