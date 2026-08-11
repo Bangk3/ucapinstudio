@@ -20,6 +20,7 @@ export { MinimalLineArt } from "./templates/minimal-line-art";
 export { SundaneseElegant } from "./templates/sundanese-elegant";
 export { MinangHeritage } from "./templates/minang-heritage";
 export { BatakTraditional } from "./templates/batak-traditional";
+export { BetawiModern } from "./templates/betawi-modern";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -213,6 +214,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "betawi-modern",
+    name: "Betawi Modern",
+    description: "Aksen gigi balang khas Betawi dengan palet merah hangat dan emas.",
+    primaryColor: "#b23a2a",
+    accentColor: "#c9a84c",
+    tags: ["betawi", "adat", "modern"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -227,6 +237,7 @@ export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
 import { BatakTraditional } from "./templates/batak-traditional";
+import { BetawiModern } from "./templates/betawi-modern";
 import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynamic";
 import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
@@ -266,6 +277,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "sundanese-elegant": SundaneseElegant,
   "minang-heritage": MinangHeritage,
   "batak-traditional": BatakTraditional,
+  "betawi-modern": BetawiModern,
   "ai-composer": _ComposerDynamic,
 };
 

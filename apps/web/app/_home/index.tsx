@@ -183,6 +183,15 @@ const TEMPLATES = [
     tags: ["batak", "adat", "ulos"],
   },
   {
+    id: "betawi-modern",
+    name: "Betawi Modern",
+    filosifi: "Gigi balang menjagai rumah, cinta menjagai hati.",
+    desc: "Aksen gigi balang khas Betawi dengan palet merah hangat dan emas.",
+    palette: ["#fdf6ef", "#b23a2a", "#c9a84c"],
+    emoji: "🏮",
+    tags: ["betawi", "adat", "modern"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
