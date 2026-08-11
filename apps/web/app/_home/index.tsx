@@ -1,6 +1,7 @@
 "use client";
 
 import { InvitationPreview } from "@/components/invitations/invitation-preview";
+import { PRESET_MUSIC_TRACKS } from "@/lib/preset-music";
 import type { InvitationContent } from "@invyte/templates";
 import {
   AnimatePresence,
@@ -232,6 +233,9 @@ const TEMPLATE_COUNT = TEMPLATES.filter((t) => t.id !== "ai-composer").length;
 // demo content only, not the actual couple.
 const PREVIEW_COVER_PHOTO =
   "https://images.unsplash.com/photo-1769812343890-4e406a33cfbe?q=80&w=1600&auto=format&fit=crop";
+
+// biome-ignore lint/style/noNonNullAssertion: PRESET_MUSIC_TRACKS is a non-empty constant
+const PREVIEW_MUSIC = PRESET_MUSIC_TRACKS[0]!;
 
 const PREVIEW_CONTENT: InvitationContent = {
   hosts: {
@@ -1701,6 +1705,20 @@ function TemplatePreviewModal({
           >
             <X size={18} />
           </button>
+        </div>
+        {/* Music auto-play is intentionally disabled inside preview mode (across
+            every template) so it doesn't fire repeatedly while editing — this
+            gives visitors a manual, muted-by-default way to hear an example
+            track without touching that gate. */}
+        <div className="flex flex-none items-center gap-2 border-b bg-slate-50 px-4 py-2">
+          <span className="text-xs text-slate-500 whitespace-nowrap">🎵 Musik contoh:</span>
+          <audio
+            src={PREVIEW_MUSIC.url}
+            controls
+            preload="none"
+            className="h-8 flex-1"
+            aria-label={`Contoh musik latar: ${PREVIEW_MUSIC.title}`}
+          />
         </div>
         <div className="flex-1 overflow-y-auto">
           <InvitationPreview

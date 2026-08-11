@@ -1,5 +1,6 @@
 "use client";
 
+import { PRESET_MUSIC_TRACKS } from "@/lib/preset-music";
 import type { InvitationContent } from "@invyte/templates";
 import { Plus, Upload, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -68,7 +69,12 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
         return;
       }
       const data = (await res.json()) as { url: string };
-      onChange({ musicUrl: data.url });
+      // Clear any leftover preset title — exactOptionalPropertyTypes needs the
+      // explicit `undefined` cast since InvitationContent.musicTitle is `?: string`.
+      onChange({
+        musicUrl: data.url,
+        musicTitle: undefined,
+      } as unknown as Partial<InvitationContent>);
     } catch {
       setMusicError("Upload gagal, coba lagi");
     } finally {
@@ -142,10 +148,32 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
             {musicLoading ? "Mengupload..." : "Upload MP3"}
           </button>
         </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {PRESET_MUSIC_TRACKS.map((track) => (
+            <button
+              key={track.id}
+              type="button"
+              onClick={() => onChange({ musicUrl: track.url, musicTitle: track.title })}
+              title={track.credit}
+              className={`rounded-lg border px-2.5 py-1.5 text-left text-xs transition-colors ${
+                content.musicUrl === track.url
+                  ? "border-primary bg-primary/10 font-medium"
+                  : "hover:border-primary/60"
+              }`}
+            >
+              {track.title}
+            </button>
+          ))}
+        </div>
         <input
           id="story-music-url"
           value={content.musicUrl ?? ""}
-          onChange={(e) => onChange({ musicUrl: e.target.value })}
+          onChange={(e) =>
+            onChange({
+              musicUrl: e.target.value,
+              musicTitle: undefined,
+            } as unknown as Partial<InvitationContent>)
+          }
           placeholder="https://... atau upload file MP3/OGG di atas"
           className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
@@ -158,7 +186,9 @@ export function EditorStory({ content, onChange, tenantId }: Props) {
             aria-label="Preview musik latar"
           />
         )}
-        <p className="text-xs text-muted-foreground">MP3/OGG maks 8MB, atau tempel URL langsung</p>
+        <p className="text-xs text-muted-foreground">
+          Pilih dari koleksi di atas, upload MP3/OGG sendiri (maks 8MB), atau tempel URL langsung
+        </p>
         <input
           ref={musicInputRef}
           type="file"
