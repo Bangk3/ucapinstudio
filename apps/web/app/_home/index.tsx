@@ -111,6 +111,15 @@ const TEMPLATES = [
     dark: true,
   },
   {
+    id: "pastel-dreamy",
+    name: "Pastel Dreamy",
+    filosifi: "Bermimpi pelan-pelan, mencinta sepenuh hati.",
+    desc: "Gradasi pastel lembut dengan elemen ilustrasi whimsical yang menggemaskan.",
+    palette: ["#fdf6f8", "#c98fb5", "#a3c4bc"],
+    emoji: "🩷",
+    tags: ["pastel", "dreamy", "whimsical"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",

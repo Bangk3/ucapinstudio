@@ -12,6 +12,7 @@ export { ModernBoho } from "./templates/modern-boho";
 export { VintageClassic } from "./templates/vintage-classic";
 export { WatercolorBotanical } from "./templates/watercolor-botanical";
 export { DarkLuxury } from "./templates/dark-luxury";
+export { PastelDreamy } from "./templates/pastel-dreamy";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -133,6 +134,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "pastel-dreamy",
+    name: "Pastel Dreamy",
+    description: "Gradasi pastel lembut dengan elemen ilustrasi whimsical yang menggemaskan.",
+    primaryColor: "#c98fb5",
+    accentColor: "#a3c4bc",
+    tags: ["pastel", "dreamy", "whimsical"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -152,6 +162,7 @@ import { FloralClassic } from "./templates/floral-classic";
 import { IslamicElegant } from "./templates/islamic-elegant";
 import { MinimalistModern } from "./templates/minimalist-modern";
 import { ModernBoho } from "./templates/modern-boho";
+import { PastelDreamy } from "./templates/pastel-dreamy";
 import { RoyalJava } from "./templates/royal-java";
 import { SereneGarden } from "./templates/serene-garden";
 import { TropicalBali } from "./templates/tropical-bali";
@@ -170,6 +181,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "vintage-classic": VintageClassic,
   "watercolor-botanical": WatercolorBotanical,
   "dark-luxury": DarkLuxury,
+  "pastel-dreamy": PastelDreamy,
   "ai-composer": _ComposerDynamic,
 };
 
