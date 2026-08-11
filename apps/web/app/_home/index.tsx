@@ -1717,6 +1717,23 @@ function TemplatesSection() {
   const [previewId, setPreviewId] = useState<string | null>(null);
   const previewTemplate = TEMPLATES.find((t) => t.id === previewId);
 
+  // Auto-shift the card row so all templates surface without manual dragging;
+  // pause while a visitor is actually interacting with it.
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const CARD_STEP = 312; // w-72 (288px) + gap-6 (24px)
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(() => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+      el.scrollTo({ left: atEnd ? 0 : el.scrollLeft + CARD_STEP, behavior: "smooth" });
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [paused]);
+
   return (
     <section
       id="templates"
@@ -1757,11 +1774,15 @@ function TemplatesSection() {
           </motion.p>
         </motion.div>
 
-        {/* Template cards horizontal scroll */}
+        {/* Template cards — auto-shifting horizontal scroll, pauses on hover/touch */}
         <motion.div
+          ref={scrollerRef}
           initial={{ opacity: 0, x: 40 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={() => setPaused(true)}
           className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory no-scrollbar"
           style={{ scrollbarWidth: "none" }}
         >
@@ -2569,68 +2590,39 @@ function Footer({ contactSettings }: { contactSettings: FooterContactSettings })
 
   return (
     <footer
-      className="py-12 px-6 border-t"
+      className="py-8 px-6 border-t"
       style={{ background: "var(--hp-blush)", borderColor: "var(--hp-gold-light)" }}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <span className="font-script text-4xl" style={{ color: "var(--hp-pink)" }}>
+        <div
+          className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 mb-6 border-b"
+          style={{ borderColor: "var(--hp-gold-light)" }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="font-script text-3xl" style={{ color: "var(--hp-pink)" }}>
               UcapinStudio
             </span>
-            <p className="mt-2 text-sm text-slate-500 max-w-xs leading-relaxed">
-              Platform undangan pernikahan digital untuk Indonesia. Aman dan privat.
-            </p>
-            <div className="flex gap-3 mt-4">
-              {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target={s.href.startsWith("http") ? "_blank" : undefined}
-                  rel={s.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors hover:bg-brand-50"
-                  style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
-                >
-                  {s.label}
-                </a>
-              ))}
-            </div>
+            <span className="hidden md:inline text-sm text-slate-500">
+              Platform undangan pernikahan digital untuk Indonesia.
+            </span>
           </div>
-
-          {/* Links */}
-          <div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-4 text-slate-400">
-              Produk
-            </p>
-            <ul className="space-y-2 text-sm text-slate-500">
-              {["Fitur", "Template", "Harga", "Changelog"].map((l) => (
-                <li key={l}>
-                  <a href="/" className="hover:text-brand-600 transition-colors">
-                    {l}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-4 text-slate-400">Legal</p>
-            <ul className="space-y-2 text-sm text-slate-500">
-              {["Lisensi", "Privasi", "Syarat Layanan", "Kontribusi"].map((l) => (
-                <li key={l}>
-                  <a href="/" className="hover:text-brand-600 transition-colors">
-                    {l}
-                  </a>
-                </li>
-              ))}
-            </ul>
+          <div className="flex flex-wrap justify-center gap-3">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target={s.href.startsWith("http") ? "_blank" : undefined}
+                rel={s.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors hover:bg-brand-50"
+                style={{ borderColor: "var(--hp-gold-light)", color: "var(--hp-dark)" }}
+              >
+                {s.label}
+              </a>
+            ))}
           </div>
         </div>
 
-        <div
-          className="border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400"
-          style={{ borderColor: "var(--hp-gold-light)" }}
-        >
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© 2025 UcapinStudio. Modifikasi oleh Kelvin Prasetya. Open source under AGPLv3.</p>
 
           {/* DevLab.tgk attribution */}
