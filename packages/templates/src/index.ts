@@ -22,6 +22,7 @@ export { MinangHeritage } from "./templates/minang-heritage";
 export { BatakTraditional } from "./templates/batak-traditional";
 export { BetawiModern } from "./templates/betawi-modern";
 export { BugisMakassarElegant } from "./templates/bugis-makassar-elegant";
+export { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -233,6 +234,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "arabic-calligraphy-luxe",
+    name: "Arabic Calligraphy Luxe",
+    description: "Kaligrafi Arab emas di atas hijau zamrud — kemewahan bernuansa islami.",
+    primaryColor: "#0f4c3a",
+    accentColor: "#c9a84c",
+    tags: ["islami", "kaligrafi", "luxe"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -246,6 +256,7 @@ export const TEMPLATES: TemplateMeta[] = [
 export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
+import { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
 import { BatakTraditional } from "./templates/batak-traditional";
 import { BetawiModern } from "./templates/betawi-modern";
 import { BugisMakassarElegant } from "./templates/bugis-makassar-elegant";
@@ -290,6 +301,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "batak-traditional": BatakTraditional,
   "betawi-modern": BetawiModern,
   "bugis-makassar-elegant": BugisMakassarElegant,
+  "arabic-calligraphy-luxe": ArabicCalligraphyLuxe,
   "ai-composer": _ComposerDynamic,
 };
 

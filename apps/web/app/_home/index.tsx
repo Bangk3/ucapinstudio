@@ -201,6 +201,15 @@ const TEMPLATES = [
     tags: ["bugis", "makassar", "tenun"],
   },
   {
+    id: "arabic-calligraphy-luxe",
+    name: "Arabic Calligraphy Luxe",
+    filosifi: "Kaligrafi menulis nama-Nya, hati menulis janji kita.",
+    desc: "Kaligrafi Arab emas di atas hijau zamrud — kemewahan bernuansa islami.",
+    palette: ["#f4f6f2", "#0f4c3a", "#c9a84c"],
+    emoji: "🕌",
+    tags: ["islami", "kaligrafi", "luxe"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
