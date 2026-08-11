@@ -19,6 +19,7 @@ export { PhotoEditorial } from "./templates/photo-editorial";
 export { MinimalLineArt } from "./templates/minimal-line-art";
 export { SundaneseElegant } from "./templates/sundanese-elegant";
 export { MinangHeritage } from "./templates/minang-heritage";
+export { BatakTraditional } from "./templates/batak-traditional";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -203,6 +204,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "batak-traditional",
+    name: "Batak Traditional",
+    description: "Aksen ulos ragidup khas Batak dengan palet merah, hitam, dan putih.",
+    primaryColor: "#a3232f",
+    accentColor: "#2b2b2b",
+    tags: ["batak", "adat", "ulos"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -216,6 +226,7 @@ export const TEMPLATES: TemplateMeta[] = [
 export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
+import { BatakTraditional } from "./templates/batak-traditional";
 import { ComposerDynamic as _ComposerDynamic } from "./templates/composer-dynamic";
 import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
@@ -254,6 +265,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "minimal-line-art": MinimalLineArt,
   "sundanese-elegant": SundaneseElegant,
   "minang-heritage": MinangHeritage,
+  "batak-traditional": BatakTraditional,
   "ai-composer": _ComposerDynamic,
 };
 

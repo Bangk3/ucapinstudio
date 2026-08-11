@@ -174,6 +174,15 @@ const TEMPLATES = [
     tags: ["minang", "adat", "songket"],
   },
   {
+    id: "batak-traditional",
+    name: "Batak Traditional",
+    filosifi: "Ulos membungkus hangat, doa membungkus bahagia.",
+    desc: "Aksen ulos ragidup khas Batak dengan palet merah, hitam, dan putih.",
+    palette: ["#faf6f0", "#a3232f", "#2b2b2b"],
+    emoji: "🪢",
+    tags: ["batak", "adat", "ulos"],
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     filosifi: "Kreasi tanpa batas, ekspresi tanpa limit.",
