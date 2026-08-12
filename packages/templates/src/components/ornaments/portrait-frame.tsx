@@ -24,13 +24,11 @@ export function PortraitFrame({
   return (
     <div
       className="relative inline-flex items-center justify-center"
-      style={{ width: size, height: size }}
+      style={{ width: `min(100%, ${size}px)`, aspectRatio: "1" }}
     >
       <svg
-        width={ringSize}
-        height={ringSize}
         viewBox={`0 0 ${ringSize} ${ringSize}`}
-        className="absolute -top-3 -left-3"
+        className="absolute -top-3 -left-3 h-[calc(100%+24px)] w-[calc(100%+24px)]"
         aria-hidden="true"
       >
         <title>Decorative ring</title>
@@ -66,13 +64,13 @@ export function PortraitFrame({
           src={src}
           alt={alt}
           className="rounded-full object-cover"
-          style={{ width: size, height: size, border: `2px solid ${color}` }}
+          style={{ width: "100%", height: "100%", border: `2px solid ${color}` }}
           loading="lazy"
         />
       ) : (
         <div
           className="flex items-center justify-center rounded-full"
-          style={{ width: size, height: size, border: `2px solid ${color}`, opacity: 0.25 }}
+          style={{ width: "100%", height: "100%", border: `2px solid ${color}`, opacity: 0.25 }}
         >
           <svg
             width={size * 0.3}

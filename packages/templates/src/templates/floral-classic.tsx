@@ -585,7 +585,15 @@ export function FloralClassic({ data, preview }: TemplateProps) {
 
       <div className="h-2 w-full" style={{ backgroundColor: primary }} />
 
-      {opened && <QuickNav items={QUICK_NAV_ITEMS} color={primary} bg="rgba(245,237,232,0.9)" />}
+      {opened && (
+        <QuickNav
+          items={QUICK_NAV_ITEMS.filter(
+            (item) => item.id !== "galeri" || (galleryUrls?.length ?? 0) > 0,
+          )}
+          color={primary}
+          bg="rgba(245,237,232,0.9)"
+        />
+      )}
 
       <PoweredByDevLab />
     </div>

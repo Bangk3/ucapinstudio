@@ -1734,7 +1734,7 @@ function TemplatePreviewModal({
             aria-label={`Contoh musik latar: ${PREVIEW_MUSIC.title}`}
           />
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" style={{ contain: "paint" }}>
           <InvitationPreview
             templateId={templateId}
             content={PREVIEW_CONTENT}

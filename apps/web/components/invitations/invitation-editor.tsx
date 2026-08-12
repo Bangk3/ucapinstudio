@@ -422,7 +422,7 @@ export function InvitationEditor({
           {/* Preview viewport */}
           <div className="flex-1 overflow-auto flex items-start justify-center">
             {previewMode === "desktop" ? (
-              <div className="w-full h-full overflow-auto">
+              <div className="w-full h-full overflow-auto" style={{ contain: "paint" }}>
                 <div
                   className="origin-top-left"
                   style={{
@@ -443,13 +443,20 @@ export function InvitationEditor({
             ) : (
               <div
                 className="flex-shrink-0 overflow-auto h-full"
-                style={{ width: `${375 * zoom}px` }}
+                style={{ width: `${375 * zoom}px`, contain: "paint" }}
               >
                 <div
                   className="origin-top"
                   style={{
                     transform: `scale(${zoom})`,
                     width: "375px",
+                    // Match desktop mode's height compensation: without it this box's
+                    // height is just its natural (auto) content height, so QuickNav's
+                    // `fixed` positioning (contained by this transformed ancestor) sits
+                    // near the true bottom of the whole invitation instead of the
+                    // visible preview pane. Scaling this box to 100/zoom% then applying
+                    // scale(zoom) makes its rendered size match the pane exactly.
+                    height: `${100 / zoom}%`,
                     transformOrigin: "top center",
                   }}
                 >
