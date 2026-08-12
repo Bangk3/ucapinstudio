@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Infant, Great_Vibes, Inter } from "next/font/google";
+import { Bodoni_Moda, Cormorant_Infant, Great_Vibes, Inter, Playfair_Display } from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
@@ -24,6 +24,21 @@ const greatVibes = Great_Vibes({
   display: "swap",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const bodoni = Bodoni_Moda({
+  subsets: ["latin"],
+  variable: "--font-bodoni",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     template: "%s | UcapinStudio",
@@ -37,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${cormorant.variable} ${greatVibes.variable} font-sans antialiased`}
+        className={`${inter.variable} ${cormorant.variable} ${greatVibes.variable} ${playfair.variable} ${bodoni.variable} font-sans antialiased`}
       >
         <NextTopLoader
           color="var(--color-primary)"
