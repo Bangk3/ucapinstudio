@@ -70,6 +70,7 @@ export function QuickNav({ items, color, bg = "rgba(255,255,255,0.9)" }: QuickNa
           >
             {ICONS[item.icon]}
           </svg>
+          <span className="sr-only">{item.label}</span>
         </a>
       ))}
     </nav>

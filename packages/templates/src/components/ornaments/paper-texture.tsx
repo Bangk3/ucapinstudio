@@ -28,7 +28,12 @@ export function PaperTexture({ opacity = 0.04, className }: PaperTextureProps) {
     >
       <title>Paper texture</title>
       <filter id={filterId}>
-        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={3} stitchTiles="stitch" />
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.85"
+          numOctaves={3}
+          stitchTiles="stitch"
+        />
         <feColorMatrix type="saturate" values="0" />
       </filter>
       <rect width="100%" height="100%" filter={`url(#${filterId})`} />

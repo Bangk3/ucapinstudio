@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Bodoni_Moda, Cormorant_Infant, Great_Vibes, Inter, Playfair_Display } from "next/font/google";
+import {
+  Bodoni_Moda,
+  Cormorant_Infant,
+  Great_Vibes,
+  Inter,
+  Playfair_Display,
+} from "next/font/google";
 import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 

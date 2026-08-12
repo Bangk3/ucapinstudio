@@ -12,11 +12,20 @@ interface PortraitFrameProps {
 
 /** Circular ornamental photo frame — replaces a plain <img> with a ring
  *  plus corner flourishes, matching the CornerOrnament variant in use. */
-export function PortraitFrame({ src, alt, color, size = 160, variant = "gold-line" }: PortraitFrameProps) {
+export function PortraitFrame({
+  src,
+  alt,
+  color,
+  size = 160,
+  variant = "gold-line",
+}: PortraitFrameProps) {
   const ringSize = size + 24;
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg
         width={ringSize}
         height={ringSize}

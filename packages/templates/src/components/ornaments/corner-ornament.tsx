@@ -18,7 +18,13 @@ interface CornerOrnamentProps {
 }
 
 /** Decorative corner flourish, drawn as original line art (no source asset). */
-export function CornerOrnament({ variant, color, corner, size = 96, className }: CornerOrnamentProps) {
+export function CornerOrnament({
+  variant,
+  color,
+  corner,
+  size = 96,
+  className,
+}: CornerOrnamentProps) {
   const flipX = corner === "top-right" || corner === "bottom-right";
   const flipY = corner === "bottom-left" || corner === "bottom-right";
 
@@ -59,9 +65,33 @@ export function CornerOrnament({ variant, color, corner, size = 96, className }:
             viewport={{ once: true }}
             transition={{ duration: 1.3, ease: "easeOut" }}
           />
-          <ellipse cx="16" cy="14" rx="5" ry="2.5" fill={color} opacity={0.35} transform="rotate(35 16 14)" />
-          <ellipse cx="26" cy="26" rx="6" ry="3" fill={color} opacity={0.3} transform="rotate(45 26 26)" />
-          <ellipse cx="38" cy="38" rx="5" ry="2.5" fill={color} opacity={0.35} transform="rotate(50 38 38)" />
+          <ellipse
+            cx="16"
+            cy="14"
+            rx="5"
+            ry="2.5"
+            fill={color}
+            opacity={0.35}
+            transform="rotate(35 16 14)"
+          />
+          <ellipse
+            cx="26"
+            cy="26"
+            rx="6"
+            ry="3"
+            fill={color}
+            opacity={0.3}
+            transform="rotate(45 26 26)"
+          />
+          <ellipse
+            cx="38"
+            cy="38"
+            rx="5"
+            ry="2.5"
+            fill={color}
+            opacity={0.35}
+            transform="rotate(50 38 38)"
+          />
         </>
       )}
     </svg>
