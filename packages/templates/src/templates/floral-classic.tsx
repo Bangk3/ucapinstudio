@@ -10,8 +10,8 @@ import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
-import { CornerOrnament, PaperTexture, PortraitFrame } from "../components/ornaments";
 import { OpeningScreen } from "../components/opening-screen";
+import { CornerOrnament, PaperTexture, PortraitFrame } from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
 import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
@@ -291,7 +291,9 @@ export function FloralClassic({ data, preview }: TemplateProps) {
               />
               <div>
                 <p className="font-bold text-[#3d2c2c]">{hosts.groomFull ?? hosts.groomName}</p>
-                {hosts.groomParents && <p className="text-sm text-[#a0856e]">{hosts.groomParents}</p>}
+                {hosts.groomParents && (
+                  <p className="text-sm text-[#a0856e]">{hosts.groomParents}</p>
+                )}
               </div>
             </div>
             <span className="pt-16 text-2xl italic" style={{ color: primary }}>
@@ -306,7 +308,9 @@ export function FloralClassic({ data, preview }: TemplateProps) {
               />
               <div>
                 <p className="font-bold text-[#3d2c2c]">{hosts.brideFull ?? hosts.brideName}</p>
-                {hosts.brideParents && <p className="text-sm text-[#a0856e]">{hosts.brideParents}</p>}
+                {hosts.brideParents && (
+                  <p className="text-sm text-[#a0856e]">{hosts.brideParents}</p>
+                )}
               </div>
             </div>
           </div>
