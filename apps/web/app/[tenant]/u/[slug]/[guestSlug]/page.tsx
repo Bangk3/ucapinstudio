@@ -3,7 +3,7 @@ import { getGuestBySlug } from "@/lib/guests";
 import { getInvitationBySlug } from "@/lib/invitations";
 import { getTenantBySlug } from "@/lib/tenant";
 import { trackView } from "@/lib/track-view";
-import type { InvitationContent } from "@invyte/templates";
+import type { InvitationContent, ThemeConfig } from "@invyte/templates";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!invitation || invitation.status !== "published") return {};
 
   const content = invitation.content as InvitationContent | null;
+  const theme = invitation.theme as ThemeConfig | null;
   const groomName = content?.hosts?.groomName ?? "";
   const brideName = content?.hosts?.brideName ?? "";
   const title = groomName && brideName ? `Undangan ${groomName} & ${brideName}` : invitation.name;
@@ -28,10 +29,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description: `Anda diundang ke ${title}. Klik untuk melihat undangan digital kami.`,
+    // Personal invitation — names, dates, venue addresses. Not meant for
+    // search engines to discover or index, only for the guest it was sent to.
+    robots: { index: false, follow: false },
     openGraph: {
       title,
       description: `Anda diundang ke ${title}.`,
       type: "website",
+      ...(theme?.coverPhotoUrl ? { images: [theme.coverPhotoUrl] } : {}),
     },
   };
 }

@@ -4,7 +4,7 @@ import { getServerSession } from "@/lib/session";
 import { getTenantBySlug } from "@/lib/tenant";
 import { trackView } from "@/lib/track-view";
 import { db, memberships } from "@invyte/db";
-import type { InvitationContent } from "@invyte/templates";
+import type { InvitationContent, ThemeConfig } from "@invyte/templates";
 import { and, eq } from "drizzle-orm";
 import { Lock } from "lucide-react";
 import type { Metadata } from "next";
@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!invitation || invitation.status !== "published") return {};
 
   const content = invitation.content as InvitationContent | null;
+  const theme = invitation.theme as ThemeConfig | null;
   const groomName = content?.hosts?.groomName ?? "";
   const brideName = content?.hosts?.brideName ?? "";
   const title = groomName && brideName ? `Undangan ${groomName} & ${brideName}` : invitation.name;
@@ -63,10 +64,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description: `Anda diundang ke ${title}. Klik untuk melihat undangan digital kami.`,
+    // Personal invitation — names, dates, venue addresses. Not meant for
+    // search engines to discover or index, only for guests who have the link.
+    robots: { index: false, follow: false },
     openGraph: {
       title,
       description: `Anda diundang ke ${title}.`,
       type: "website",
+      ...(theme?.coverPhotoUrl ? { images: [theme.coverPhotoUrl] } : {}),
     },
   };
 }
