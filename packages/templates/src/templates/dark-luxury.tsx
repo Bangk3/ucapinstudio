@@ -505,7 +505,7 @@ export function DarkLuxury({ data, preview }: TemplateProps) {
         </AnimateIn>
       </section>
 
-      {opened && !preview && <QuickNav items={QUICK_NAV_ITEMS} color={primary} bg="rgba(22,22,26,0.85)" />}
+      {opened && <QuickNav items={QUICK_NAV_ITEMS} color={primary} bg="rgba(22,22,26,0.85)" />}
 
       <PoweredByDevLab />
     </div>
