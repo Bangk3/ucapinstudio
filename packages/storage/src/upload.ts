@@ -19,6 +19,18 @@ function detectMimeType(buffer: Buffer): string | null {
   return null;
 }
 
+const AUDIO_EXT: Record<string, string> = { "audio/mpeg": "mp3", "audio/ogg": "ogg" };
+
+function detectAudioMimeType(buffer: Buffer): string | null {
+  if (buffer.length < 4) return null;
+  if (buffer[0] === 0x49 && buffer[1] === 0x44 && buffer[2] === 0x33) return "audio/mpeg"; // ID3v2 tag
+  if (buffer[0] === 0xff && ((buffer[1] as number) & 0xe0) === 0xe0) return "audio/mpeg"; // raw MPEG frame sync
+  if (buffer[0] === 0x4f && buffer[1] === 0x67 && buffer[2] === 0x67 && buffer[3] === 0x53) {
+    return "audio/ogg"; // "OggS" — also covers Opus-in-Ogg
+  }
+  return null;
+}
+
 export async function uploadImage(
   tenantId: string,
   buffer: Buffer,
@@ -70,26 +82,29 @@ export async function uploadImage(
   };
 }
 
-export async function uploadAudio(
-  tenantId: string,
-  buffer: Buffer,
-  originalName: string,
-): Promise<UploadResult> {
+export async function uploadAudio(tenantId: string, buffer: Buffer): Promise<UploadResult> {
+  // Magic-byte sniff, not the client-supplied filename extension — same rule
+  // uploadImage() follows above (see root CLAUDE.md's file-upload anti-pattern).
+  const mimeType = detectAudioMimeType(buffer);
+  if (!mimeType) {
+    throw new Error("Invalid audio type — only MP3/OGG accepted");
+  }
+
   if (buffer.length > 8 * 1024 * 1024) {
     throw new Error("Audio too large (max 8MB)");
   }
 
   const id = nanoid();
-  const ext = originalName.split(".").pop() ?? "mp3";
+  const ext = AUDIO_EXT[mimeType];
   const key = `${tenantId}/audio/${id}.${ext}`;
-  await putObject(key, buffer, "audio/mpeg");
+  await putObject(key, buffer, mimeType);
 
   return {
     key,
     url: getPublicUrl(key),
     variants: {},
     sizeBytes: buffer.length,
-    mimeType: "audio/mpeg",
+    mimeType,
   };
 }
 

@@ -62,7 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (type === "image") {
       result = await uploadImage(tenantId, buffer, "media");
     } else {
-      result = await uploadAudio(tenantId, buffer, file.name);
+      result = await uploadAudio(tenantId, buffer);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
