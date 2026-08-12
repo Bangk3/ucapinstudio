@@ -1,6 +1,5 @@
 "use client";
 
-import { InvitationPreview } from "@/components/invitations/invitation-preview";
 import { PRESET_MUSIC_TRACKS } from "@/lib/preset-music";
 import type { InvitationContent } from "@invyte/templates";
 import {
@@ -13,9 +12,24 @@ import {
   useTransform,
 } from "framer-motion";
 import { Check, ChevronDown, Menu, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { LenisProvider } from "./lenis-provider";
+
+// All 21+ template components live behind this one import — load it only when
+// the preview modal actually opens instead of bloating the public homepage's
+// initial JS (see root CLAUDE.md's "Public invitation initial JS: <100KB" budget).
+const InvitationPreview = dynamic(
+  () => import("@/components/invitations/invitation-preview").then((m) => m.InvitationPreview),
+  {
+    loading: () => (
+      <div className="flex min-h-[400px] items-center justify-center text-sm text-slate-400">
+        Memuat preview…
+      </div>
+    ),
+  },
+);
 
 // ── Data ────────────────────────────────────────────────────────────────────
 
