@@ -1,7 +1,28 @@
 # Project Tasks: invyte
 
 > Workflow: tick `[x]` when done. Each milestone has a verification gate before next starts.
-> Lessons captured in `tasks/lessons.md`.
+> Lessons captured in `lessons.md`.
+
+---
+
+## 📌 Session Log
+
+> Cross-cutting work that doesn't map cleanly to one milestone checkbox below.
+> Newest first. Read this before re-deriving project state from scratch.
+
+### 2026-08-12 — Homepage polish + full security/perf/SEO pass
+Commits `7911b2b`..`97d8dac` on `main` (all pushed).
+- Rebranded template attribution badge + homepage footer: "DevLab.tgk" → "UcapinStudio" (not legally required, MIT templates + no additional-attribution clause in root LICENSE — only the AGPLv3 §13 "Source Code" link is mandatory and was left untouched).
+- Homepage template row: replaced periodic smooth-scroll jumps with a continuous `requestAnimationFrame` crawl (`apps/web/app/_home/index.tsx`), pauses on hover/touch.
+- Homepage template preview: real free-stock couple/cover/gallery photos (Unsplash/Pexels, individually license-verified) instead of placeholders.
+- Preset background-music picker (4 self-hosted, license-verified royalty-free/public-domain tracks — see `apps/web/lib/preset-music.ts`) in the invitation editor, alongside existing upload/paste-link options. Homepage preview modal gets its own independent `<audio>` control for an example track — deliberately NOT wired through the templates' `!preview` gate (that gate also protects RSVP/Wishes from firing on the fake homepage tenant; touching it was out of scope).
+- Fixed critical `better-auth` CVE (OAuth refresh-token replay, GHSA-pw9m-5jxm-xr6h) — bumped 1.2.7→1.6.26/27.
+- Added magic-byte validation to `uploadAudio()` (`packages/storage/src/upload.ts`) — previously trusted client filename/MIME, unlike `uploadImage()` which already did this. Closes the gap against this repo's own "never trust extension" rule.
+- Fixed a real bundle-bloat regression from this session's own earlier preview-modal work: homepage was eagerly bundling all 22 templates. Converted to `next/dynamic` in `apps/web/app/_home/index.tsx`.
+- Added `robots.ts`, `sitemap.ts` (homepage only — tenant invitations deliberately excluded), `icon.tsx`, `opengraph-image.tsx`; added `robots: {index:false}` + `openGraph.images` to both public invitation page variants (personal wedding data was previously indexable by default — privacy fix).
+- Swept the remaining 38 non-critical `pnpm audit` findings (3 low/17 moderate/18 high) down to **0**. Direct bumps: `next` 15.5.18→15.5.23, `drizzle-orm` 0.41.0→0.45.2 (SQL injection fix), `sharp` 0.34.5→0.35.3, `nodemailer` 6.10.1→9.0.1, `next-intl` 3.26.5→4.13.6, `turbo` 2.3.3→2.10.9. Transitive-only advisories (form-data, js-yaml, fast-uri, nanoid, esbuild, postcss) pinned via `pnpm-workspace.yaml` `overrides:`. Verified: clean audit, clean typecheck (8/8 packages), clean prod build.
+- Login already had Redis rate-limiting pre-existing (`apps/web/app/api/auth/[...all]/route.ts`, 10/15min per IP hash) — checked, not new work.
+- **Not done, not asked for:** the milestone checklists below (M5–M11) were not re-audited against actual code this session — the app already has working `/admin`, `/order`, `/checkin`, `/broadcast`, `/ai` routes that suggest M6–M10 are further along than their "—" status implies. Worth a dedicated reconciliation pass before trusting the table below at face value.
 
 ---
 
@@ -91,7 +112,7 @@
 - [x] Password reset via email (endpoint wired, no SMTP in dev)
 - [ ] Google OAuth provider (config stub done, needs real credentials)
 - [x] Session management + refresh token
-- [ ] Rate limiting on login (Redis-backed) — pending M3/M4
+- [x] Rate limiting on login (Redis-backed, 10 attempts/15min per IP hash)
 
 #### Multi-Tenancy
 - [x] Implement tenant slug validation
@@ -262,8 +283,8 @@ User can manage guest list, bulk import via CSV, generate personalized links, re
 - [x] Add-to-calendar buttons (Google Calendar + Apple/Outlook .ics)
 - [x] Waze + Google Maps deeplinks (lat/lng required for Waze)
 - [x] Background music player (autoplay muted → tap to unmute)
-- [ ] Royalty-free music library (10 curated tracks in MinIO)
-- [ ] Custom music upload (MP3, max 8MB, via storage package)
+- [x] Royalty-free music library (4 curated tracks, self-hosted MP3s — not MinIO, not 10; see `apps/web/lib/preset-music.ts`)
+- [x] Custom music upload (MP3, via storage package + magic-byte validation) + paste-link option
 - [x] Share button group (WA, Telegram, copy link)
 - [ ] Gallery lightbox + swipe (mobile)
 - [ ] Love story timeline component
@@ -536,7 +557,7 @@ User can manage guest list, bulk import via CSV, generate personalized links, re
 ### Open Risks
 1. Photo upload in editor — currently URL-only; need to wire `packages/storage` upload to editor UI in M4
 2. AI generation quality — validate early with M7 prototype before committing timeline
-3. Rate limiting — not yet implemented on any public endpoints (RSVP, wishes); critical before M3 launch
+3. ~~Rate limiting — not yet implemented~~ — RESOLVED: Redis-backed `rateLimitIp()`/`rateLimit()` (`apps/web/lib/rate-limit.ts`) now covers login, RSVP, wishes, and orders endpoints (verified 2026-08-12)
 4. RLS — DB-level row security is placeholder only; must implement before v0.1.0
 5. Google OAuth — credentials stub done, needs real client ID/secret in env
 
