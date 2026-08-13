@@ -5,14 +5,20 @@ import { useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
-import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
+import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -34,6 +40,13 @@ const GOLD_PARTICLES = [
   { top: "70%", left: "10%", size: 3, dur: 11, delay: 5.0 },
 ] as const;
 
+const QUICK_NAV_ITEMS: QuickNavItem[] = [
+  { id: "beranda", icon: "home", label: "Beranda" },
+  { id: "mempelai", icon: "couple", label: "Mempelai" },
+  { id: "acara", icon: "location", label: "Acara" },
+  { id: "galeri", icon: "gallery", label: "Galeri" },
+];
+
 export function IslamicElegant({ data, preview }: TemplateProps) {
   const { content, theme, guestName } = data;
   const { hosts, events, thanksNote, galleryUrls, musicUrl, musicTitle } = content;
@@ -48,6 +61,7 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
       className="min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, color: "#e8dcc8", fontFamily: "'Georgia', serif" }}
     >
+      <PaperTexture opacity={0.04} />
       {/* Keyframe animations */}
       <style>{`
         @keyframes shimmer {
@@ -142,7 +156,10 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
       </AnimateIn>
 
       {/* Hero */}
-      <section className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24 text-center overflow-hidden">
+      <section
+        id="beranda"
+        className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24 text-center overflow-hidden"
+      >
         {theme.coverPhotoUrl && (
           <img
             src={theme.coverPhotoUrl}
@@ -173,6 +190,22 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
             <polygon points="100,0 122,78 200,78 138,126 162,204 100,156 38,204 62,126 0,78 78,78" />
           </motion.svg>
         )}
+
+        {/* Corner ornaments */}
+        <div className="pointer-events-none absolute inset-6 z-10" aria-hidden="true">
+          <div className="absolute top-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-left" />
+          </div>
+          <div className="absolute top-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-right" />
+          </div>
+          <div className="absolute bottom-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-left" />
+          </div>
+          <div className="absolute bottom-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-right" />
+          </div>
+        </div>
 
         <div className="relative z-10 space-y-6">
           {guestName && <p className="text-sm text-gray-400">Kepada Yth. {guestName}</p>}
@@ -207,6 +240,8 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
           )}
 
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Undangan Pernikahan</p>
+
+          <CrownFlourish color={primary} />
 
           <div>
             {/* Groom name — gold shimmer */}
@@ -314,31 +349,57 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
         </div>
       </section>
 
-      {/* Couple carousel */}
+      {/* Couple */}
       <AnimateIn direction="up">
-        <section className="mx-auto max-w-2xl px-6 py-16">
+        <section id="mempelai" className="mx-auto max-w-2xl px-6 py-16">
           <div className="text-center mb-8">
             <div className="text-xl mb-2" style={{ color: primary }}>
               ✦
             </div>
             <h2 className="text-xs uppercase tracking-widest text-gray-400">Mempelai</h2>
           </div>
-          <CoupleCarousel
-            groomName={hosts.groomName}
-            brideName={hosts.brideName}
-            {...(hosts.groomFull !== undefined ? { groomFull: hosts.groomFull } : {})}
-            {...(hosts.brideFull !== undefined ? { brideFull: hosts.brideFull } : {})}
-            {...(hosts.groomParents !== undefined ? { groomParents: hosts.groomParents } : {})}
-            {...(hosts.brideParents !== undefined ? { brideParents: hosts.brideParents } : {})}
-            {...(hosts.groomPhotoUrl !== undefined ? { groomPhotoUrl: hosts.groomPhotoUrl } : {})}
-            {...(hosts.bridePhotoUrl !== undefined ? { bridePhotoUrl: hosts.bridePhotoUrl } : {})}
-            primaryColor={primary}
-            textColor="#e8dcc8"
-            mutedColor="rgba(255,255,255,0.4)"
-            slideBg={surface}
-            groomLabel="Putra"
-            brideLabel="Putri"
-          />
+          <div className="border-y py-10" style={{ borderColor: `${primary}40` }}>
+            <div
+              className="grid items-start gap-4 text-center"
+              style={{ gridTemplateColumns: "1fr auto 1fr" }}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
+                  alt={hosts.groomName}
+                  color={primary}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold" style={{ color: primary }}>
+                    {hosts.groomFull ?? hosts.groomName}
+                  </p>
+                  {hosts.groomParents && (
+                    <p className="text-sm text-gray-400">Putra dari {hosts.groomParents}</p>
+                  )}
+                </div>
+              </div>
+              <span className="pt-16 text-2xl italic" style={{ color: primary }}>
+                &amp;
+              </span>
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
+                  alt={hosts.brideName}
+                  color={primary}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold" style={{ color: primary }}>
+                    {hosts.brideFull ?? hosts.brideName}
+                  </p>
+                  {hosts.brideParents && (
+                    <p className="text-sm text-gray-400">Putri dari {hosts.brideParents}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
       </AnimateIn>
 
@@ -360,7 +421,7 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
       </AnimateIn>
 
       {/* Events */}
-      <section className="mx-auto max-w-2xl px-6 py-20">
+      <section id="acara" className="mx-auto max-w-2xl px-6 py-20">
         <div className="text-center mb-10">
           <div className="text-2xl mb-2" style={{ color: primary }}>
             ✦
@@ -504,7 +565,7 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
 
       {/* Gallery */}
       {galleryUrls && galleryUrls.length > 0 && (
-        <section className="px-4 py-12">
+        <section id="galeri" className="px-4 py-12">
           <GalleryLightbox
             urls={galleryUrls}
             gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-2 md:grid-cols-3"
@@ -594,6 +655,16 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
           <p className="mt-4 text-gray-500 text-sm">وَاللَّهُ وَلِيُّ التَّوْفِيق</p>
         </section>
       </AnimateIn>
+
+      {opened && (
+        <QuickNav
+          items={QUICK_NAV_ITEMS.filter(
+            (item) => item.id !== "galeri" || (galleryUrls?.length ?? 0) > 0,
+          )}
+          color={primary}
+          bg="rgba(15,27,45,0.85)"
+        />
+      )}
 
       <PoweredByDevLab />
     </div>
