@@ -25,6 +25,7 @@ export { BugisMakassarElegant } from "./templates/bugis-makassar-elegant";
 export { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
 export { AcehHeritage } from "./templates/aceh-heritage";
 export { MelayuPalembang } from "./templates/melayu-palembang";
+export { LampungTapis } from "./templates/lampung-tapis";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -263,6 +264,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "lampung-tapis",
+    name: "Lampung Tapis",
+    description: "Motif Tapis geometris dengan siluet Siger, palet marun dan emas.",
+    primaryColor: "#7a1f2b",
+    accentColor: "#c9a84c",
+    tags: ["lampung", "adat", "tapis"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -286,6 +296,7 @@ import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
 import { GeometricModern } from "./templates/geometric-modern";
 import { IslamicElegant } from "./templates/islamic-elegant";
+import { LampungTapis } from "./templates/lampung-tapis";
 import { MelayuPalembang } from "./templates/melayu-palembang";
 import { MinangHeritage } from "./templates/minang-heritage";
 import { MinimalLineArt } from "./templates/minimal-line-art";
@@ -326,6 +337,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "arabic-calligraphy-luxe": ArabicCalligraphyLuxe,
   "aceh-heritage": AcehHeritage,
   "melayu-palembang": MelayuPalembang,
+  "lampung-tapis": LampungTapis,
   "ai-composer": _ComposerDynamic,
 };
 
