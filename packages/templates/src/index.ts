@@ -23,6 +23,7 @@ export { BatakTraditional } from "./templates/batak-traditional";
 export { BetawiModern } from "./templates/betawi-modern";
 export { BugisMakassarElegant } from "./templates/bugis-makassar-elegant";
 export { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
+export { AcehHeritage } from "./templates/aceh-heritage";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -243,6 +244,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "aceh-heritage",
+    name: "Aceh Heritage",
+    description: "Motif Pinto Aceh emas di atas hitam, kesan islami dan megah.",
+    primaryColor: "#c9a24a",
+    accentColor: "#8b2635",
+    tags: ["aceh", "adat", "islami"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -256,6 +266,7 @@ export const TEMPLATES: TemplateMeta[] = [
 export const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
 
 import type { ComponentType } from "react";
+import { AcehHeritage } from "./templates/aceh-heritage";
 import { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
 import { BatakTraditional } from "./templates/batak-traditional";
 import { BetawiModern } from "./templates/betawi-modern";
@@ -302,6 +313,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "betawi-modern": BetawiModern,
   "bugis-makassar-elegant": BugisMakassarElegant,
   "arabic-calligraphy-luxe": ArabicCalligraphyLuxe,
+  "aceh-heritage": AcehHeritage,
   "ai-composer": _ComposerDynamic,
 };
 
