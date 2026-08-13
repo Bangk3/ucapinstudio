@@ -5,14 +5,20 @@ import { useRef, useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn, StaggerChildren } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
-import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
+import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -37,6 +43,13 @@ const SHIMMER_STYLE = `
   100% { background-position: 300% center; }
 }
 `;
+
+const QUICK_NAV_ITEMS: QuickNavItem[] = [
+  { id: "beranda", icon: "home", label: "Beranda" },
+  { id: "mempelai", icon: "couple", label: "Mempelai" },
+  { id: "acara", icon: "location", label: "Acara" },
+  { id: "galeri", icon: "gallery", label: "Galeri" },
+];
 
 /* ── Section with scroll-triggered reveal ─────────────────── */
 function RoyalSection({
@@ -102,9 +115,10 @@ export function RoyalJava({ data, preview }: TemplateProps) {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, fontFamily: "'Georgia', serif", color: "#1a0a0a" }}
     >
+      <PaperTexture opacity={0.04} />
       {!preview && <style>{SHIMMER_STYLE}</style>}
 
       {/* Batik border trim — top */}
@@ -151,7 +165,10 @@ export function RoyalJava({ data, preview }: TemplateProps) {
       <div className="h-2" style={{ backgroundColor: gold }} />
 
       {/* ── Hero ────────────────────────────────────────────────── */}
-      <section className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24 text-center overflow-hidden">
+      <section
+        id="beranda"
+        className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-24 text-center overflow-hidden"
+      >
         {theme.coverPhotoUrl && (
           <img
             src={theme.coverPhotoUrl}
@@ -193,6 +210,22 @@ export function RoyalJava({ data, preview }: TemplateProps) {
           </motion.div>
         )}
 
+        {/* Corner ornaments */}
+        <div className="pointer-events-none absolute inset-6 z-10" aria-hidden="true">
+          <div className="absolute top-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-left" />
+          </div>
+          <div className="absolute top-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-right" />
+          </div>
+          <div className="absolute bottom-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-left" />
+          </div>
+          <div className="absolute bottom-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-right" />
+          </div>
+        </div>
+
         <div className="relative z-10 space-y-6">
           {/* Pulsing ornament */}
           {!preview ? (
@@ -221,6 +254,8 @@ export function RoyalJava({ data, preview }: TemplateProps) {
             <p className="text-xs uppercase tracking-widest mb-4" style={goldShimmerStyle}>
               Dengan rahmat dan karunia Tuhan
             </p>
+
+            <CrownFlourish color={primary} />
 
             {!preview ? (
               <>
@@ -306,30 +341,58 @@ export function RoyalJava({ data, preview }: TemplateProps) {
 
       {/* ── Couple ──────────────────────────────────────────────── */}
       <RoyalSection>
-        <section className="mx-auto max-w-2xl px-6 py-20">
+        <section id="mempelai" className="mx-auto max-w-2xl px-6 py-20">
           <div className="border-y py-10" style={{ borderColor: gold }}>
-            <CoupleCarousel
-              groomName={hosts.groomName}
-              brideName={hosts.brideName}
-              {...(hosts.groomFull !== undefined ? { groomFull: hosts.groomFull } : {})}
-              {...(hosts.brideFull !== undefined ? { brideFull: hosts.brideFull } : {})}
-              {...(hosts.groomParents !== undefined ? { groomParents: hosts.groomParents } : {})}
-              {...(hosts.brideParents !== undefined ? { brideParents: hosts.brideParents } : {})}
-              {...(hosts.groomPhotoUrl !== undefined ? { groomPhotoUrl: hosts.groomPhotoUrl } : {})}
-              {...(hosts.bridePhotoUrl !== undefined ? { bridePhotoUrl: hosts.bridePhotoUrl } : {})}
-              primaryColor={gold}
-              ringColor={gold}
-              textColor={primary}
-              mutedColor="#7a6050"
-              groomLabel="Putra"
-              brideLabel="Putri"
-            />
+            <div
+              className="grid items-start gap-4 text-center"
+              style={{ gridTemplateColumns: "1fr auto 1fr" }}
+            >
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
+                  alt={hosts.groomName}
+                  color={gold}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold" style={{ color: primary }}>
+                    {hosts.groomFull ?? hosts.groomName}
+                  </p>
+                  {hosts.groomParents && (
+                    <p className="text-sm" style={{ color: "#7a6050" }}>
+                      Putra dari {hosts.groomParents}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <span className="pt-16 text-2xl italic" style={{ color: gold }}>
+                &amp;
+              </span>
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
+                  alt={hosts.brideName}
+                  color={gold}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold" style={{ color: primary }}>
+                    {hosts.brideFull ?? hosts.brideName}
+                  </p>
+                  {hosts.brideParents && (
+                    <p className="text-sm" style={{ color: "#7a6050" }}>
+                      Putri dari {hosts.brideParents}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </RoyalSection>
 
       {/* ── Events ──────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-2xl px-6 py-16">
+      <section id="acara" className="mx-auto max-w-2xl px-6 py-16">
         <AnimateIn>
           <h2
             className="mb-10 text-center text-xs uppercase tracking-widest"
@@ -448,7 +511,7 @@ export function RoyalJava({ data, preview }: TemplateProps) {
       {/* ── Gallery ─────────────────────────────────────────────── */}
       {galleryUrls && galleryUrls.length > 0 && (
         <AnimateIn direction="up">
-          <section className="px-4 py-12">
+          <section id="galeri" className="px-4 py-12">
             <GalleryLightbox
               urls={galleryUrls}
               gridClassName="mx-auto grid max-w-3xl grid-cols-2 gap-2 md:grid-cols-3"
@@ -602,6 +665,16 @@ export function RoyalJava({ data, preview }: TemplateProps) {
         </defs>
         <rect width="100%" height="16" fill="url(#batikBottom)" />
       </svg>
+
+      {opened && (
+        <QuickNav
+          items={QUICK_NAV_ITEMS.filter(
+            (item) => item.id !== "galeri" || (galleryUrls?.length ?? 0) > 0,
+          )}
+          color={primary}
+          bg="rgba(253,248,240,0.9)"
+        />
+      )}
 
       <PoweredByDevLab />
     </div>
