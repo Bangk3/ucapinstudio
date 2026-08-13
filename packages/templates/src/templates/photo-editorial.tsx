@@ -194,44 +194,46 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
             <CornerOrnament variant="gold-line" color={primary} corner="bottom-right" />
           </div>
         </div>
-        <Kicker color={primary}>Mempelai</Kicker>
-        <div className="relative z-20 mt-8 grid grid-cols-1 gap-10 sm:grid-cols-2">
-          <AnimateIn direction="up">
-            <div className="flex flex-col items-center gap-3">
-              <PortraitFrame
-                {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
-                alt={hosts.groomName}
-                color={primary}
-                variant="gold-line"
-              />
-              <div>
-                <p className="font-bold">{hosts.groomFull ?? hosts.groomName}</p>
-                {hosts.groomParents && (
-                  <p className="text-sm" style={{ color: muted }}>
-                    Putra dari {hosts.groomParents}
-                  </p>
-                )}
+        <div className="relative z-10">
+          <Kicker color={primary}>Mempelai</Kicker>
+          <div className="mt-8 grid grid-cols-1 gap-10 sm:grid-cols-2">
+            <AnimateIn direction="up">
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
+                  alt={hosts.groomName}
+                  color={primary}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold">{hosts.groomFull ?? hosts.groomName}</p>
+                  {hosts.groomParents && (
+                    <p className="text-sm" style={{ color: muted }}>
+                      Putra dari {hosts.groomParents}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </AnimateIn>
-          <AnimateIn direction="up">
-            <div className="flex flex-col items-center gap-3">
-              <PortraitFrame
-                {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
-                alt={hosts.brideName}
-                color={primary}
-                variant="gold-line"
-              />
-              <div>
-                <p className="font-bold">{hosts.brideFull ?? hosts.brideName}</p>
-                {hosts.brideParents && (
-                  <p className="text-sm" style={{ color: muted }}>
-                    Putri dari {hosts.brideParents}
-                  </p>
-                )}
+            </AnimateIn>
+            <AnimateIn direction="up">
+              <div className="flex flex-col items-center gap-3">
+                <PortraitFrame
+                  {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
+                  alt={hosts.brideName}
+                  color={primary}
+                  variant="gold-line"
+                />
+                <div>
+                  <p className="font-bold">{hosts.brideFull ?? hosts.brideName}</p>
+                  {hosts.brideParents && (
+                    <p className="text-sm" style={{ color: muted }}>
+                      Putri dari {hosts.brideParents}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </AnimateIn>
+            </AnimateIn>
+          </div>
         </div>
       </section>
 

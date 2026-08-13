@@ -259,7 +259,7 @@ export const TEMPLATES: TemplateMeta[] = [
     name: "Melayu Palembang",
     description: "Motif songket emas-merah dengan siluet Rumah Limas, kesan mewah Melayu.",
     primaryColor: "#9c1f2e",
-    accentColor: "#c9a23f",
+    accentColor: "#1f6b4a",
     tags: ["melayu", "palembang", "adat", "songket"],
     isPremium: true,
   },

@@ -11,7 +11,12 @@ import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
-import { CornerOrnament, PaperTexture, PortraitFrame } from "../components/ornaments";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
 import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
@@ -217,6 +222,7 @@ export function FloralClassic({ data, preview }: TemplateProps) {
           <p className="mb-2 text-xs uppercase tracking-widest" style={{ color: primary }}>
             ~ Undangan Pernikahan ~
           </p>
+          <CrownFlourish color={primary} />
           {opened && !preview ? (
             <motion.div
               className="my-6 text-5xl font-light tracking-wide md:text-6xl"

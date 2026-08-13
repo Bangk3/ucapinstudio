@@ -241,7 +241,7 @@ const TEMPLATES = [
     name: "Melayu Palembang",
     filosifi: "Benang emas songket, ikatan cinta selamanya.",
     desc: "Motif songket emas-merah dengan siluet Rumah Limas, kesan mewah Melayu.",
-    palette: ["#fdf8ee", "#9c1f2e", "#c9a23f"],
+    palette: ["#fdf8ee", "#9c1f2e", "#1f6b4a"],
     emoji: "🧵",
     tags: ["melayu", "palembang", "adat", "songket"],
   },

@@ -11,7 +11,12 @@ import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
-import { CornerOrnament, PaperTexture, PortraitFrame } from "../components/ornaments";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
 import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
@@ -181,6 +186,7 @@ export function DarkLuxury({ data, preview }: TemplateProps) {
           <p className="text-xs uppercase tracking-[0.5em]" style={{ color: primary }}>
             Undangan Pernikahan
           </p>
+          <CrownFlourish color={primary} />
           <h1 className="text-5xl font-bold leading-tight md:text-6xl">
             <FoilText color={primary} preview={Boolean(preview)}>
               {hosts.groomName}

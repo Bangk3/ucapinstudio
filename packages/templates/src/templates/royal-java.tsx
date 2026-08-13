@@ -213,16 +213,16 @@ export function RoyalJava({ data, preview }: TemplateProps) {
         {/* Corner ornaments */}
         <div className="pointer-events-none absolute inset-6 z-10" aria-hidden="true">
           <div className="absolute top-0 left-0">
-            <CornerOrnament variant="gold-line" color={primary} corner="top-left" />
+            <CornerOrnament variant="gold-line" color={gold} corner="top-left" />
           </div>
           <div className="absolute top-0 right-0">
-            <CornerOrnament variant="gold-line" color={primary} corner="top-right" />
+            <CornerOrnament variant="gold-line" color={gold} corner="top-right" />
           </div>
           <div className="absolute bottom-0 left-0">
-            <CornerOrnament variant="gold-line" color={primary} corner="bottom-left" />
+            <CornerOrnament variant="gold-line" color={gold} corner="bottom-left" />
           </div>
           <div className="absolute bottom-0 right-0">
-            <CornerOrnament variant="gold-line" color={primary} corner="bottom-right" />
+            <CornerOrnament variant="gold-line" color={gold} corner="bottom-right" />
           </div>
         </div>
 
@@ -255,7 +255,7 @@ export function RoyalJava({ data, preview }: TemplateProps) {
               Dengan rahmat dan karunia Tuhan
             </p>
 
-            <CrownFlourish color={primary} />
+            <CrownFlourish color={gold} />
 
             {!preview ? (
               <>
