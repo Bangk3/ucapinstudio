@@ -6,6 +6,12 @@
 ---
 
 ## 📌 Session Log
+ (newest first)
+
+> Cross-cutting work that doesn't map cleanly to one milestone checkbox below.
+> Newest first. Read this before re-deriving project state from scratch.
+
+- **Templates batch (M2 extension):** completed 5/5 remaining adat templates from `packages/templates/NEW_TEMPLATES_SPEC.md` — Minang Heritage (songket gold/maroon), Batak Traditional (ulos ragidup red/black/white), Betawi Modern (gigi balang red/gold), Bugis-Makassar Elegant (sarung tenun jewel tones), Arabic Calligraphy Luxe (emerald/gold, distinct from existing Islamic Elegant's navy/gold). All registered in `packages/templates/src/index.ts` + homepage `TEMPLATES` array (`apps/web/app/_home/index.tsx`). `pnpm --filter @invyte/templates typecheck`, `@invyte/web typecheck` and `@invyte/web lint` clean after each; `pnpm run build` passes. `@invyte/db` test suite fails only on missing `DATABASE_URL` env var (pre-existing infra blocker, unrelated to templates). Spec file deleted & committed.
 
 > Cross-cutting work that doesn't map cleanly to one milestone checkbox below.
 > Newest first. Read this before re-deriving project state from scratch.
