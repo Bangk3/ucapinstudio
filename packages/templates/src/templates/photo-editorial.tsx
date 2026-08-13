@@ -3,14 +3,20 @@ import { useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
-import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
+import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -20,6 +26,13 @@ const bg = "#ffffff";
 const surface = "#f7f7f5";
 const text = "#111111";
 const muted = "#767676";
+
+const QUICK_NAV_ITEMS: QuickNavItem[] = [
+  { id: "beranda", icon: "home", label: "Beranda" },
+  { id: "mempelai", icon: "couple", label: "Mempelai" },
+  { id: "acara", icon: "location", label: "Acara" },
+  { id: "galeri", icon: "gallery", label: "Galeri" },
+];
 
 /* Magazine-style kicker — small caps with rule */
 function Kicker({ children, color }: { children: React.ReactNode; color: string }) {
@@ -54,9 +67,11 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, color: text, fontFamily: "'Bodoni Moda', Georgia, serif" }}
     >
+      <PaperTexture opacity={0.04} />
+
       {/* Opening screen */}
       {!opened && (
         <OpeningScreen
@@ -81,7 +96,7 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
       )}
 
       {/* Hero — split layout, magazine cover */}
-      <section className="grid min-h-dvh grid-cols-1 md:grid-cols-2">
+      <section id="beranda" className="grid min-h-dvh grid-cols-1 md:grid-cols-2">
         {/* Photo side */}
         <div className="relative min-h-[50dvh] md:min-h-dvh overflow-hidden">
           {heroPhoto ? (
@@ -125,6 +140,7 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
             </p>
           )}
           <Kicker color={primary}>Wedding Invitation</Kicker>
+          <CrownFlourish color={primary} />
           <h1 className="mt-6 text-5xl font-bold leading-tight md:text-6xl">
             {hosts.groomName}
             <span className="block text-3xl font-light italic my-2" style={{ color: primary }}>
@@ -163,30 +179,64 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
       </section>
 
       {/* Couple */}
-      <section className="mx-auto max-w-2xl px-6 py-20 text-center">
+      <section id="mempelai" className="relative mx-auto max-w-2xl px-6 py-20 text-center">
+        <div className="pointer-events-none absolute inset-6 z-10" aria-hidden="true">
+          <div className="absolute top-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-left" />
+          </div>
+          <div className="absolute top-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="top-right" />
+          </div>
+          <div className="absolute bottom-0 left-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-left" />
+          </div>
+          <div className="absolute bottom-0 right-0">
+            <CornerOrnament variant="gold-line" color={primary} corner="bottom-right" />
+          </div>
+        </div>
         <Kicker color={primary}>Mempelai</Kicker>
-        <div className="mt-8">
+        <div className="relative z-20 mt-8 grid grid-cols-1 gap-10 sm:grid-cols-2">
           <AnimateIn direction="up">
-            <CoupleCarousel
-              groomName={hosts.groomName}
-              brideName={hosts.brideName}
-              {...(hosts.groomFull !== undefined ? { groomFull: hosts.groomFull } : {})}
-              {...(hosts.brideFull !== undefined ? { brideFull: hosts.brideFull } : {})}
-              {...(hosts.groomParents !== undefined ? { groomParents: hosts.groomParents } : {})}
-              {...(hosts.brideParents !== undefined ? { brideParents: hosts.brideParents } : {})}
-              {...(hosts.groomPhotoUrl !== undefined ? { groomPhotoUrl: hosts.groomPhotoUrl } : {})}
-              {...(hosts.bridePhotoUrl !== undefined ? { bridePhotoUrl: hosts.bridePhotoUrl } : {})}
-              primaryColor={primary}
-              textColor={text}
-              mutedColor={muted}
-              slideBg={surface}
-            />
+            <div className="flex flex-col items-center gap-3">
+              <PortraitFrame
+                {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
+                alt={hosts.groomName}
+                color={primary}
+                variant="gold-line"
+              />
+              <div>
+                <p className="font-bold">{hosts.groomFull ?? hosts.groomName}</p>
+                {hosts.groomParents && (
+                  <p className="text-sm" style={{ color: muted }}>
+                    Putra dari {hosts.groomParents}
+                  </p>
+                )}
+              </div>
+            </div>
+          </AnimateIn>
+          <AnimateIn direction="up">
+            <div className="flex flex-col items-center gap-3">
+              <PortraitFrame
+                {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
+                alt={hosts.brideName}
+                color={primary}
+                variant="gold-line"
+              />
+              <div>
+                <p className="font-bold">{hosts.brideFull ?? hosts.brideName}</p>
+                {hosts.brideParents && (
+                  <p className="text-sm" style={{ color: muted }}>
+                    Putri dari {hosts.brideParents}
+                  </p>
+                )}
+              </div>
+            </div>
           </AnimateIn>
         </div>
       </section>
 
       {/* Events */}
-      <section className="mx-auto max-w-2xl px-6 py-16">
+      <section id="acara" className="mx-auto max-w-2xl px-6 py-16">
         <Kicker color={primary}>Rangkaian Acara</Kicker>
         <div className="mt-10 space-y-6">
           {events.map((event) => (
@@ -289,7 +339,7 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
 
       {/* Gallery */}
       {galleryUrls && galleryUrls.length > 0 && (
-        <section className="px-4 py-16">
+        <section id="galeri" className="px-4 py-16">
           <Kicker color={primary}>Galeri</Kicker>
           <div className="mt-8">
             <GalleryLightbox
@@ -389,6 +439,16 @@ export function PhotoEditorial({ data, preview }: TemplateProps) {
           </p>
         </AnimateIn>
       </section>
+
+      {opened && (
+        <QuickNav
+          items={QUICK_NAV_ITEMS.filter(
+            (item) => item.id !== "galeri" || (galleryUrls?.length ?? 0) > 0,
+          )}
+          color={primary}
+          bg="rgba(255,255,255,0.92)"
+        />
+      )}
 
       <PoweredByDevLab />
     </div>
