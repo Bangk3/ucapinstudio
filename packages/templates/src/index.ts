@@ -24,6 +24,7 @@ export { BetawiModern } from "./templates/betawi-modern";
 export { BugisMakassarElegant } from "./templates/bugis-makassar-elegant";
 export { ArabicCalligraphyLuxe } from "./templates/arabic-calligraphy-luxe";
 export { AcehHeritage } from "./templates/aceh-heritage";
+export { MelayuPalembang } from "./templates/melayu-palembang";
 export { ComposerDynamic } from "./templates/composer-dynamic";
 
 export type {
@@ -253,6 +254,15 @@ export const TEMPLATES: TemplateMeta[] = [
     isPremium: true,
   },
   {
+    id: "melayu-palembang",
+    name: "Melayu Palembang",
+    description: "Motif songket emas-merah dengan siluet Rumah Limas, kesan mewah Melayu.",
+    primaryColor: "#9c1f2e",
+    accentColor: "#c9a23f",
+    tags: ["melayu", "palembang", "adat", "songket"],
+    isPremium: true,
+  },
+  {
     id: "ai-composer",
     name: "AI Composer",
     description: "Layout dibuat oleh AI — pilih blok, gaya, dan animasi.",
@@ -276,6 +286,7 @@ import { DarkLuxury } from "./templates/dark-luxury";
 import { FloralClassic } from "./templates/floral-classic";
 import { GeometricModern } from "./templates/geometric-modern";
 import { IslamicElegant } from "./templates/islamic-elegant";
+import { MelayuPalembang } from "./templates/melayu-palembang";
 import { MinangHeritage } from "./templates/minang-heritage";
 import { MinimalLineArt } from "./templates/minimal-line-art";
 import { MinimalistModern } from "./templates/minimalist-modern";
@@ -314,6 +325,7 @@ export const TEMPLATE_COMPONENTS: Record<string, ComponentType<TemplateProps>> =
   "bugis-makassar-elegant": BugisMakassarElegant,
   "arabic-calligraphy-luxe": ArabicCalligraphyLuxe,
   "aceh-heritage": AcehHeritage,
+  "melayu-palembang": MelayuPalembang,
   "ai-composer": _ComposerDynamic,
 };
 
