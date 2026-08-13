@@ -5,14 +5,20 @@ import { useState } from "react";
 import { AddToCalendar } from "../components/add-to-calendar";
 import { AnimateIn } from "../components/animate-in";
 import { Countdown } from "../components/countdown";
-import { CoupleCarousel } from "../components/couple-carousel";
 import { DigitalAmplop } from "../components/digital-amplop";
 import { GalleryLightbox } from "../components/gallery-lightbox";
 import { LoveTimeline } from "../components/love-timeline";
 import { MapEmbed } from "../components/map-embed";
 import { MusicPlayer } from "../components/music-player";
 import { OpeningScreen } from "../components/opening-screen";
+import {
+  CornerOrnament,
+  CrownFlourish,
+  PaperTexture,
+  PortraitFrame,
+} from "../components/ornaments";
 import { PoweredByDevLab } from "../components/powered-by";
+import { QuickNav, type QuickNavItem } from "../components/quick-nav";
 import { RsvpForm } from "../components/rsvp-form";
 import { ShareBar } from "../components/share-bar";
 import { WishesSection } from "../components/wishes-section";
@@ -22,6 +28,13 @@ const bg = "#fbf7f0";
 const surface = "#ffffff";
 const text = "#3f2f26";
 const muted = "#8a7568";
+
+const QUICK_NAV_ITEMS: QuickNavItem[] = [
+  { id: "beranda", icon: "home", label: "Beranda" },
+  { id: "mempelai", icon: "couple", label: "Mempelai" },
+  { id: "acara", icon: "location", label: "Acara" },
+  { id: "galeri", icon: "gallery", label: "Galeri" },
+];
 
 /* Songket motif — diamond weave strips, Minang gold-work heritage */
 function SongketRow({ color }: { color: string }) {
@@ -61,9 +74,11 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden font-serif"
+      className="relative min-h-screen overflow-x-hidden font-serif"
       style={{ backgroundColor: bg, color: text }}
     >
+      <PaperTexture opacity={0.04} />
+
       {/* Opening screen */}
       {!opened && (
         <OpeningScreen
@@ -88,7 +103,10 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
       )}
 
       {/* Hero */}
-      <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 py-20 text-center">
+      <section
+        id="beranda"
+        className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 py-20 text-center"
+      >
         {theme.coverPhotoUrl && (
           <img
             src={theme.coverPhotoUrl}
@@ -96,6 +114,20 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
             className="absolute inset-0 h-full w-full object-cover opacity-10"
           />
         )}
+        <div className="pointer-events-none absolute inset-6 z-10" aria-hidden="true">
+          <div className="absolute top-0 left-0">
+            <CornerOrnament variant="rumah-gadang" color={primary} corner="top-left" />
+          </div>
+          <div className="absolute top-0 right-0">
+            <CornerOrnament variant="rumah-gadang" color={primary} corner="top-right" />
+          </div>
+          <div className="absolute bottom-0 left-0">
+            <CornerOrnament variant="rumah-gadang" color={primary} corner="bottom-left" />
+          </div>
+          <div className="absolute bottom-0 right-0">
+            <CornerOrnament variant="rumah-gadang" color={primary} corner="bottom-right" />
+          </div>
+        </div>
         <div className="relative z-10 w-full space-y-5">
           <SongketRow color={primary} />
           {guestName && (
@@ -106,6 +138,7 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
           <p className="text-xs uppercase tracking-[0.4em]" style={{ color: primary }}>
             Undangan Pernikahan
           </p>
+          <CrownFlourish color={primary} />
           <h1 className="text-5xl font-bold leading-tight md:text-6xl">
             {hosts.groomName}
             <span className="block my-2 text-3xl font-light italic" style={{ color: primary }}>
@@ -153,31 +186,61 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
       </section>
 
       {/* Couple */}
-      <section className="mx-auto max-w-2xl px-6 py-20 text-center">
+      <section id="mempelai" className="mx-auto max-w-2xl px-6 py-20 text-center">
         <SongketRow color={primary} />
         <p className="mt-4 mb-8 text-xs uppercase tracking-widest" style={{ color: primary }}>
           Mempelai
         </p>
         <AnimateIn direction="up">
-          <CoupleCarousel
-            groomName={hosts.groomName}
-            brideName={hosts.brideName}
-            {...(hosts.groomFull !== undefined ? { groomFull: hosts.groomFull } : {})}
-            {...(hosts.brideFull !== undefined ? { brideFull: hosts.brideFull } : {})}
-            {...(hosts.groomParents !== undefined ? { groomParents: hosts.groomParents } : {})}
-            {...(hosts.brideParents !== undefined ? { brideParents: hosts.brideParents } : {})}
-            {...(hosts.groomPhotoUrl !== undefined ? { groomPhotoUrl: hosts.groomPhotoUrl } : {})}
-            {...(hosts.bridePhotoUrl !== undefined ? { bridePhotoUrl: hosts.bridePhotoUrl } : {})}
-            primaryColor={primary}
-            textColor={text}
-            mutedColor={muted}
-            slideBg={surface}
-          />
+          <div
+            className="grid items-start gap-4 text-center"
+            style={{ gridTemplateColumns: "1fr auto 1fr" }}
+          >
+            <div className="flex flex-col items-center gap-3">
+              <PortraitFrame
+                {...(hosts.groomPhotoUrl !== undefined ? { src: hosts.groomPhotoUrl } : {})}
+                alt={hosts.groomName}
+                color={primary}
+                variant="rumah-gadang"
+              />
+              <div>
+                <p className="font-bold" style={{ color: text }}>
+                  {hosts.groomFull ?? hosts.groomName}
+                </p>
+                {hosts.groomParents && (
+                  <p className="text-sm" style={{ color: muted }}>
+                    {hosts.groomParents}
+                  </p>
+                )}
+              </div>
+            </div>
+            <span className="pt-16 text-2xl italic" style={{ color: primary }}>
+              &amp;
+            </span>
+            <div className="flex flex-col items-center gap-3">
+              <PortraitFrame
+                {...(hosts.bridePhotoUrl !== undefined ? { src: hosts.bridePhotoUrl } : {})}
+                alt={hosts.brideName}
+                color={primary}
+                variant="rumah-gadang"
+              />
+              <div>
+                <p className="font-bold" style={{ color: text }}>
+                  {hosts.brideFull ?? hosts.brideName}
+                </p>
+                {hosts.brideParents && (
+                  <p className="text-sm" style={{ color: muted }}>
+                    {hosts.brideParents}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </AnimateIn>
       </section>
 
       {/* Events */}
-      <section className="mx-auto max-w-2xl px-6 py-16">
+      <section id="acara" className="mx-auto max-w-2xl px-6 py-16">
         <h2
           className="mb-10 text-center text-sm uppercase tracking-widest"
           style={{ color: primary }}
@@ -291,7 +354,7 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
 
       {/* Gallery */}
       {galleryUrls && galleryUrls.length > 0 && (
-        <section className="px-4 py-16">
+        <section id="galeri" className="px-4 py-16">
           <h2
             className="mb-8 text-center text-sm uppercase tracking-widest"
             style={{ color: primary }}
@@ -391,6 +454,16 @@ export function MinangHeritage({ data, preview }: TemplateProps) {
           </p>
         </AnimateIn>
       </section>
+
+      {opened && (
+        <QuickNav
+          items={QUICK_NAV_ITEMS.filter(
+            (item) => item.id !== "galeri" || (galleryUrls?.length ?? 0) > 0,
+          )}
+          color={primary}
+          bg="rgba(251,247,240,0.9)"
+        />
+      )}
 
       <PoweredByDevLab />
     </div>
