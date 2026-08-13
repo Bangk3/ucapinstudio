@@ -58,7 +58,7 @@ export function IslamicElegant({ data, preview }: TemplateProps) {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="relative min-h-screen overflow-x-hidden"
       style={{ backgroundColor: bg, color: "#e8dcc8", fontFamily: "'Georgia', serif" }}
     >
       <PaperTexture opacity={0.04} />
